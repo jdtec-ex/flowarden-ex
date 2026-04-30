@@ -31,7 +31,7 @@
 | `P1-008` | `completed` | 方向判定与服务识别已按 backlog 验收完成 |
 | `P1-009` | `completed` | 聚合器与时间推进已按 backlog 验收完成 |
 | `P1-010` | `completed` | 输出格式化与文件输出已按 backlog 验收完成 |
-| `P1-011` | `not_started` | 未开始 |
+| `P1-011` | `completed` | 测试资产、golden、固定离线回归样本已落地 |
 | `P1-012` | `not_started` | 未开始 |
 | `P1-101` | `not_started` | 未开始 |
 
@@ -612,16 +612,93 @@ cargo run -q -p flowarden -- capture --read <sample.pcap> --format json --output
 
 ---
 
+## P1-011 测试资产与回归样本
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 在 `flowarden-core/tests/fixtures/` 落地固定离线样本：
+   - `offline_mixed_ethernet.pcap`
+2. 在 `flowarden-core/tests/golden/` 落地稳定 golden JSON：
+   - `offline_mixed_ethernet.json`
+3. 在 `flowarden-core/tests/` 增加独立集成测试：
+   - `offline_capture_golden.rs`
+4. 补充 fixture 说明文档：
+   - `flowarden/flowarden-core/tests/fixtures/README.md`
+5. 补充第一阶段建议样本清单：
+   - `docs/flowarden_phase1_sample_catalog.md`
+
+### 覆盖范围
+
+当前固定样本和集成测试已经覆盖：
+
+1. 固定 offline `pcap` 回放
+2. malformed packet 不拖垮主循环
+3. offline second gap 补零 snapshot
+4. 关键统计值可复核：
+   - `packets_seen`
+   - `bytes_seen`
+   - `packets_decoded`
+   - `packets_decode_failed`
+   - `tick_snapshots`
+   - `final_snapshot`
+5. BPF 过滤后的稳定统计值
+
+### 主要代码位置
+
+- `flowarden/flowarden-core/tests/offline_capture_golden.rs`
+- `flowarden/flowarden-core/tests/fixtures/offline_mixed_ethernet.pcap`
+- `flowarden/flowarden-core/tests/golden/offline_mixed_ethernet.json`
+- `flowarden/flowarden-core/tests/fixtures/README.md`
+- `docs/flowarden_phase1_sample_catalog.md`
+
+### 验证结果
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo test -q -p flowarden-core
+cargo test -q
+```
+
+其中 `P1-011` 直接新增的关键验证包括：
+
+1. `offline_fixture_matches_golden_json`
+2. `offline_fixture_reports_expected_core_stats`
+3. `offline_fixture_bpf_filter_preserves_reproducible_stats`
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. `cargo test` 可覆盖第一阶段核心路径
+   - 已满足
+   - `flowarden-core` 集成测试已覆盖 offline 回放、malformed、gap、BPF、golden
+2. golden output 稳定
+   - 已满足
+   - 固定 fixture 产出已和仓库内 golden JSON 对齐
+3. 关键统计值可复核
+   - 已满足
+   - 集成测试直接断言核心统计值和最终聚合结果
+
+### 结论
+
+按 backlog 验收口径，`P1-011` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
 
-1. `--output` 目前只完成参数解析，尚未真正写文件
-   - 属于 `P1-010`
-2. 当前 capture 主处理仍然是单 worker 同步 loop
+1. 当前 capture 主处理仍然是单 worker 同步 loop
    - 这是有意的第一阶段取舍
    - 不是遗漏
-3. channel / gRPC / UI 通信尚未开始
+2. channel / gRPC / UI 通信尚未开始
    - 不属于当前已完成任务范围
 
 ---
@@ -630,11 +707,11 @@ cargo run -q -p flowarden -- capture --read <sample.pcap> --format json --output
 
 下一步进入：
 
-- `P1-011` 测试资产与回归样本
+- `P1-012` 封板与质量门禁
 
 计划内容：
 
-1. 固定样本 `pcap`
-2. 生成 golden JSON
-3. 覆盖 CLI / core 的关键回归路径
-4. 让第一阶段统计结果具备长期可复核资产
+1. README 与阶段一使用说明收口
+2. 质量门禁检查
+3. backlog 完成状态复核
+4. 第一阶段封板条件确认
