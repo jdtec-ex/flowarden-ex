@@ -28,7 +28,7 @@
 | `P1-005` | `completed` | runtime 主循环与 graceful stop 已验收 |
 | `P1-006` | `completed` | BPF、link type、unsupported 行为已验收 |
 | `P1-007` | `completed` | 包解码器已按 backlog 验收完成 |
-| `P1-008` | `not_started` | 未开始 |
+| `P1-008` | `completed` | 方向判定与服务识别已按 backlog 验收完成 |
 | `P1-009` | `not_started` | 未开始 |
 | `P1-010` | `not_started` | 未开始 |
 | `P1-011` | `not_started` | 未开始 |
@@ -357,6 +357,94 @@ cargo test -q -p flowarden-core
 
 ---
 
+## P1-008 方向判定与服务识别
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 新增分类模型：
+   - `TrafficDirection`
+   - `ServiceConfidence`
+   - `ServiceLabel`
+   - `ClassifiedPacket`
+2. 新增 `analysis/direction.rs`
+   - live 模式基于本机地址判断方向
+   - loopback 特判
+   - `0.0.0.0` / `::` 未分配地址特判
+   - offline 模式私网/公网保守回退策略
+3. 新增 `analysis/service.rs`
+   - 服务识别综合协议、源端口、目标端口、方向
+   - 不退化成简单“只看目标端口”
+   - 支持常见阶段一服务：
+     - `ssh`
+     - `dns`
+     - `http`
+     - `https`
+     - `ntp`
+     - `mdns`
+     - `quic`
+     - `dhcp`
+     - `icmp`
+     - `icmpv6`
+4. 新增 `classify_packet(...)`
+   - 把 `DecodedPacket` 转成 `ClassifiedPacket`
+
+### 主要代码位置
+
+- `flowarden/flowarden-core/src/analysis/packet.rs`
+- `flowarden/flowarden-core/src/analysis/direction.rs`
+- `flowarden/flowarden-core/src/analysis/service.rs`
+- `flowarden/flowarden-core/src/analysis/mod.rs`
+
+### 自动化验证
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo test -q -p flowarden-core
+```
+
+当前 `flowarden-core` 共 30 个测试全部通过，其中与 `P1-008` 直接相关的验证包括：
+
+1. `marks_loopback_pair_as_local`
+2. `marks_unspecified_as_unknown`
+3. `marks_live_local_to_remote_as_outbound`
+4. `marks_live_remote_to_local_as_inbound`
+5. `uses_offline_private_to_public_fallback`
+6. `uses_offline_public_to_private_fallback`
+7. `offline_public_to_public_stays_unknown`
+8. `outbound_uses_destination_port_for_service`
+9. `inbound_uses_source_port_for_service`
+10. `unknown_direction_does_not_degenerate_to_destination_only`
+11. `local_direction_returns_low_confidence_for_well_known_service`
+12. `icmp_is_classified_without_ports`
+13. `classify_packet_combines_direction_and_service`
+14. `sample_pcap_packet_classifies_to_outbound_https`
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. 方向判定在样本 `pcap` 上结果可解释
+   - 已满足
+   - `sample_pcap_packet_classifies_to_outbound_https` 验证了解码后的真实样本包可被解释为 `Outbound`
+2. 服务识别不退化成简单目标端口映射
+   - 已满足
+   - `unknown_direction_does_not_degenerate_to_destination_only` 已验证在 `Unknown` 场景下会综合源/目标端口选择服务
+3. live/offline 统计语义保持一致
+   - 已满足当前任务口径
+   - 当前方向/服务分类为纯函数模型，live 与 offline 共享同一套分类逻辑，未引入模式分叉统计语义
+
+### 结论
+
+按 backlog 验收口径，`P1-008` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
@@ -375,11 +463,11 @@ cargo test -q -p flowarden-core
 
 下一步进入：
 
-- `P1-008` 方向判定与服务识别
+- `P1-009` 聚合器与时间推进
 
 计划内容：
 
-1. 基于 `DecodedPacket` 建 `ClassifiedPacket`
-2. 实现方向判定
-3. 实现服务识别
-4. 为后续聚合提供稳定输入
+1. 设计 `FlowKey`
+2. 实现 tick / final snapshot
+3. 实现 live/offline 时间推进
+4. 接入 top connections / hosts / services
