@@ -2,6 +2,12 @@
 
 ## 1. 方案定位
 
+当前 `docs` 的组织方式调整为：
+
+- `phase1/`：第一阶段实施、backlog、进度、运行与样本文档
+- `phase2/`：第二阶段开发计划与 UI 设计文档
+- 根目录：跨阶段总方案、Sniffnet 参考分析、UI 参考图片索引
+
 本方案基于当前 `docs` 中两份已有文档形成：
 
 - `sniffnet_reverse_analysis.md`
@@ -396,11 +402,16 @@ CLI 打印只是展示形式，核心输出应该先形成统一投影，例如�
 
 阶段一的实施细化、模块设计、任务拆解与验收清单，见：
 
-- `flowarden_phase1_detailed_plan.md`
+- `phase1/flowarden_phase1_detailed_plan.md`
 
 ---
 
 ## 7. 阶段二：Avalonia UI
+
+第二阶段的详细计划与 UI 设计稿见：
+
+- `phase2/flowarden_phase2_development_plan.md`
+- `phase2/flowarden_phase2_ui_design.md`
 
 ## 7.1 阶段目标
 
@@ -423,6 +434,7 @@ CLI 打印只是展示形式，核心输出应该先形成统一投影，例如�
 6. Overview 页面
 7. Inspect 页面
 8. 基础设置和日志查看
+9. 固定使用本机 `dotnet --version` 当前输出对应的 SDK `8.0.125`，目标框架为 `net8.0`
 
 ### 明确不做
 
