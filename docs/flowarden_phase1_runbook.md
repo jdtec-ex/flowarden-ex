@@ -25,6 +25,18 @@ cargo run -p flowarden -- devices
 cargo run -p flowarden -- devices --format json
 ```
 
+启动前做所有 device 的短时 preview：
+
+```bash
+cargo run -p flowarden -- devices --preview 2
+```
+
+说明：
+
+1. `devices --preview <秒数>` 会对所有可用 device 做短时预览。
+2. preview 只用于帮助选择 source。
+3. 正式 `capture` 仍然只绑定一个 `--device` 或一个 `--read`。
+
 ### live capture
 
 ```bash
