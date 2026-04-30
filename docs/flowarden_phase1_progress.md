@@ -29,7 +29,7 @@
 | `P1-006` | `completed` | BPF、link type、unsupported 行为已验收 |
 | `P1-007` | `completed` | 包解码器已按 backlog 验收完成 |
 | `P1-008` | `completed` | 方向判定与服务识别已按 backlog 验收完成 |
-| `P1-009` | `not_started` | 未开始 |
+| `P1-009` | `completed` | 聚合器与时间推进已按 backlog 验收完成 |
 | `P1-010` | `not_started` | 未开始 |
 | `P1-011` | `not_started` | 未开始 |
 | `P1-012` | `not_started` | 未开始 |
@@ -445,6 +445,86 @@ cargo test -q -p flowarden-core
 
 ---
 
+## P1-009 聚合器与时间推进
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 新建 `flow` 模块：
+   - `flow/mod.rs`
+   - `flow/aggregator.rs`
+2. 建立第一阶段稳定输出模型：
+   - `FlowKey`
+   - `AggregateTotals`
+   - `FlowCounters`
+   - `HostCounters`
+   - `ServiceCounters`
+   - `TickSnapshot`
+   - `FinalSnapshot`
+   - `AggregateSummary`
+3. 实现 `FlowAggregator`
+   - 全局聚合
+   - 秒级 tick 聚合
+   - `top_connections`
+   - `top_hosts`
+   - `top_services`
+4. 实现时间推进语义：
+   - offline 模式按 `pcap` 时间戳推进
+   - live 模式按 wall clock tick 推进
+   - 跨秒空洞可表达为零增量 tick
+5. 将 `decode -> classify -> aggregate -> snapshot` 链路接入 `capture/runtime.rs`
+6. `RuntimeReport` 现在已携带：
+   - `tick_snapshots`
+   - `final_snapshot`
+7. `dropped_packets` 与 `last_packet_timestamp` 已进入 snapshot 模型
+
+### 主要代码位置
+
+- `flowarden/flowarden-core/src/flow/mod.rs`
+- `flowarden/flowarden-core/src/flow/aggregator.rs`
+- `flowarden/flowarden-core/src/capture/runtime.rs`
+- `flowarden/flowarden-core/src/lib.rs`
+
+### 自动化验证
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo test -q -p flowarden-core
+```
+
+当前 `flowarden-core` 共 33 个测试全部通过，其中与 `P1-009` 直接相关的新增验证包括：
+
+1. `offline_time_gap_emits_zero_tick`
+2. `same_input_produces_stable_output`
+3. `rankings_are_sorted_deterministically`
+4. `offline_runtime_reads_complete_file`
+5. `offline_runtime_applies_bpf_filter`
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. 同一输入多次运行结果稳定
+   - 已满足
+   - `same_input_produces_stable_output` 已验证相同输入会生成相同 snapshots
+2. offline 回放按 `pcap` 时间戳推进，而不是按读取速度推进
+   - 已满足
+   - `offline_time_gap_emits_zero_tick` 已验证跨秒 gap 会生成零增量 tick
+3. 聚合结果可直接供 CLI 和后续 UI 复用
+   - 已满足
+   - `RuntimeReport` 已携带稳定的 `tick_snapshots` 与 `final_snapshot`
+
+### 结论
+
+按 backlog 验收口径，`P1-009` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
@@ -463,11 +543,11 @@ cargo test -q -p flowarden-core
 
 下一步进入：
 
-- `P1-009` 聚合器与时间推进
+- `P1-010` 输出格式化与文件输出
 
 计划内容：
 
-1. 设计 `FlowKey`
-2. 实现 tick / final snapshot
-3. 实现 live/offline 时间推进
-4. 接入 top connections / hosts / services
+1. 输出 `json` formatter
+2. 输出 `table` formatter
+3. 接入 stdout / file 写出
+4. 将 `RuntimeReport` 的 snapshot 结果转换为 CLI 稳定输出
