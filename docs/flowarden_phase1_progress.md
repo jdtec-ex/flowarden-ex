@@ -33,7 +33,7 @@
 | `P1-010` | `completed` | 输出格式化与文件输出已按 backlog 验收完成 |
 | `P1-011` | `completed` | 测试资产、golden、固定离线回归样本已落地 |
 | `P1-012` | `completed` | 封板文档、运行说明、验收模板与质量门禁已落实 |
-| `P1-101` | `not_started` | 未开始 |
+| `P1-101` | `completed` | 原始 `pcap` 落盘能力已落地并通过自动化验收 |
 
 ---
 
@@ -751,6 +751,65 @@ cargo test -q
 
 ---
 
+## P1-101 实时抓包同时落盘 `pcap`
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 新增独立 CLI 参数：
+   - `--pcap-out <PATH>`
+2. `RuntimeConfig` 增加 `pcap_output_path`
+3. `CaptureType` 增加 savefile 创建能力
+4. runtime 在主循环中将原始包写入 savefile，并在结束时 `flush`
+5. `--output` 与 `--pcap-out` 路径冲突时，CLI 明确拒绝
+
+### 主要代码位置
+
+- `flowarden/flowarden/src/cli.rs`
+- `flowarden/flowarden/src/main.rs`
+- `flowarden/flowarden-core/src/capture/context.rs`
+- `flowarden/flowarden-core/src/capture/runtime.rs`
+
+### 自动化验证
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo fmt --all -- --check
+cargo clippy -q --all-targets --all-features -- -D warnings
+cargo test -q -p flowarden-core -p flowarden
+```
+
+其中新增或直接相关的验证包括：
+
+1. `capture_rejects_same_output_and_pcap_output_path`
+2. `offline_runtime_can_export_replay_to_pcap`
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. 开启时能生成有效 `pcap`
+   - 已满足
+   - `offline_runtime_can_export_replay_to_pcap` 已验证导出的文件可再次被回放
+2. 不开启时不影响主流程
+   - 已满足
+   - 未开启时现有 runtime 和输出测试均保持通过
+3. 错误行为清楚、可定位
+   - 已满足
+   - savefile 创建失败会映射到稳定错误
+   - `--output` / `--pcap-out` 路径冲突会被 CLI 明确拒绝
+
+### 结论
+
+按 backlog 验收口径，`P1-101` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
@@ -765,11 +824,4 @@ cargo test -q
 
 ## 5. 下一步
 
-下一步进入：
-
-- `P1-101` 实时抓包同时落盘 `pcap`（建议保留项，可选）
-
-计划内容：
-
-1. 评估是否需要保留 live capture savefile 能力
-2. 若不做，则第一阶段主线已封板完成
+第一阶段 backlog 已全部完成。

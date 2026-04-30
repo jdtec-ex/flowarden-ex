@@ -76,6 +76,23 @@ cargo run -p flowarden -- capture --device <device> --duration 5 --bpf "tcp"
 - [ ] 通过
 - 备注：
 
+### live capture 原始 `pcap` 落盘
+
+命令：
+
+```bash
+cargo run -p flowarden -- capture --device <device> --duration 5 --pcap-out ./capture.pcap
+```
+
+检查项：
+
+1. `capture.pcap` 被创建
+2. 不开启时不影响主流程
+3. 与 `--output` 不冲突
+
+- [ ] 通过
+- 备注：
+
 ---
 
 ## 4. 输出契约
@@ -135,7 +152,6 @@ cargo run -p flowarden -- capture --read ./sample.pcap --format json --output ./
 - [ ] payload 深度解析
 - [ ] 会话级重建
 - [ ] channel/gRPC 通信
-- [ ] live capture 同时落盘 `pcap`
 
 ---
 

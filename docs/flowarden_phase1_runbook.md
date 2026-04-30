@@ -37,11 +37,19 @@ cargo run -p flowarden -- capture --device en0 --duration 5
 cargo run -p flowarden -- capture --device en0 --duration 5 --bpf "tcp"
 ```
 
+同时落原始 `pcap`：
+
+```bash
+cargo run -p flowarden -- capture --device en0 --duration 5 --pcap-out ./capture.pcap
+```
+
 说明：
 
 1. `--duration` 以秒为单位。
 2. `Ctrl+C` 会触发 graceful stop。
 3. macOS 上 live capture 可能需要 `/dev/bpf*` 权限。
+4. `--output` 用于 table/json 结果输出。
+5. `--pcap-out` 用于原始抓包落盘。
 
 ### offline 回放
 
@@ -116,7 +124,6 @@ cargo test -q
 2. payload 深度解析
 3. 会话级重建
 4. channel/gRPC 通信
-5. live capture 同时落盘 `pcap`
 
 ---
 
