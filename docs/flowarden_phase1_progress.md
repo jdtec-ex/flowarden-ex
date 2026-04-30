@@ -32,7 +32,7 @@
 | `P1-009` | `completed` | 聚合器与时间推进已按 backlog 验收完成 |
 | `P1-010` | `completed` | 输出格式化与文件输出已按 backlog 验收完成 |
 | `P1-011` | `completed` | 测试资产、golden、固定离线回归样本已落地 |
-| `P1-012` | `not_started` | 未开始 |
+| `P1-012` | `completed` | 封板文档、运行说明、验收模板与质量门禁已落实 |
 | `P1-101` | `not_started` | 未开始 |
 
 ---
@@ -691,6 +691,66 @@ cargo test -q
 
 ---
 
+## P1-012 封板与质量门禁
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 更新 `flowarden/README.md`，补齐：
+   - 如何列设备
+   - 如何 live capture
+   - 如何 offline 回放
+   - 如何输出 JSON
+   - 第一阶段已保留与明确后置能力
+2. 新增第一阶段运行说明：
+   - `docs/flowarden_phase1_runbook.md`
+3. 新增第一阶段验收记录模板：
+   - `docs/flowarden_phase1_acceptance_template.md`
+4. 固定质量门禁并完成实际执行：
+   - `cargo fmt --all -- --check`
+   - `cargo clippy -q --all-targets --all-features -- -D warnings`
+   - `cargo test -q`
+
+### 主要文件位置
+
+- `flowarden/README.md`
+- `docs/flowarden_phase1_runbook.md`
+- `docs/flowarden_phase1_acceptance_template.md`
+
+### 验证结果
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo fmt --all -- --check
+cargo clippy -q --all-targets --all-features -- -D warnings
+cargo test -q
+```
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. 第一阶段可被独立评审和重复验收
+   - 已满足
+   - README、runbook、验收模板、固定回归资产已齐备
+2. 文档、测试、产物齐备
+   - 已满足
+   - 运行说明、golden、fixture、进度记录和样本清单均已落地
+3. 输出模型可以直接作为第二阶段契约起点
+   - 已满足
+   - `tick_snapshots` 与 `final_snapshot` 已通过固定样本和 golden 稳定化
+
+### 结论
+
+按 backlog 验收口径，`P1-012` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
@@ -707,11 +767,9 @@ cargo test -q
 
 下一步进入：
 
-- `P1-012` 封板与质量门禁
+- `P1-101` 实时抓包同时落盘 `pcap`（建议保留项，可选）
 
 计划内容：
 
-1. README 与阶段一使用说明收口
-2. 质量门禁检查
-3. backlog 完成状态复核
-4. 第一阶段封板条件确认
+1. 评估是否需要保留 live capture savefile 能力
+2. 若不做，则第一阶段主线已封板完成
