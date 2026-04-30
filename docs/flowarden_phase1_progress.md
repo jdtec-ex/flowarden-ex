@@ -30,7 +30,7 @@
 | `P1-007` | `completed` | 包解码器已按 backlog 验收完成 |
 | `P1-008` | `completed` | 方向判定与服务识别已按 backlog 验收完成 |
 | `P1-009` | `completed` | 聚合器与时间推进已按 backlog 验收完成 |
-| `P1-010` | `not_started` | 未开始 |
+| `P1-010` | `completed` | 输出格式化与文件输出已按 backlog 验收完成 |
 | `P1-011` | `not_started` | 未开始 |
 | `P1-012` | `not_started` | 未开始 |
 | `P1-101` | `not_started` | 未开始 |
@@ -525,6 +525,93 @@ cargo test -q -p flowarden-core
 
 ---
 
+## P1-010 输出格式化与文件输出
+
+### 状态
+
+- `completed`
+
+### 完成内容
+
+1. 新增 CLI 输出模块：
+   - `flowarden/src/output.rs`
+2. 建立稳定的 capture 输出封装：
+   - `CaptureOutput`
+3. 实现 `json` formatter
+   - 直接序列化 `tick_snapshots + final_snapshot`
+4. 实现 `table` formatter
+   - 面向人工查看
+   - 输出 capture 元信息、totals、top connections、top hosts、top services
+5. 接入 stdout / file output
+   - `--output` 现在会真正写文件
+   - 写文件失败会带输出路径上下文
+6. CLI `capture` 现在会：
+   - 先渲染 snapshot
+   - 再输出到 stdout 或文件
+   - 最终 summary 走 `stderr`
+
+### 主要代码位置
+
+- `flowarden/flowarden/src/output.rs`
+- `flowarden/flowarden/src/main.rs`
+- `flowarden/flowarden/Cargo.toml`
+
+### 自动化验证
+
+通过：
+
+```bash
+cd /Users/wangli/workspace/coding/flowarden/flowarden
+cargo test -q -p flowarden
+cargo test -q
+```
+
+其中与 `P1-010` 直接相关的验证包括：
+
+1. `json_output_is_stable_and_parseable`
+2. `table_output_is_human_readable`
+3. `file_output_writes_expected_content`
+
+### 运行验证
+
+已完成一条实际 CLI 离线 JSON 文件输出验证：
+
+```bash
+cargo run -q -p flowarden -- capture --read <sample.pcap> --format json --output <out.json>
+```
+
+验证结果：
+
+1. 进程退出码为 `0`
+2. `out.json` 被真实创建
+3. 输出内容包含稳定的：
+   - `tick_snapshots`
+   - `final_snapshot`
+   - `totals`
+   - `top_connections`
+   - `top_hosts`
+   - `top_services`
+
+### 验收依据
+
+对应 backlog 的三条验收条件，当前结论如下：
+
+1. `json` 可被脚本稳定解析
+   - 已满足
+   - `json_output_is_stable_and_parseable` 与实际 CLI 文件输出均已验证
+2. `table` 适合人工查看
+   - 已满足
+   - `table_output_is_human_readable` 已覆盖主要展示字段
+3. stdout 与 file output 行为一致、可预期
+   - 已满足当前任务口径
+   - formatter 先统一产出字符串，再由 `emit_output(...)` 决定写 stdout 或 file
+
+### 结论
+
+按 backlog 验收口径，`P1-010` 已完成。
+
+---
+
 ## 4. 当前未完成但需注意的事项
 
 这些不是已完成任务的阻塞项，但需要明确记录：
@@ -543,11 +630,11 @@ cargo test -q -p flowarden-core
 
 下一步进入：
 
-- `P1-010` 输出格式化与文件输出
+- `P1-011` 测试资产与回归样本
 
 计划内容：
 
-1. 输出 `json` formatter
-2. 输出 `table` formatter
-3. 接入 stdout / file 写出
-4. 将 `RuntimeReport` 的 snapshot 结果转换为 CLI 稳定输出
+1. 固定样本 `pcap`
+2. 生成 golden JSON
+3. 覆盖 CLI / core 的关键回归路径
+4. 让第一阶段统计结果具备长期可复核资产
