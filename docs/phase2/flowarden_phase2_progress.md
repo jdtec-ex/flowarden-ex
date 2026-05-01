@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
 | `M2-002` | 已完成 | 已用 `proto + tonic + .NET gRPC client` 重做最小 service mode 与本地通信骨架。 |
-| `M2-003` | 未开始 | 之前有未提交 DTO 草稿；在 `M2-002` 修正完成并经确认前，不进入该任务。 |
+| `M2-003` | 已完成 | phase2 UI 侧最小 DTO/契约模型已冻结，足以承接 Source / Overview / Inspect / Settings 开发。 |
 | `M2-004` | 未开始 | 等待 `M2-003` 完成并经确认。 |
 | `M2-005` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-006` | 未开始 | 等待前置任务完成并经确认。 |
@@ -67,3 +67,26 @@
 - 修正后提交：
   - inner repo `7b1c4d8` `Rework M2-002 to gRPC service mode skeleton`
   - outer repo `83a8b89` `Rework M2-002 to gRPC ui client skeleton`
+
+### M2-003 phase2 契约模型冻结
+
+- 状态：已完成
+- 完成内容：
+  - 冻结 `DeviceSummaryDto`
+  - 冻结 `DevicePreviewDto`
+  - 冻结 `CaptureSessionStateDto`
+  - 冻结 `OverviewSnapshotDto`
+  - 冻结 `InspectFilterDto`
+  - 冻结 `InspectResultDto`
+  - 冻结 `CoreErrorDto`
+- 结构约束：
+  - DTO 命名明确区分 UI 传输模型与 Rust 内部领域模型
+  - `DestinationMapPanel` 和 `TopDestinationsPanel` 已保留 placeholder 契约
+  - `InspectResultDto` 只承接 phase2 的连接明细和结果摘要，不提前引入 phase3 的 payload / session 字段
+  - 当前只冻结 UI 侧最小数据面，不新增 core 侧 proto 扩展
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - UI 项目未直接依赖 Rust 内部结构体
+  - phase2 页面所需最小数据面已齐备
+- 提交：
+  - 待本轮提交后补充

@@ -1,0 +1,18 @@
+namespace Flowarden.Ui.Models;
+
+public sealed class ConnectionRowDto
+{
+    public string SourceAddress { get; init; } = string.Empty;
+
+    public ushort? SourcePort { get; init; }
+
+    public string DestinationAddress { get; init; } = string.Empty;
+
+    public ushort? DestinationPort { get; init; }
+
+    public string Protocol { get; init; } = string.Empty;
+
+    public ulong Packets { get; init; }
+
+    public ulong Bytes { get; init; }
+}
