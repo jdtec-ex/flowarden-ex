@@ -16,6 +16,244 @@
 4. `deep_cosmos.png`
 5. `thumbnail.png`
 
+### 1.1 本轮评审先看什么
+
+本轮先不讨论 Stitch 样版，也不先讨论 Avalonia 控件细节，而是先从原参考图抽出两类内容：
+
+1. 这些页面到底在展示哪些领域实体
+2. 这些页面到底由哪些界面要素组成
+
+只有这两件事先冻结，后续基于 Stitch 重做 layout 和风格时，才不会把关键监控信息丢掉。
+
+### 1.2 参考图中的领域实体
+
+从 `overview / inspect / notifications / thumbnail` 四类画面看，原图实际在展示的不是“页面组件集合”，而是一组稳定的流量监控实体：
+
+1. `CaptureSource`
+   - 当前网卡或当前数据源
+   - 例如 `Network adapter: en0`
+2. `CaptureState`
+   - 当前是否运行、暂停、停止
+   - 当前页面是否连接到活跃采集会话
+3. `FilterState`
+   - 当前生效的过滤条件
+   - 例如 `Active filters: none`、国家/域名/ASN/服务筛选
+4. `MetricMode`
+   - 数据展示口径
+   - `bits / bytes / packets`
+5. `TrafficSummary`
+   - 总接收、总发送、总丢弃
+6. `TrafficTimeline`
+   - 随时间推进的入站/出站速率序列
+7. `HostEntry`
+   - 主机或远端地址条目
+   - 可能带 hostname、组织名、IP、收藏状态、国家标识
+8. `ServiceEntry`
+   - 服务条目
+   - 例如 `https / domain / zeroconf`
+9. `ProgramEntry`
+   - 本地程序条目
+   - 原图中是 Sniffnet 的增强能力，Flowarden phase2 只记录为“原图存在的实体”，不承诺 MVP 实现
+10. `ConnectionEntry`
+   - 连接明细条目
+   - 包含源地址、目标地址、源端口、目标端口、协议、服务、字节数
+11. `NotificationEvent`
+   - 监控事件条目
+   - 包含事件类型、时间、标题、目标对象、相关统计
+12. `FavoriteState`
+   - 收藏或关注标记
+   - 原图中存在于 host / service / program / notification
+
+### 1.3 参考图中的全局界面要素
+
+原图在所有页面上基本保持了一套稳定的 shell：
+
+1. 顶部主色带
+2. 页面级主导航
+3. 顶部快速动作区
+   - 返回
+   - 开始/暂停
+   - 布局切换或缩略模式
+   - 设置/工具
+4. 主内容区深色面板系统
+5. 底部状态带
+6. 页面标题区
+7. 当前页激活态
+8. 全局图标语言
+9. 全局颜色语义
+   - 主强调色
+   - 入站色
+   - 出站色
+   - 异常/警告色
+
+这说明后续重设计时，哪怕换掉具体 layout，也不能丢：
+
+1. 页面层级感
+2. 运行状态可见性
+3. 全局导航和局部工作区的区分
+
+### 1.4 Overview 画面中的要素
+
+`overview.png` 和 `deep_cosmos.png` 共同呈现了 Overview 页的核心要素：
+
+1. Source summary
+   - 当前网卡名
+   - 当前过滤条件
+2. Metric mode switch
+   - `bits`
+   - `bytes`
+   - `packets`
+3. Totals donut / totals summary
+   - 总流量
+   - incoming
+   - outgoing
+   - dropped
+4. Traffic rate chart
+   - 时间轴
+   - 入站曲线或面积
+   - 出站曲线或面积
+   - 图例
+5. Top host list
+   - 主机名或 IP
+   - 组织名
+   - 排名值
+   - 微型进度条
+   - 收藏状态
+6. Top service list
+   - 服务名
+   - 排名值
+   - 微型进度条
+   - 收藏状态
+7. Top program list
+   - 程序名
+   - 图标
+   - 排名值
+   - 微型进度条
+   - 收藏状态
+8. 列表排序控件
+9. 列表筛选入口
+10. 列表滚动区
+
+其中需要特别注意：
+
+1. Overview 不是“一个总览卡片加若干小卡片”，而是“趋势图 + 三列排行榜”的工作台
+2. 榜单每一项都承载了实体名称、数值和轻量比例关系
+3. 原图中 `Program` 是一列独立榜单，不是连接明细的一部分
+
+### 1.5 Inspect 画面中的要素
+
+`inspect.png` 展示的是“过滤工作台 + 连接明细表格”，核心要素如下：
+
+1. 页面标题
+2. 顶部过滤条
+3. 布尔开关类过滤器
+4. 标签/Chip 类过滤条件
+   - `Country`
+   - `Domain`
+   - `ASN`
+   - `Program`
+   - `Service`
+5. 可移除的条件标签
+6. 明细表格
+7. 表头排序
+8. 列级过滤入口
+9. 结果滚动区
+10. 底部汇总条
+   - 当前结果总量
+   - 当前统计值
+11. 结果计数文案
+
+表格字段在原图中非常明确：
+
+1. `Address (source)`
+2. `Port (source)`
+3. `Address (destination)`
+4. `Port (destination)`
+5. `Protocol`
+6. `Service`
+7. `Bytes`
+
+这里要注意两点：
+
+1. Inspect 页在原图中是“连接/流记录视角”，不是主机榜单视角
+2. 过滤器是页面一级主角，不是藏在二级弹窗里的附属功能
+
+### 1.6 Notifications 画面中的要素
+
+`notifications.png` 体现的是事件流视角，核心要素如下：
+
+1. 事件卡片列表
+2. 事件类型图标
+   - 收藏相关
+   - 阈值超限
+   - 黑名单命中
+3. 事件时间戳
+4. 事件标题
+5. 事件摘要
+6. 相关实体
+   - 主机
+   - 服务
+   - 程序
+7. 相关统计值
+8. 卡片内部的局部榜单
+9. 删除或清理动作
+
+这页对 Flowarden phase2 的价值不是“现在就做通知中心”，而是提醒后续 UI 结构里需要给事件卡片预留表达方式。
+
+### 1.7 Thumbnail 画面中的要素
+
+`thumbnail.png` 体现的是“压缩态概览”，它抽出的要素是：
+
+1. 缩略窗口模式
+2. 最小总量环形图
+3. 最小趋势图
+4. 精简 host 列表
+5. 精简 service 列表
+6. 顶部最少控制按钮
+
+这说明原图并不只是做单一大窗口，而是有“密度压缩后的概览态”。
+
+Flowarden phase2 不把它列为必做页面，但要在设计文档中记录：
+
+1. 它是参考图中存在的显示形态
+2. 它证明主数据模型需要支持 full / compact 两种呈现层级
+
+### 1.8 需要落入 Flowarden phase2 MVP 的实体与要素
+
+不是原图里出现的每个实体都要在 phase2 MVP 里实现。
+
+按当前阶段边界，建议分成三组：
+
+第一组：phase2 必须落地
+
+1. `CaptureSource`
+2. `CaptureState`
+3. `FilterState`
+4. `MetricMode`
+5. `TrafficSummary`
+6. `TrafficTimeline`
+7. `HostEntry`
+8. `ServiceEntry`
+9. `ConnectionEntry`
+
+第二组：phase2 可保留入口，但不要求完整实现
+
+1. `NotificationEvent`
+2. `FavoriteState`
+3. compact / thumbnail presentation
+
+第三组：原图存在，但 Flowarden phase2 明确后置
+
+1. `ProgramEntry`
+2. 进程图标
+3. 国家旗帜与组织增强
+4. 黑名单与通知系统完整版
+
+这组划分的意义是：
+
+1. 评审时先看“是否把原图真正重要的实体抓全了”
+2. 后续用 Stitch 重设计时，再看“哪些实体放在哪个 layout 区域最合适”
+
 ---
 
 ## 2. 视觉方向结论
