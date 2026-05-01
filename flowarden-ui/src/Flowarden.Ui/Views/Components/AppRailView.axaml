@@ -39,8 +39,6 @@
         <Button Classes="primary-cta"
                 Command="{Binding StartCaptureCommand}"
                 Content="Start Capture" />
-        <Button Classes="rail-button" Content="Docs" />
-        <Button Classes="rail-button" Content="Quit" />
       </StackPanel>
     </DockPanel>
   </Border>

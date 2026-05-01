@@ -120,22 +120,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [RelayCommand]
     private void StartCapture()
     {
-        CaptureStatus = new StatusIndicatorViewModel
-        {
-            Label = "Capture",
-            Value = CaptureStatus.Value == "Running" ? "Idle" : "Running",
-            Tone = CaptureStatus.Value == "Running" ? "neutral" : "good",
-        };
+        Navigate("source");
     }
 
     [RelayCommand]
     private void OpenTools()
     {
-        CoreStatus = new StatusIndicatorViewModel
-        {
-            Label = "Core",
-            Value = CoreStatus.Value == "Connected" ? "Diagnostics" : "Connected",
-            Tone = CoreStatus.Value == "Connected" ? "neutral" : "good",
-        };
+        // Tools entry is reserved for later wiring.
     }
 }
