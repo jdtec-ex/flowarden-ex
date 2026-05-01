@@ -255,4 +255,4 @@
   - 地图区域已具备空态、reserved state、future state 的说明
   - 不影响第二阶段主线封板结论
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `fda2e27` `Complete M2-101 destination workbench reserve enhancement`
