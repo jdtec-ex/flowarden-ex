@@ -20,7 +20,7 @@
 | `M2-006` | 已完成 | Overview 页面 MVP 已落地，hero/status/destination/detail row 结构已由 `OverviewSnapshotDto` 驱动。 |
 | `M2-007` | 已完成 | Inspect 页面 MVP 已落地，过滤条、结果表与 footer summary 已形成稳定工作台。 |
 | `M2-008` | 已完成 | Settings 与诊断页 MVP 已落地，运行配置、core 状态和近期错误提示已可见。 |
-| `M2-009` | 未开始 | 等待前置任务完成并经确认。 |
+| `M2-009` | 已完成 | 第二阶段已完成封板、质量门禁、运行说明与验收模板。 |
 | `M2-101` | 未开始 | 作为增强预留项，等待 `M2-006` 后评估。 |
 
 ---
@@ -217,3 +217,24 @@
   - 错误日志入口与近期错误提示可见
 - 提交：
   - outer repo `272cbc9` `Complete M2-008 settings and diagnostics mvp`
+
+### M2-009 第二阶段封板与质量门禁
+
+- 状态：已完成
+- 完成内容：
+  - 第二阶段封板版本
+  - 第二阶段运行说明
+  - 第二阶段验收记录模板
+- 具体落地：
+  - 补充 phase2 runbook
+  - 补充 phase2 acceptance template
+  - 补齐质量门禁记录
+- 质量门禁结果：
+  - `dotnet format flowarden-ui/Flowarden.Ui.sln --verify-no-changes` 通过
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - `cargo test -q -p flowarden` 通过
+- 封板边界：
+  - 第二阶段 UI 已可独立评审
+  - 后续 phase3 继续接真实地图能力和 session 详情，不需要推倒当前 UI 壳层
+- 提交：
+  - 待本轮提交后补充
