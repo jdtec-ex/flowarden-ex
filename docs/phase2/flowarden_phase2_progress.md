@@ -165,4 +165,4 @@
   - 页面具备 live/offline 显示口径
   - `Destination Map` 区域在布局中稳定存在，即使当前是 placeholder
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `d7cad13` `Complete M2-006 overview page mvp`
