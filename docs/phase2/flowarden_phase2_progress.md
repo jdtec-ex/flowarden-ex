@@ -191,4 +191,4 @@
   - 过滤条件可下发并影响当前结果集
   - 表格仅依赖 phase2 可用聚合字段
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `307822b` `Complete M2-007 inspect page mvp`
