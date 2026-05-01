@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.SettingsPageView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Grid RowDefinitions="*,*" ColumnDefinitions="*,*" RowSpacing="20" ColumnSpacing="20">
+    <components:SettingsRuntimePanelView DataContext="{Binding}" />
+    <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
+    <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.ColumnSpan="2" DataContext="{Binding}" />
+  </Grid>
+</UserControl>

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SettingsDiagnosticsPanelView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Border Classes="glass-panel">
+    <StackPanel Spacing="12">
+      <TextBlock Classes="section-title" Text="Diagnostics" />
+      <Border Classes="status-pill">
+        <TextBlock Text="{Binding ErrorLogEntry}" />
+      </Border>
+      <ItemsControl ItemsSource="{Binding Diagnostics}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="status-pill" Margin="0,0,0,8">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding Source}" FontWeight="SemiBold" />
+                <TextBlock Classes="muted-text" Text="{Binding Reason}" />
+                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Border>
+</UserControl>

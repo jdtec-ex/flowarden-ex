@@ -26,13 +26,7 @@
 
               <views:InspectPageView IsVisible="{Binding IsInspectPageActive}" />
 
-              <Border IsVisible="{Binding IsSettingsPageActive}" Classes="workbench-placeholder">
-                <StackPanel Spacing="8">
-                  <TextBlock Classes="section-title" Text="Settings Workbench" />
-                  <TextBlock Classes="muted-text"
-                             Text="Runtime endpoint, current source, BPF and diagnostics will land in M2-008." />
-                </StackPanel>
-              </Border>
+              <views:SettingsPageView IsVisible="{Binding IsSettingsPageActive}" />
             </Grid>
           </Grid>
         </Border>

@@ -19,7 +19,7 @@
 | `M2-005` | 已完成 | Source 页面 MVP 已落地，preview 与 formal capture 边界已图形化，并补齐最小 preview gRPC 通道。 |
 | `M2-006` | 已完成 | Overview 页面 MVP 已落地，hero/status/destination/detail row 结构已由 `OverviewSnapshotDto` 驱动。 |
 | `M2-007` | 已完成 | Inspect 页面 MVP 已落地，过滤条、结果表与 footer summary 已形成稳定工作台。 |
-| `M2-008` | 未开始 | 等待前置任务完成并经确认。 |
+| `M2-008` | 已完成 | Settings 与诊断页 MVP 已落地，运行配置、core 状态和近期错误提示已可见。 |
 | `M2-009` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-101` | 未开始 | 作为增强预留项，等待 `M2-006` 后评估。 |
 
@@ -192,3 +192,28 @@
   - 表格仅依赖 phase2 可用聚合字段
 - 提交：
   - outer repo `307822b` `Complete M2-007 inspect page mvp`
+
+### M2-008 Settings 与诊断页 MVP
+
+- 状态：已完成
+- 完成内容：
+  - `SettingsPageView`
+  - `SettingsRuntimePanelView`
+  - `SettingsCorePanelView`
+  - `SettingsDiagnosticsPanelView`
+- 具体落地：
+  - Settings 页已从壳层占位切换成正式页面
+  - runtime 面板可展示当前 source、BPF、tick interval、top N
+  - core 面板可展示 endpoint、process state、health、core version、UI version
+  - diagnostics 面板可展示错误日志入口和近期错误提示
+- 当前实现边界：
+  - 当前页面由稳定运行态样本驱动
+  - 未扩展为大而全设置中心
+  - 诊断面板聚焦 core / permission / filter 相关提示，不提前引入 phase3 诊断需求
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - 当前 source、BPF、tick interval、top N 可见
+  - core endpoint / process state / version 可见
+  - 错误日志入口与近期错误提示可见
+- 提交：
+  - 待本轮提交后补充

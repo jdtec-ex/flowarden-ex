@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SettingsCorePanelView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Border Classes="glass-panel">
+    <StackPanel Spacing="12">
+      <TextBlock Classes="section-title" Text="Core" />
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+        <TextBlock Text="Endpoint" />
+        <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpoint}" />
+
+        <TextBlock Grid.Row="1" Text="Process state" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
+
+        <TextBlock Grid.Row="2" Text="Health" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
+
+        <TextBlock Grid.Row="3" Text="Core version" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
+
+        <TextBlock Grid.Row="4" Text="UI version" />
+        <TextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
+      </Grid>
+      <Border Classes="status-pill">
+        <TextBlock Classes="muted-text" Text="{Binding StartedAtLabel}" />
+      </Border>
+    </StackPanel>
+  </Border>
+</UserControl>

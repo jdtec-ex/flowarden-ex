@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SettingsRuntimePanelView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Border Classes="glass-panel">
+    <StackPanel Spacing="12">
+      <TextBlock Classes="section-title" Text="Runtime" />
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+        <TextBlock Text="Current source" />
+        <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.SourceDisplayName}" />
+
+        <TextBlock Grid.Row="1" Text="Source kind" />
+        <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.SourceKind}" />
+
+        <TextBlock Grid.Row="2" Text="BPF" />
+        <TextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.Bpf}" />
+
+        <TextBlock Grid.Row="3" Text="Tick interval" />
+        <TextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding TickInterval}" />
+
+        <TextBlock Grid.Row="4" Text="Top N" />
+        <TextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding TopN}" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>
