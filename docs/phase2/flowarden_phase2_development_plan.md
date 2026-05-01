@@ -14,6 +14,8 @@
 配套的界面设计说明见：
 
 - `flowarden_phase2_ui_design.md`
+- `flowarden_phase2_backlog.md`
+- `flowarden_phase2_implementation_sequence.md`
 
 上游参考文档见：
 
