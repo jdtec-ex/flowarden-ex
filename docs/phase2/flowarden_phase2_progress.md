@@ -138,4 +138,5 @@
   - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
   - Source 页具备设备 preview 展示、单 source 选择和 offline import 入口
 - 提交：
-  - 待本轮提交后补充
+  - inner repo `f712ab5` `Complete M2-005 preview discovery gRPC path`
+  - outer repo `8e9ab88` `Complete M2-005 source page mvp`
