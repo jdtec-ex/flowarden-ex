@@ -406,47 +406,105 @@ Flowarden phase2 建议：
 
 `Notifications` 不作为 phase2 一级必做页面，只在顶部状态区或后续阶段扩展。
 
+### 6.1 基于 Stitch 的新页面分层
+
+参考 `docs/ui-images/stitch_avalonia_ui_refinement/screen.png` 和对应 HTML 结构后，Flowarden 的新 UI 设计不再沿用 Sniffnet 原图那种“顶部 tab + 底部带”的页面壳，而是切换为更适合 Avalonia 的双层 shell：
+
+1. 左侧纵向导航 rail
+2. 顶部工作区 app bar
+3. 中央单页工作台
+
+这意味着：
+
+1. `Source / Overview / Inspect / Settings` 会成为左侧主导航项
+2. `Overview` 页内部再承载趋势图、状态卡、地图、榜单
+3. `Inspect` 页内部再承载过滤条、结果表格和局部统计
+
+这个分层更符合你指定的 `Cosmos Network System` layout，也更容易在 Avalonia 里形成稳定的容器结构。
+
 ---
 
 ## 7. 整体布局
 
 ## 7.1 主窗口布局
 
-建议采用如下结构：
+基于 Stitch 样版，主窗口建议采用如下结构：
 
 ```text
-+------------------------------------------------------+
-| Top Shell Band                                       |
-|  nav / session state / core state / quick actions    |
-+------------------------------------------------------+
-| Left rail (optional compact) | Main content          |
-|                              |                       |
-|                              |                       |
-+------------------------------------------------------+
-| Bottom status band                                   |
-|  capture source / mode / errors / throughput hints   |
-+------------------------------------------------------+
++------------------+-----------------------------------+
+| Left Rail        | Top App Bar                       |
+| nav / session    +-----------------------------------+
+| quick actions    | Main Workbench                    |
+| start capture    |                                   |
+| docs / exit      |                                   |
++------------------+-----------------------------------+
 ```
 
 说明：
 
-1. 顶部使用强色带，继承参考图的识别度
-2. 主内容区保持深色面板系统
-3. 底部状态带承载运行态，而不是装饰
+1. 左 rail 固定承载全局导航、主动作和低频入口
+2. 顶部 app bar 承载页面标题、二级模式切换、通知与连接态
+3. 主内容区是单页工作台，整体采用 glass panel 组合
+4. phase2 不再强依赖独立底部状态带，运行状态可并入 top app bar 与页面 summary 区
+
+### 7.1.1 Left Rail 组成
+
+参考 Stitch 样版，左 rail 建议固定包含：
+
+1. 产品标识
+   - `FLOWARDEN`
+   - phase / version
+2. 主导航
+   - `Source`
+   - `Overview`
+   - `Inspect`
+   - `Settings`
+3. 主动作按钮
+   - `Start Capture`
+4. 低频入口
+   - `Docs`
+   - `Quit`
+
+说明：
+
+1. 这里不照搬 Stitch 中的 `Dashboard / Traffic / Packets / Devices / Settings`
+2. Flowarden 要严格按已经冻结的 phase2 信息架构落导航
+3. `Source` 页面承担原来 `Devices` 的职责，但语义更准确
+
+### 7.1.2 Top App Bar 组成
+
+顶部 app bar 建议包含：
+
+1. 当前工作区标题
+2. 二级模式切换
+   - live
+   - offline
+3. core 状态
+4. capture 状态
+5. 通知入口
+6. 全局工具入口
+
+说明：
+
+1. `Cosmos Network System` 的顶部 bar 是深色、轻玻璃感，不再做高亮色整条横幅
+2. 高亮色更多留给 active tab、状态点和关键 CTA
+3. 这样可以避免 shell 抢走监控内容的视觉重心
 
 ## 7.2 导航建议
 
-顶部导航建议包含：
+基于新 shell，导航建议改成：
 
 1. `Source`
 2. `Overview`
 3. `Inspect`
-4. core 状态点
-5. capture 状态点
-6. quick action：
-   - start
-   - stop
-   - pause / resume
+4. `Settings`
+
+全局状态与动作建议放在：
+
+1. left rail 的主 CTA
+2. top app bar 的状态点与小动作
+
+这样页面导航和运行控制是分层的，不会混在同一排里互相抢焦点。
 
 ---
 
@@ -460,9 +518,9 @@ Flowarden phase2 建议：
 
 ```text
 +------------------------------------------------------+
-| Header: source selection / refresh / preview window  |
+| Header: source selection / refresh / import offline  |
 +--------------------------+---------------------------+
-| Device list              | Device preview details    |
+| Device list              | Preview workbench         |
 | - device name            | - packets_seen            |
 | - addresses              | - bytes_seen              |
 | - status                 | - unsupported / error     |
@@ -471,6 +529,8 @@ Flowarden phase2 建议：
 | Footer actions: confirm source / offline file import |
 +------------------------------------------------------+
 ```
+
+按 Stitch/Cosmos 风格收敛后，Source 页建议做成“左列表 + 右详情”的运维工作台，而不是卡片拼贴页。
 
 ## 8.3 关键交互
 
@@ -496,19 +556,21 @@ Flowarden phase2 建议：
 
 ## 9.2 页面结构
 
-建议沿用参考图的核心构成，但做更清楚的布局：
+基于 Stitch 样版，Overview 需要从 Sniffnet 的“三列榜单工作台”演进成“hero chart + status cards + map + destination list”的 bento 工作台，同时保留 phase1 的实体语义。
 
 ```text
 +------------------------------------------------------+
-| Summary strip                                        |
-| source | mode | filter | dropped | last packet time  |
-+-----------------------------+------------------------+
-| Totals card                 | Traffic rate chart     |
-| inbound/outbound/dropped    | inbound/outbound trend |
-+-----------------------------+------------------------+
-| Destination map (reserved)  | Top hosts              |
-+-----------------------------+------------------------+
-| Top services                | Top connections        |
+| Hero Chart Panel                                     |
+| title / mode switch / inbound-outbound legend        |
++------------------------------------------------------+
+| Status Cards Row                                     |
+| packets/s | dropped | active connections | source    |
++----------------------------------+-------------------+
+| Destination Map                  | Top Destinations  |
+| reserved or future map panel     | ranked list       |
++----------------------------------+-------------------+
+| Lower Detail Row                                     |
+| Top hosts | Top services | Top connections           |
 +------------------------------------------------------+
 ```
 
@@ -518,25 +580,33 @@ Flowarden phase2 建议：
 2. phase2 MVP 可先只放 placeholder / reserved panel
 3. 但整体 layout 必须提前为它留位
 
+同时按 Stitch 样版再加一条：
+
+1. `Destination Map + Top Destinations` 应成为 Overview 的下半区主结构
+2. 这不是附属小组件，而是 phase2 新版 Overview 的核心视觉板块
+
 ## 9.3 必备组件
 
-1. `TotalsCard`
-   - incoming
-   - outgoing
-   - dropped
-   - total packets
-2. `TrafficRateChart`
+1. `HeroTrafficChartPanel`
    - 以 `tick_snapshots` 为基础
+   - 置顶，作为第一视觉焦点
+2. `StatusCardsRow`
+   - packets per second
+   - dropped packets
+   - active connections
+   - current source or local address
 3. `DestinationMapPanel`
    - MVP 中允许为 reserved panel
    - 作用是为后续 destination 分布视图保留稳定区域
-4. `TopHostsPanel`
-5. `TopServicesPanel`
-6. `TopConnectionsPanel`
+4. `TopDestinationsPanel`
+   - 展示目的地国家、区域或组织的排名列表
+5. `TopHostsPanel`
+6. `TopServicesPanel`
+7. `TopConnectionsPanel`
 
 ## 9.4 图表策略
 
-图表只展示聚合后的入站/出站趋势，不展示逐包点。
+hero chart 只展示聚合后的入站/出站趋势，不展示逐包点。
 
 必须做到：
 
@@ -549,8 +619,30 @@ Flowarden phase2 建议：
 
 1. 趋势图是页面视觉中心
 2. `Destination Map` 是第二层级视觉锚点，即使先不实现内容也要占位
-3. 榜单保持紧凑，避免空白感
-4. Summary strip 比 phase1 CLI 输出更易读，但口径不能变
+3. `Top Destinations` 和地图区域要形成成对结构
+4. 下层榜单保持紧凑，避免空白感
+5. 所有状态卡都要可一眼读数
+
+### 9.6 Flowarden Overview 与 Stitch 样版的映射关系
+
+Stitch 样版中已有这些布局锚点可以直接借用：
+
+1. 顶部大图表 panel
+2. 中间四张状态卡
+3. 左下大地图 panel
+4. 右下 destinations 排名 panel
+
+Flowarden 在此基础上的替换规则是：
+
+1. `Real-time Traffic` 保留为 `Overview` 的 hero chart 区
+2. `Packets / Dropped / Active Connections / Local IP` 保留为状态卡排
+3. `Global Traffic Distribution` 改名为 `Destination Distribution`
+4. `Top Destinations` 保留，但统计口径需以后续 destination 模型为准
+5. Sniffnet 原图里的 `Top hosts / Top services / Top connections` 不能丢，放入下层 detail row
+
+也就是说，Flowarden 的新 Overview 不再照抄 Sniffnet 原 overview，而是：
+
+> 用 Stitch/Cosmos 的大盘布局，承载 Sniffnet/Flowarden 已冻结的流量监控实体。
 
 ---
 
@@ -562,9 +654,12 @@ Flowarden phase2 建议：
 
 ## 10.2 页面结构
 
-参考图的“过滤条 + 大表格”是对的，建议保留：
+参考图的“过滤条 + 大表格”语义仍成立，但 layout 需要靠近 Stitch 的大工作台写法：
 
 ```text
++------------------------------------------------------+
+| Inspect header                                       |
+| title / active filters / quick clear                 |
 +------------------------------------------------------+
 | Filter bar                                           |
 | source/destination/protocol/service/bpf/local flags  |
@@ -576,6 +671,13 @@ Flowarden phase2 建议：
 | result count | current sort | bytes total            |
 +------------------------------------------------------+
 ```
+
+Inspect 页的视觉重点不再是“像 Sniffnet 那样一整块表”，而是：
+
+1. header 明确当前筛选上下文
+2. filter bar 保持高可见性
+3. 表格本体尽量占大部分垂直空间
+4. footer 持续反馈当前结果集规模
 
 ## 10.3 过滤策略
 
@@ -630,6 +732,12 @@ Flowarden phase2 建议：
 7. 错误日志入口
 
 Settings 必须收敛，不要做成“管理后台式配置中心”。
+
+同时要保持 Cosmos 风格：
+
+1. settings 也走 glass panel 容器
+2. 不回退成纯表单页面
+3. 配置项按“运行态相关优先”排序
 
 ---
 
@@ -718,6 +826,9 @@ phase2 只保留轻量动效：
 4. Inspect 是否以过滤条和明细表格为中心
 5. 是否把 core 状态、错误状态显式化
 6. 是否严格依赖 phase1 已有数据，而不是偷渡 phase3 需求
+7. 是否真正把 Stitch/Cosmos 的 shell 和版式吸收进来了，而不是只换了配色
+8. 是否把 `Destination Map + Top Destinations` 做成 Overview 的稳定结构
+9. 是否仍然保留了 `Top hosts / Top services / Top connections` 这些 phase1 关键输出的落点
 
 ---
 
@@ -725,6 +836,6 @@ phase2 只保留轻量动效：
 
 第二阶段 UI 不应做成“Rust CLI 外面套一层普通表格壳”，而应明确做成：
 
-> 一个基于深色监控台视觉、强状态反馈、以 `Overview + Inspect` 为核心工作面的 Avalonia 桌面前端。
+> 一个基于 `Cosmos Network System` shell、强状态反馈、以 `Overview hero chart + destination workbench + inspect grid` 为核心工作面的 Avalonia 桌面前端。
 
 这个方向既承接 Sniffnet 的优点，也更适合后续第三阶段继续接 payload 与 session 详情。
