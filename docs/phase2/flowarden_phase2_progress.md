@@ -114,4 +114,4 @@
   - 全局状态点可显示 `core / capture` 状态
   - 风格已脱离默认 Avalonia 壳，收敛到 `Cosmos Network System` 的 shell 基线
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `a457e25` `Complete M2-004 app shell and global state layer`
