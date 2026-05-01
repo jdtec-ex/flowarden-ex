@@ -89,4 +89,4 @@
   - UI 项目未直接依赖 Rust 内部结构体
   - phase2 页面所需最小数据面已齐备
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `a21b72a` `Complete M2-003 phase 2 dto contract freeze`
