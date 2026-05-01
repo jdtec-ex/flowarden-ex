@@ -65,4 +65,5 @@
   - inner repo `0daff75` `Complete M2-002 local service mode and health skeleton`
   - outer repo `0099fc7` `Complete M2-002 local service mode and health skeleton`
 - 修正后提交：
-  - 待本轮提交后补充
+  - inner repo `7b1c4d8` `Rework M2-002 to gRPC service mode skeleton`
+  - outer repo `83a8b89` `Rework M2-002 to gRPC ui client skeleton`
