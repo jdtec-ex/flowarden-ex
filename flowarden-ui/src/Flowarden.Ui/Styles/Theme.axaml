@@ -1,0 +1,20 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <Color x:Key="CosmosBackgroundColor">#11131E</Color>
+    <Color x:Key="CosmosSurfaceColor">#1D1F2B</Color>
+    <Color x:Key="CosmosSurfaceHighColor">#272935</Color>
+    <Color x:Key="CosmosPrimaryColor">#D7BAFF</Color>
+    <Color x:Key="CosmosSecondaryColor">#75D4E8</Color>
+    <Color x:Key="CosmosTextColor">#E1E1F1</Color>
+    <Color x:Key="CosmosMutedTextColor">#968E9C</Color>
+
+    <SolidColorBrush x:Key="CosmosBackgroundBrush" Color="{StaticResource CosmosBackgroundColor}" />
+    <SolidColorBrush x:Key="CosmosSurfaceBrush" Color="{StaticResource CosmosSurfaceColor}" />
+    <SolidColorBrush x:Key="CosmosSurfaceHighBrush" Color="{StaticResource CosmosSurfaceHighColor}" />
+    <SolidColorBrush x:Key="CosmosPrimaryBrush" Color="{StaticResource CosmosPrimaryColor}" />
+    <SolidColorBrush x:Key="CosmosSecondaryBrush" Color="{StaticResource CosmosSecondaryColor}" />
+    <SolidColorBrush x:Key="CosmosTextBrush" Color="{StaticResource CosmosTextColor}" />
+    <SolidColorBrush x:Key="CosmosMutedTextBrush" Color="{StaticResource CosmosMutedTextColor}" />
+  </Styles.Resources>
+</Styles>
