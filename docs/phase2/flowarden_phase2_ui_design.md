@@ -832,7 +832,261 @@ phase2 只保留轻量动效：
 
 ---
 
-## 16. 建议结论
+## 16. 页面级线框
+
+下面的线框不是最终像素稿，而是为了把后续 Avalonia 组件树和页面职责定死。
+
+## 16.1 App Shell 线框
+
+```text
++----------------------+--------------------------------------------------+
+| Brand / Version      | Workbench Header                                 |
+|----------------------| title | mode switch | state dots | tools        |
+| Source               +--------------------------------------------------+
+| Overview             | active page content                              |
+| Inspect              |                                                  |
+| Settings             |                                                  |
+|                      |                                                  |
+| [Start Capture]      |                                                  |
+|                      |                                                  |
+| Docs                 |                                                  |
+| Quit                 |                                                  |
++----------------------+--------------------------------------------------+
+```
+
+关键约束：
+
+1. 左 rail 宽度固定，不随页面大幅变化
+2. header 高度固定，保证不同页面切换时视觉稳定
+3. 主内容区只切工作台，不切 shell
+
+## 16.2 Source 页面线框
+
+```text
++--------------------------------------------------------------------------------+
+| Source Header                                                                  |
+| source mode | refresh preview | import offline | last preview time             |
++--------------------------------------+-----------------------------------------+
+| Device List                           | Preview Workbench                       |
+| - device item                         | selected device summary                 |
+| - device item                         | packets_seen / bytes_seen               |
+| - device item                         | unsupported / permission / error        |
+| - device item                         | addresses / capability hints            |
+| - device item                         | preview sparkline or compact metrics    |
++--------------------------------------+-----------------------------------------+
+| Footer: confirm selected source | start in live | load offline pcap            |
++--------------------------------------------------------------------------------+
+```
+
+## 16.3 Overview 页面线框
+
+```text
++--------------------------------------------------------------------------------+
+| Hero Traffic Chart                                                             |
+| title | metric mode | live/offline badge | legend | current filter summary     |
++--------------------------------------------------------------------------------+
+| Stat Card | Stat Card | Stat Card | Stat Card                                  |
+| pps       | dropped   | active    | current source / local addr                |
++----------------------------------------------+---------------------------------+
+| Destination Map (reserved or future map)     | Top Destinations                |
+| large visual panel                            | ranked list                     |
+| hotspot placeholders                          | country/region/org entries      |
++----------------------------------------------+---------------------------------+
+| Top Hosts                     | Top Services                    | Top Connections|
+| ranked rows                   | ranked rows                     | compact table   |
++--------------------------------------------------------------------------------+
+```
+
+## 16.4 Inspect 页面线框
+
+```text
++--------------------------------------------------------------------------------+
+| Inspect Header                                                                 |
+| title | active filter chips | clear all | current result count                 |
++--------------------------------------------------------------------------------+
+| Filter Bar                                                                     |
+| source | destination | protocol | service | direction | bpf | time mode        |
++--------------------------------------------------------------------------------+
+| Results Table                                                                  |
+| src addr | src port | dst addr | dst port | protocol | service | bytes | ...   |
+| ...                                                                            |
+| ...                                                                            |
++--------------------------------------------------------------------------------+
+| Footer Summary                                                                 |
+| results | bytes total | packets total | current sort | stream freshness        |
++--------------------------------------------------------------------------------+
+```
+
+## 16.5 Settings 页面线框
+
+```text
++--------------------------------------------------------------------------------+
+| Settings Header                                                                |
+| runtime settings | connection | diagnostics                                   |
++--------------------------------------+-----------------------------------------+
+| Runtime Panel                         | Core Panel                              |
+| current source                        | endpoint / process state                |
+| bpf                                   | core version                            |
+| tick interval                         | ui version                              |
+| top N                                 | reconnect / ping                        |
++--------------------------------------+-----------------------------------------+
+| Error / Diagnostic Panel                                                        |
+| recent errors | filter apply failures | permission hints | logs entry          |
++--------------------------------------------------------------------------------+
+```
+
+---
+
+## 17. 区块职责表
+
+为了避免后面把页面做成“看起来差不多，但职责混乱”，每个主要区块都需要先定职责。
+
+| 区块 | 页面 | 主要职责 | 数据来源 | MVP 状态 |
+| --- | --- | --- | --- | --- |
+| `AppRail` | 全局 | 主导航、主 CTA、低频入口 | UI state | 必做 |
+| `AppHeader` | 全局 | 页面标题、模式切换、core/capture 状态 | UI state + health | 必做 |
+| `SourceDeviceList` | Source | 展示全部设备并选择单 source | discovery | 必做 |
+| `SourcePreviewWorkbench` | Source | 展示当前选中 device 的 preview 统计和错误状态 | preview stream | 必做 |
+| `HeroTrafficChartPanel` | Overview | 展示 live/offline 聚合趋势 | overview snapshot | 必做 |
+| `StatusCardsRow` | Overview | 展示关键摘要指标 | overview snapshot | 必做 |
+| `DestinationMapPanel` | Overview | 预留 destination 分布可视区域 | reserved | 必做但可 placeholder |
+| `TopDestinationsPanel` | Overview | 展示 destination 维度排行 | future destination projection | phase2 预留，MVP 可 placeholder |
+| `TopHostsPanel` | Overview | 展示 host 排行 | overview snapshot | 必做 |
+| `TopServicesPanel` | Overview | 展示 service 排行 | overview snapshot | 必做 |
+| `TopConnectionsPanel` | Overview | 展示 connection 排行 | overview snapshot | 必做 |
+| `InspectFilterBar` | Inspect | 下发过滤条件并反馈激活条件 | inspect query state | 必做 |
+| `InspectResultsTable` | Inspect | 展示连接明细结果 | inspect projection | 必做 |
+| `InspectFooterSummary` | Inspect | 展示结果集摘要和排序状态 | inspect projection | 必做 |
+| `SettingsRuntimePanel` | Settings | 展示最小运行配置 | settings state | 必做 |
+| `SettingsCorePanel` | Settings | 展示 core 连接与版本信息 | health/version | 必做 |
+| `SettingsDiagnosticsPanel` | Settings | 展示近期错误与诊断入口 | error state | 必做 |
+
+说明：
+
+1. `TopDestinationsPanel` 在 phase2 中需要先有版位和占位数据协议方案
+2. 如果 destination 统计模型在 phase2 代码侧还没有产出，UI 可先用 placeholder 文案占位
+3. `DestinationMapPanel` 与 `TopDestinationsPanel` 是成对规划，不建议只留地图不留排行
+
+---
+
+## 18. Avalonia 视图树建议
+
+下面给的是建议视图树，不是必须逐文件照抄，但分层要保持。
+
+## 18.1 Shell 层
+
+```text
+App
+  MainWindow
+    AppShellView
+      AppRailView
+      AppHeaderView
+      ContentHost
+```
+
+## 18.2 页面层
+
+```text
+ContentHost
+  SourcePageView
+  OverviewPageView
+  InspectPageView
+  SettingsPageView
+```
+
+说明：
+
+1. 四个页面是同级工作区
+2. 切换的是 page view，不是整个 window
+
+## 18.3 Overview 视图树建议
+
+```text
+OverviewPageView
+  HeroTrafficChartView
+  StatusCardsRowView
+  DestinationWorkbenchView
+    DestinationMapView
+    TopDestinationsView
+  LowerDetailRowView
+    TopHostsView
+    TopServicesView
+    TopConnectionsView
+```
+
+## 18.4 Inspect 视图树建议
+
+```text
+InspectPageView
+  InspectHeaderView
+  InspectFilterBarView
+  InspectResultsTableView
+  InspectFooterSummaryView
+```
+
+## 18.5 Source 视图树建议
+
+```text
+SourcePageView
+  SourceHeaderView
+  SourceDeviceListView
+  SourcePreviewWorkbenchView
+  SourceFooterActionsView
+```
+
+## 18.6 Settings 视图树建议
+
+```text
+SettingsPageView
+  SettingsHeaderView
+  SettingsRuntimePanelView
+  SettingsCorePanelView
+  SettingsDiagnosticsPanelView
+```
+
+---
+
+## 19. ViewModel 划分建议
+
+建议维持“页面级 + 区块级”两层，不要一开始就过度细碎。
+
+```text
+AppShellViewModel
+  SourcePageViewModel
+  OverviewPageViewModel
+  InspectPageViewModel
+  SettingsPageViewModel
+```
+
+区块级 ViewModel 建议只在下列场景再拆：
+
+1. 图表区需要独立刷新节流
+2. 过滤条需要独立输入状态
+3. 结果表格需要独立排序/分页状态
+4. destination workbench 后续要独立演进
+
+---
+
+## 20. 实现顺序建议
+
+如果按 UI 设计落地顺序推进，建议按下面顺序做，而不是页面并行乱起：
+
+1. `AppShellView`
+2. `SourcePageView`
+3. `OverviewPageView`
+4. `InspectPageView`
+5. `SettingsPageView`
+
+原因：
+
+1. `Source` 决定 session 入口
+2. `Overview` 是主价值页
+3. `Inspect` 依赖稳定过滤和表格骨架
+4. `Settings` 最后补不会阻塞核心交互
+
+---
+
+## 21. 建议结论
 
 第二阶段 UI 不应做成“Rust CLI 外面套一层普通表格壳”，而应明确做成：
 
