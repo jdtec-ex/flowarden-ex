@@ -8,6 +8,7 @@
       <StackPanel>
         <TextBlock Classes="page-title" Text="{Binding CurrentPage.Title}" />
         <TextBlock Classes="muted-text" Text="{Binding CurrentPage.Description}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted-text" Text="{Binding ConnectionMessage}" />
       </StackPanel>
 
       <Button Grid.Column="1"

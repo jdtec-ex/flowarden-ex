@@ -39,14 +39,14 @@
 
 | 初始要求 | 来源文档 | 当前代码事实 | 结论 |
 | --- | --- | --- | --- |
-| UI 能拉起或连接本地 core service | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | UI 中虽有 `CoreLauncherService`、`CoreHealthService`，但 `App.axaml.cs` 与 `AppShellViewModel` 未接入真实启动与连接流程 | 未完成 |
+| UI 能拉起或连接本地 core service | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | UI 已接入真实探活与拉起 `flowarden core` 的流程，但仍未完成后续 control / projection 闭环 | 部分完成 |
 | UI 能列出设备、显示多 device preview，并选择单一 source 正式抓包 | `flowarden_phase2_development_plan.md` 2 / 5.1 / 8 / 10 | `SourcePageViewModel` 使用 `CreateSeedDevices()`；`RefreshPreview()` 只更新时间；`StartFormalCapture()` 只改本地状态 | 未完成 |
 | UI 能完成 `Start / Stop / Pause / Resume` | `flowarden_phased_development_plan.md` 7.2 / 7.5；`flowarden_phase2_development_plan.md` 2 / 6.1 / 10 | Rust 无 `ControlService`；UI 无真实控制接线；shell 的 `Start Capture` 只是导航 | 未完成 |
 | UI 能实时展示 `tick_snapshots` 和 `final_snapshot` | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | `OverviewPageViewModel` 使用 `CreateSeedSnapshot()`；`ProjectionClient` 仅返回 placeholder | 未完成 |
 | Overview / Inspect 页面数据与 CLI 输出一致 | `flowarden_phase2_development_plan.md` 2 / 8 / 10；`flowarden_phase2_backlog.md` M2-006 / M2-007 | Overview 与 Inspect 都由本地样本驱动，不是运行中的 phase1 输出投影 | 未完成 |
 | Settings 显示最小运行参数与 core 状态 | `flowarden_phase2_development_plan.md` 5.1 / 8；`flowarden_phase2_backlog.md` M2-008 | `SettingsPageViewModel` 使用本地样本 `RuntimeState / CoreHealth / Diagnostics` | 未完成 |
 | UI 与 core 通过稳定契约通信，UI 不直接依赖 Rust 内部结构体 | `flowarden_phase2_development_plan.md` 2 / 6.3 | DTO 存在，UI 未直接引用 Rust 内部结构体 | 已完成 |
-| 本地 gRPC / IPC 基线固定为双进程 | `flowarden_phased_development_plan.md` 7.3；`flowarden_phase2_development_plan.md` 4 | 已有 `tonic` gRPC server 与 .NET gRPC client skeleton | 部分完成 |
+| 本地 gRPC / IPC 基线固定为双进程 | `flowarden_phased_development_plan.md` 7.3；`flowarden_phase2_development_plan.md` 4 | 已有 `tonic` gRPC server 与 .NET gRPC client skeleton，且 `flowarden core` 已可作为常驻进程运行 | 部分完成 |
 | 多 device 只用于 preview，正式 capture 保持单 source | `flowarden_phase2_development_plan.md` 3.2 / 11；`flowarden_phase2_backlog.md` M2-005 | UI 文案和页面结构守住了这个边界 | 已完成 |
 | `Destination Map` 预留区域必须存在 | `flowarden_phase2_development_plan.md` 3.3 / 5.1；`flowarden_phase2_backlog.md` M2-006 / M2-101 | Overview 中 reserved panel 与 future-state 已存在 | 已完成 |
 
@@ -119,7 +119,7 @@
    - `ProjectionService`
    - `GetRuntimeStatus`
 
-### 4.6 UI 应用未真实接入 launcher / health
+### 4.6 UI 应用已接入最小 launcher / health，但闭环仍未完成
 
 文件：
 
@@ -130,9 +130,9 @@
 
 证据：
 
-1. `App.axaml.cs` 直接 new `AppShellViewModel()`，没有 service 注入。
-2. `AppShellViewModel` 自身不持有 gRPC client / launcher。
-3. `CoreLauncherService` 存在，但没有被应用启动路径使用。
+1. `App.axaml.cs` 已创建 `CoreHealthService`、`CoreLauncherService`、`CoreConnectionCoordinator`，并启动初始化连接流程。
+2. `AppShellViewModel` 已接入 `InitializeCoreConnectionAsync(...)`。
+3. 但这仍只覆盖最小探活 / 拉起，不代表后续 control / projection 已闭环。
 
 ---
 
@@ -159,19 +159,18 @@
 
 如果要让 phase2 真正对齐初始总方案，后续至少要补齐：
 
-1. 应用启动时的 core 检查、拉起、连接管理
-2. Source 页真实 `ListDevices / ListDevicePreviews`
-3. `ControlService`：
+1. `ControlService`：
    - `StartCapture`
    - `StopCapture`
    - `PauseCapture`
    - `ResumeCapture`
-4. `ProjectionService`：
+2. `ProjectionService`：
    - `StreamOverview`
    - `GetLatestOverview`
    - `GetInspectPage`
-5. Settings 页真实 runtime / health / version / diagnostics
-6. core 异常退出后的 UI 可恢复状态
+3. Source 页真实 `ListDevices / ListDevicePreviews`
+4. Settings 页真实 runtime / health / version / diagnostics
+5. core 异常退出后的 UI 可恢复状态
 
 ---
 

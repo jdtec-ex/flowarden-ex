@@ -1,17 +1,27 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Flowarden.Ui.Models;
+using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class AppShellViewModel : ViewModelBase
 {
     private readonly IReadOnlyDictionary<string, AppShellPageViewModel> _pages;
+    private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
 
     public AppShellViewModel()
+        : this(null)
     {
+    }
+
+    public AppShellViewModel(CoreConnectionCoordinator? coreConnectionCoordinator)
+    {
+        _coreConnectionCoordinator = coreConnectionCoordinator;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source" },
@@ -53,8 +63,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         CoreStatus = new StatusIndicatorViewModel
         {
             Label = "Core",
-            Value = "Connected",
-            Tone = "good",
+            Value = "Checking",
+            Tone = "warning",
         };
         CaptureStatus = new StatusIndicatorViewModel
         {
@@ -87,6 +97,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [ObservableProperty]
     private AppShellPageViewModel currentPage;
 
+    [ObservableProperty]
+    private string connectionMessage = "Connecting to flowarden core...";
+
+    [ObservableProperty]
+    private CoreErrorDto? latestCoreError;
+
     public bool IsSourcePageActive => CurrentPageId == "source";
 
     public bool IsOverviewPageActive => CurrentPageId == "overview";
@@ -94,6 +110,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public bool IsInspectPageActive => CurrentPageId == "inspect";
 
     public bool IsSettingsPageActive => CurrentPageId == "settings";
+
+    public bool HasLatestCoreError => LatestCoreError is not null;
 
     [RelayCommand]
     private void Navigate(string? pageId)
@@ -127,5 +145,57 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private void OpenTools()
     {
         // Tools entry is reserved for later wiring.
+    }
+
+    public async Task InitializeCoreConnectionAsync(
+        string workingDirectory,
+        string binaryPath,
+        string bindAddress
+    )
+    {
+        if (_coreConnectionCoordinator is null)
+        {
+            CoreStatus = new StatusIndicatorViewModel
+            {
+                Label = "Core",
+                Value = "Not wired",
+                Tone = "warning",
+            };
+            ConnectionMessage = "Core connection services are not configured in this app session.";
+            return;
+        }
+
+        ConnectionMessage = "Checking for resident flowarden core...";
+        var result = await _coreConnectionCoordinator.EnsureConnectedAsync(
+            workingDirectory,
+            binaryPath,
+            bindAddress
+        );
+
+        if (result.Connected && result.Health is not null)
+        {
+            LatestCoreError = null;
+            CoreStatus = new StatusIndicatorViewModel
+            {
+                Label = "Core",
+                Value = "Connected",
+                Tone = "good",
+            };
+            ConnectionMessage = result.LaunchedByUi
+                ? "flowarden core launched and connected."
+                : "Connected to an already running flowarden core.";
+            OnPropertyChanged(nameof(HasLatestCoreError));
+            return;
+        }
+
+        LatestCoreError = result.Error;
+        CoreStatus = new StatusIndicatorViewModel
+        {
+            Label = "Core",
+            Value = "Offline",
+            Tone = "warning",
+        };
+        ConnectionMessage = result.Error?.Message ?? "Failed to connect to flowarden core.";
+        OnPropertyChanged(nameof(HasLatestCoreError));
     }
 }

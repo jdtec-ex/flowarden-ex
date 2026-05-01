@@ -56,7 +56,7 @@ dotnet build /Users/wangli/workspace/coding/flowarden/flowarden-ui/Flowarden.Ui.
 
 ---
 
-## 4. 启动 core service
+## 4. 启动 resident core
 
 第二阶段本地通信基线是 `gRPC`。
 
@@ -64,7 +64,7 @@ dotnet build /Users/wangli/workspace/coding/flowarden/flowarden-ui/Flowarden.Ui.
 
 ```bash
 cd /Users/wangli/workspace/coding/flowarden/flowarden
-cargo run -p flowarden -- service --bind 127.0.0.1:39091
+cargo run -p flowarden -- core --bind 127.0.0.1:39091
 ```
 
 当前最小 RPC：

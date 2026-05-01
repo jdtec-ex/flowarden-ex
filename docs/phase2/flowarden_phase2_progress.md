@@ -48,6 +48,7 @@
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
 | `M2-002` | 进行中 | `proto + tonic + .NET gRPC client` 最小 skeleton 已落地，但 UI 应用本身尚未真实使用 launcher / health 连接闭环。 |
+| `M2-002` | 进行中 | `flowarden core` resident mode 已改名并可常驻运行，UI 启动链已接入真实探活/拉起，但仍缺 UI 内更完整的运行态反馈与后续 control/projection 接线。 |
 | `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，且未直接依赖 Rust 内部结构体。 |
 | `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 壳层已落地并可稳定切页。 |
 | `M2-005` | 进行中 | Source 页面结构与文案边界已完成，但设备与 preview 仍是样本驱动，不是运行中 core 的真实结果。 |
@@ -76,6 +77,7 @@
 
 - 状态：进行中
 - 已成立：
+  - `flowarden core` 作为单一可执行程序内的 resident mode 入口
   - 共享 `proto/flowarden/health.proto`
   - 共享 `proto/flowarden/discovery.proto`
   - Rust 侧 `tonic` gRPC service mode
@@ -89,7 +91,7 @@
   - Rust 仅暴露 `HealthService` 和 `DiscoveryService`
   - 代码位置：`../../flowarden/flowarden/src/service.rs`
   - `ControlService`、`ProjectionService`、`GetRuntimeStatus` 尚不存在
-  - UI 虽有 `CoreLauncherService`、`CoreHealthService`，但 `App.axaml.cs` / `AppShellViewModel` 未将它们接入真实启动与连接流程
+  - UI 已能探活并在需要时拉起 `flowarden core`，但 UI 内仍缺少后续更完整的运行态反馈与控制面接线
 - 未满足的验收项：
   - UI 可拉起 core 或连接已运行 core
   - UI 内部可判断 core 是否在线并更新真实状态

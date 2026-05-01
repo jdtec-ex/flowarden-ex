@@ -13,7 +13,7 @@ public sealed class CoreLauncherService
             UseShellExecute = false,
         };
 
-        processStartInfo.ArgumentList.Add("service");
+        processStartInfo.ArgumentList.Add("core");
         processStartInfo.ArgumentList.Add("--bind");
         processStartInfo.ArgumentList.Add(bindAddress);
 

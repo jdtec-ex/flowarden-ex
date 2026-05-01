@@ -23,7 +23,7 @@
 
 ### 3.1 gRPC core service
 
-- `cargo run -p flowarden -- service --bind 127.0.0.1:39091`
+- `cargo run -p flowarden -- core --bind 127.0.0.1:39091`
 - 结果：
 
 ### 3.2 gRPC probe
