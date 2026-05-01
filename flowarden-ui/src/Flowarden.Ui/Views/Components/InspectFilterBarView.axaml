@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.InspectFilterBarView"
+             x:DataType="vm:InspectPageViewModel">
+  <Border Classes="glass-panel">
+    <Grid ColumnDefinitions="*,*,*,*,*,*,Auto" ColumnSpacing="10">
+      <TextBox Watermark="Source"
+               Text="{Binding SourceAddressInput}" />
+      <TextBox Grid.Column="1"
+               Watermark="Destination"
+               Text="{Binding DestinationAddressInput}" />
+      <TextBox Grid.Column="2"
+               Watermark="Service"
+               Text="{Binding ServiceInput}" />
+      <TextBox Grid.Column="3"
+               Watermark="Protocol"
+               Text="{Binding ProtocolInput}" />
+      <TextBox Grid.Column="4"
+               Watermark="Direction"
+               Text="{Binding DirectionInput}" />
+      <TextBox Grid.Column="5"
+               Watermark="BPF"
+               Text="{Binding BpfInput}" />
+      <Button Grid.Column="6"
+              Classes="mode-button"
+              Command="{Binding ApplyFiltersCommand}"
+              Content="Apply" />
+    </Grid>
+  </Border>
+</UserControl>

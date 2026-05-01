@@ -24,13 +24,7 @@
 
               <views:OverviewPageView IsVisible="{Binding IsOverviewPageActive}" />
 
-              <Border IsVisible="{Binding IsInspectPageActive}" Classes="workbench-placeholder">
-                <StackPanel Spacing="8">
-                  <TextBlock Classes="section-title" Text="Inspect Workbench" />
-                  <TextBlock Classes="muted-text"
-                             Text="Filter bar, results table and footer summary will land in M2-007." />
-                </StackPanel>
-              </Border>
+              <views:InspectPageView IsVisible="{Binding IsInspectPageActive}" />
 
               <Border IsVisible="{Binding IsSettingsPageActive}" Classes="workbench-placeholder">
                 <StackPanel Spacing="8">

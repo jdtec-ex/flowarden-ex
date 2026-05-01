@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.InspectPageView"
+             x:DataType="vm:InspectPageViewModel">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+    <components:InspectHeaderView DataContext="{Binding}" />
+    <components:InspectFilterBarView Grid.Row="1" DataContext="{Binding}" />
+    <components:InspectResultsTableView Grid.Row="2" DataContext="{Binding}" />
+    <components:InspectFooterSummaryView Grid.Row="3" DataContext="{Binding}" />
+  </Grid>
+</UserControl>

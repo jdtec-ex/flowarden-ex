@@ -12,6 +12,10 @@ public sealed class ConnectionRowDto
 
     public string Protocol { get; init; } = string.Empty;
 
+    public string ServiceName { get; init; } = string.Empty;
+
+    public string Direction { get; init; } = string.Empty;
+
     public ulong Packets { get; init; }
 
     public ulong Bytes { get; init; }

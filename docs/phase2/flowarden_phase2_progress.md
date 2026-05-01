@@ -18,7 +18,7 @@
 | `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 已落地，页面切换与全局状态点已稳定。 |
 | `M2-005` | 已完成 | Source 页面 MVP 已落地，preview 与 formal capture 边界已图形化，并补齐最小 preview gRPC 通道。 |
 | `M2-006` | 已完成 | Overview 页面 MVP 已落地，hero/status/destination/detail row 结构已由 `OverviewSnapshotDto` 驱动。 |
-| `M2-007` | 未开始 | 等待前置任务完成并经确认。 |
+| `M2-007` | 已完成 | Inspect 页面 MVP 已落地，过滤条、结果表与 footer summary 已形成稳定工作台。 |
 | `M2-008` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-009` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-101` | 未开始 | 作为增强预留项，等待 `M2-006` 后评估。 |
@@ -166,3 +166,29 @@
   - `Destination Map` 区域在布局中稳定存在，即使当前是 placeholder
 - 提交：
   - outer repo `d7cad13` `Complete M2-006 overview page mvp`
+
+### M2-007 Inspect 页面 MVP
+
+- 状态：已完成
+- 完成内容：
+  - `InspectPageView`
+  - `InspectHeaderView`
+  - `InspectFilterBarView`
+  - `InspectResultsTableView`
+  - `InspectFooterSummaryView`
+- 具体落地：
+  - Inspect 页已从壳层占位切换成正式页面
+  - 过滤条保持高可见性
+  - 结果表格成为主体区域
+  - footer 持续显示当前结果数、汇总字节数、汇总包数和排序口径
+  - `ConnectionRowDto` 已补齐 `service` 与 `direction` 列，满足 phase2 inspect MVP 表格需求
+- 当前实现边界：
+  - 当前过滤在本地稳定样本结果集上真实生效
+  - 尚未接入后端 inspect projection/query 通道
+  - 未引入 phase3 的 payload / session 级字段
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - 过滤条件可下发并影响当前结果集
+  - 表格仅依赖 phase2 可用聚合字段
+- 提交：
+  - 待本轮提交后补充
