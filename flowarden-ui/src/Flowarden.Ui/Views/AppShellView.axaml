@@ -22,43 +22,7 @@
             <Grid Grid.Row="1">
               <views:SourcePageView IsVisible="{Binding IsSourcePageActive}" />
 
-              <Grid IsVisible="{Binding IsOverviewPageActive}"
-                    ColumnDefinitions="2*,*"
-                    RowDefinitions="Auto,Auto,*"
-                    ColumnSpacing="20"
-                    RowSpacing="20">
-                <Border Classes="glass-panel" Grid.ColumnSpan="2" MinHeight="220">
-                  <StackPanel Spacing="8">
-                    <TextBlock Classes="section-title" Text="Hero Traffic Chart" />
-                    <TextBlock Classes="muted-text"
-                               Text="Traffic trend host panel reserved for Overview implementation." />
-                  </StackPanel>
-                </Border>
-
-                <Border Classes="glass-panel" Grid.Row="1" MinHeight="120">
-                  <TextBlock Classes="section-title" Text="Status Cards Row" />
-                </Border>
-
-                <Border Classes="glass-panel" Grid.Row="1" Grid.Column="1" MinHeight="120">
-                  <TextBlock Classes="section-title" Text="Top Destinations" />
-                </Border>
-
-                <Border Classes="glass-panel" Grid.Row="2" MinHeight="260">
-                  <StackPanel Spacing="8">
-                    <TextBlock Classes="section-title" Text="Destination Map" />
-                    <TextBlock Classes="muted-text"
-                               Text="Reserved panel required by phase 2 MVP." />
-                  </StackPanel>
-                </Border>
-
-                <Border Classes="glass-panel" Grid.Row="2" Grid.Column="1" MinHeight="260">
-                  <StackPanel Spacing="8">
-                    <TextBlock Classes="section-title" Text="Lower Detail Row" />
-                    <TextBlock Classes="muted-text"
-                               Text="Top hosts / top services / top connections placeholder." />
-                  </StackPanel>
-                </Border>
-              </Grid>
+              <views:OverviewPageView IsVisible="{Binding IsOverviewPageActive}" />
 
               <Border IsVisible="{Binding IsInspectPageActive}" Classes="workbench-placeholder">
                 <StackPanel Spacing="8">

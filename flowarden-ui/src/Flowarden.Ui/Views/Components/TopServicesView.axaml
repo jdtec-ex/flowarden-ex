@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.TopServicesView"
+             x:DataType="vm:OverviewPageViewModel">
+  <Border Classes="glass-panel">
+    <StackPanel Spacing="10">
+      <TextBlock Classes="section-title" Text="Top Services" />
+      <ItemsControl ItemsSource="{Binding Snapshot.TopServices}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+              <TextBlock Text="{Binding Name}" />
+              <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding Bytes}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Border>
+</UserControl>

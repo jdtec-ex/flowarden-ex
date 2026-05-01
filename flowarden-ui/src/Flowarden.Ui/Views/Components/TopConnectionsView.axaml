@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.TopConnectionsView"
+             x:DataType="vm:OverviewPageViewModel">
+  <Border Classes="glass-panel">
+    <StackPanel Spacing="10">
+      <TextBlock Classes="section-title" Text="Top Connections" />
+      <ItemsControl ItemsSource="{Binding Snapshot.TopConnections}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="0,0,0,10">
+              <TextBlock Text="{Binding SourceAddress}" />
+              <TextBlock Classes="muted-text"
+                         Text="{Binding DestinationAddress}" />
+              <TextBlock Classes="muted-text"
+                         Text="{Binding Bytes}" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Border>
+</UserControl>

@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.StatusCardsRowView"
+             x:DataType="vm:OverviewPageViewModel">
+  <ItemsControl ItemsSource="{Binding StatusCards}">
+    <ItemsControl.ItemsPanel>
+      <ItemsPanelTemplate>
+        <UniformGrid Columns="4" />
+      </ItemsPanelTemplate>
+    </ItemsControl.ItemsPanel>
+    <ItemsControl.ItemTemplate>
+      <DataTemplate x:DataType="vm:OverviewStatusCardViewModel">
+        <Border Classes="glass-panel overview-status-card" Margin="0,0,12,0">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="muted-text" Text="{Binding Label}" />
+            <TextBlock FontSize="24" FontWeight="SemiBold" Text="{Binding Value}" />
+            <TextBlock Classes="muted-text" Text="{Binding Hint}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</UserControl>

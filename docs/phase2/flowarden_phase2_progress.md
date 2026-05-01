@@ -17,7 +17,7 @@
 | `M2-003` | 已完成 | phase2 UI 侧最小 DTO/契约模型已冻结，足以承接 Source / Overview / Inspect / Settings 开发。 |
 | `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 已落地，页面切换与全局状态点已稳定。 |
 | `M2-005` | 已完成 | Source 页面 MVP 已落地，preview 与 formal capture 边界已图形化，并补齐最小 preview gRPC 通道。 |
-| `M2-006` | 未开始 | 等待前置任务完成并经确认。 |
+| `M2-006` | 已完成 | Overview 页面 MVP 已落地，hero/status/destination/detail row 结构已由 `OverviewSnapshotDto` 驱动。 |
 | `M2-007` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-008` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-009` | 未开始 | 等待前置任务完成并经确认。 |
@@ -140,3 +140,29 @@
 - 提交：
   - inner repo `f712ab5` `Complete M2-005 preview discovery gRPC path`
   - outer repo `8e9ab88` `Complete M2-005 source page mvp`
+
+### M2-006 Overview 页面 MVP
+
+- 状态：已完成
+- 完成内容：
+  - `HeroTrafficChartView`
+  - `StatusCardsRowView`
+  - `DestinationWorkbenchView`
+  - `TopHostsView`
+  - `TopServicesView`
+  - `TopConnectionsView`
+- 具体落地：
+  - Overview 已从壳层占位切换成正式页面
+  - `hero chart + status cards + destination workbench + lower detail row` 结构已成立
+  - `Destination Map` 与 `Top Destinations` 保持成对存在
+  - `Top hosts / Top services / Top connections` 没有因新版布局丢失
+- 当前实现边界：
+  - 当前页面由稳定样本 `OverviewSnapshotDto` 驱动
+  - 尚未接入实时 projection stream
+  - 但字段口径严格限制在 phase1 已有聚合输出，没有提前引入 phase3 数据
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - 页面具备 live/offline 显示口径
+  - `Destination Map` 区域在布局中稳定存在，即使当前是 placeholder
+- 提交：
+  - 待本轮提交后补充
