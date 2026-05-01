@@ -216,4 +216,4 @@
   - core endpoint / process state / version 可见
   - 错误日志入口与近期错误提示可见
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `272cbc9` `Complete M2-008 settings and diagnostics mvp`
