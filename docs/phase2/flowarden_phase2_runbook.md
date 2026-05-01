@@ -2,7 +2,7 @@
 
 ## 1. 目标
 
-本文用于第二阶段的重复运行与评审。
+本文用于第二阶段当前实现的重复运行与评审。
 
 覆盖范围：
 
@@ -11,7 +11,7 @@
 3. 如何启动本地 gRPC core service
 4. 如何启动 UI
 5. 如何验证 `Source / Overview / Inspect / Settings`
-6. 哪些能力已经实现，哪些仍是明确后置
+6. 当前哪些能力已经实现，哪些仍未达到初始总方案要求
 
 ---
 
@@ -121,6 +121,7 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 
 - 当前页面由稳定种子数据驱动
 - `ListDevicePreviews` gRPC 通道已存在，但还未在 UI 中接成实时拉取
+- `ListDevices` 也尚未在 UI 页面中接成真实拉取
 
 ### 7.2 Overview
 
@@ -137,6 +138,7 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 - 当前页面由稳定样本 `OverviewSnapshotDto` 驱动
 - 口径受限于 phase1 聚合输出
 - 尚未接入实时 projection stream
+- 当前不能据此判定“与 CLI 输出真实一致”，因为还不是运行态投影
 
 ### 7.3 Inspect
 
@@ -153,6 +155,7 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 - 当前过滤作用于本地稳定样本结果集
 - 尚未接入后端 inspect query/projection 通道
 - 未引入 payload / session 字段
+- 当前不能据此判定“过滤条件已真实下发到 core”
 
 ### 7.4 Settings
 
@@ -165,11 +168,16 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 5. endpoint / process state / version 可见
 6. 错误提示入口可见
 
+说明：
+
+- 当前 runtime / core / diagnostics 仍由本地样本填充
+- 页面尚未接入真实 `CoreHealthService` 或 runtime 状态
+
 ---
 
-## 8. 已实现与后置能力
+## 8. 当前已实现与未实现能力
 
-### 8.1 第二阶段已实现
+### 8.1 当前已实现
 
 1. Avalonia shell
 2. Source 页面 MVP
@@ -179,19 +187,26 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 6. Rust core 本地 gRPC service skeleton
 7. `Destination Map` 稳定预留区
 
-### 8.2 明确后置
+### 8.2 当前未实现但原方案要求第二阶段完成
 
-1. Source 页真实 gRPC preview/device 拉取接线
-2. Overview 实时 projection stream
-3. Inspect 后端 query/projection 接线
-4. Settings 的真实 runtime write-back
-5. `Destination Map` 真实地图能力
-6. phase3 的 payload 深度解析
-7. phase3 的会话级重建
+1. UI 启动后真实拉起或连接 core
+2. Source 页真实 gRPC preview/device 拉取
+3. `Start / Stop / Pause / Resume`
+4. Overview 实时 projection stream
+5. Inspect 后端 query/projection 接线
+6. Settings 的真实 runtime / health / version / diagnostics 接线
+7. core 异常退出后的 UI 可恢复状态
+
+### 8.3 明确后置
+
+1. Settings 的真实 runtime write-back
+2. `Destination Map` 真实地图能力
+3. phase3 的 payload 深度解析
+4. phase3 的会话级重建
 
 ---
 
-## 9. 第二阶段质量门禁
+## 9. 当前质量门禁
 
 已验证命令：
 
@@ -201,3 +216,8 @@ dotnet build /Users/wangli/workspace/coding/flowarden/flowarden-ui/Flowarden.Ui.
 cd /Users/wangli/workspace/coding/flowarden/flowarden
 cargo test -q -p flowarden
 ```
+
+说明：
+
+- 这些命令只能证明当前代码可构建、可格式化、最小 Rust 测试通过
+- 不能证明第二阶段已完成初始总方案要求的“真实运行闭环”

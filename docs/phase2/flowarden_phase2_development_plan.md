@@ -11,6 +11,15 @@
 
 本文不进入第三阶段的 payload 深度解析和会话级重建。
 
+审计说明：
+
+1. 本文定义的是第二阶段目标状态，不是当前已完成状态。
+2. 当前实现状态必须以：
+   - `flowarden_phase2_progress.md`
+   - `flowarden_phase2_audit_against_plan.md`
+   为准。
+3. 若当前代码仅达到样本驱动 MVP，而未形成真实运行闭环，不得把本文目标条目表述成“已完成”。
+
 配套的界面设计说明见：
 
 - `flowarden_phase2_ui_design.md`

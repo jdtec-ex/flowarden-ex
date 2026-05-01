@@ -4,28 +4,62 @@
 
 1. 仅当任务同时满足 backlog 中的“输出”和“验收条件”时，才标记为“已完成”。
 2. 若实现偏离既定架构约束，即使代码可运行，也不得标记为“已完成”。
-3. 每个任务完成后先记录状态，再等待用户确认是否进入下一个任务。
+3. 阶段状态必须同时对齐以下文档：
+   - `../flowarden_phased_development_plan.md`
+   - `flowarden_phase2_development_plan.md`
+   - `flowarden_phase2_backlog.md`
+4. 页面壳层、样本驱动 MVP、真实运行闭环必须分开记录，禁止混写成“已完成”。
+5. 每个任务完成后先记录状态，再等待用户确认是否进入下一个任务。
 
 ---
 
-## 2. 当前状态总览
+## 2. 审计结论
 
-| 任务 | 状态 | 说明 |
+本文件已按初始总方案和 phase2 计划重新审计。
+
+结论如下：
+
+1. 第二阶段当前不能标记为“已封板完成”。
+2. 当前已经成立的是：
+   - Avalonia 工程骨架
+   - gRPC 最小 skeleton
+   - UI shell
+   - Source / Overview / Inspect / Settings 的样本驱动 MVP
+3. 当前尚未成立的是：
+   - UI 启动后真实拉起或连接 core 的运行闭环
+   - Source 页面真实 `ListDevices / ListDevicePreviews` 接线
+   - `Start / Stop / Pause / Resume`
+   - Overview 对 `tick_snapshots / final_snapshot` 的真实投影接线
+   - Inspect 对后端 query / projection 的真实接线
+   - Settings 对 runtime / health / version / diagnostics 的真实接线
+4. 因此，第二阶段当前应被描述为：
+
+> `gRPC skeleton + 样本驱动 UI MVP 已完成，但与初始总方案一致的真实运行闭环尚未完成。`
+
+详细对照见：
+
+- `flowarden_phase2_audit_against_plan.md`
+
+---
+
+## 3. 当前状态总览
+
+| 任务 | 真实状态 | 说明 |
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
-| `M2-002` | 已完成 | 已用 `proto + tonic + .NET gRPC client` 重做最小 service mode 与本地通信骨架。 |
-| `M2-003` | 已完成 | phase2 UI 侧最小 DTO/契约模型已冻结，足以承接 Source / Overview / Inspect / Settings 开发。 |
-| `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 已落地，页面切换与全局状态点已稳定。 |
-| `M2-005` | 已完成 | Source 页面 MVP 已落地，preview 与 formal capture 边界已图形化，并补齐最小 preview gRPC 通道。 |
-| `M2-006` | 已完成 | Overview 页面 MVP 已落地，hero/status/destination/detail row 结构已由 `OverviewSnapshotDto` 驱动。 |
-| `M2-007` | 已完成 | Inspect 页面 MVP 已落地，过滤条、结果表与 footer summary 已形成稳定工作台。 |
-| `M2-008` | 已完成 | Settings 与诊断页 MVP 已落地，运行配置、core 状态和近期错误提示已可见。 |
-| `M2-009` | 已完成 | 第二阶段已完成封板、质量门禁、运行说明与验收模板。 |
-| `M2-101` | 已完成 | Destination workbench 的 placeholder 模型与 future-state 文案已增强，且未影响第二阶段主线封板。 |
+| `M2-002` | 进行中 | `proto + tonic + .NET gRPC client` 最小 skeleton 已落地，但 UI 应用本身尚未真实使用 launcher / health 连接闭环。 |
+| `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，且未直接依赖 Rust 内部结构体。 |
+| `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 壳层已落地并可稳定切页。 |
+| `M2-005` | 进行中 | Source 页面结构与文案边界已完成，但设备与 preview 仍是样本驱动，不是运行中 core 的真实结果。 |
+| `M2-006` | 进行中 | Overview 页面结构已完成，但未接入 `tick_snapshots / final_snapshot` 的真实 projection。 |
+| `M2-007` | 进行中 | Inspect 页面结构已完成，但过滤与结果仍作用于本地样本，不是后端 query / projection。 |
+| `M2-008` | 进行中 | Settings 页面结构已完成，但 runtime / core / diagnostics 仍由本地样本填充。 |
+| `M2-009` | 进行中 | runbook、模板和质量门禁文件已存在，但“从启动到抓包到关闭流程完整”的封板条件未满足。 |
+| `M2-101` | 已完成 | Destination workbench 的 reserved / future-state UI 壳增强已完成，但它不代表 phase2 主线已封板。 |
 
 ---
 
-## 3. 任务记录
+## 4. 任务记录
 
 ### M2-001 UI 工程骨架与 SDK 基线
 
@@ -40,31 +74,27 @@
 
 ### M2-002 core service mode 与本地 IPC 骨架
 
-- 状态：已完成
-- 原偏差说明：
-  - 曾落成 loopback HTTP skeleton，不符合 [sniffnet_refactor_avalonia_rust_grpc.md](/Users/wangli/workspace/coding/flowarden/docs/sniffnet_refactor_avalonia_rust_grpc.md) 中已明确的 `Rust Core + Avalonia + gRPC` 架构要求
-  - 该偏差已在本任务内修正，不再作为正式通信基线保留
-- 修正后完成内容：
-  - 建立共享 `proto/flowarden/health.proto`
-  - 建立共享 `proto/flowarden/discovery.proto`
-  - Rust 侧改为 `tonic` gRPC service mode
-  - Avalonia 侧改为 `.NET gRPC client`
-  - 最小 RPC 已落地：
+- 状态：进行中
+- 已成立：
+  - 共享 `proto/flowarden/health.proto`
+  - 共享 `proto/flowarden/discovery.proto`
+  - Rust 侧 `tonic` gRPC service mode
+  - `.NET gRPC client`
+  - 最小 RPC：
     - `GetHealth`
     - `GetVersion`
     - `ListDevices`
-- 验证结果：
-  - `cargo build -p flowarden` 通过
-  - `cargo test -q -p flowarden` 通过
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - 端到端探针验证通过：
-    - `health.status=ok`
-    - `version.service=flowarden-core-service`
-    - `devices.count=22`
-- 原提交：
-  - inner repo `0daff75` `Complete M2-002 local service mode and health skeleton`
-  - outer repo `0099fc7` `Complete M2-002 local service mode and health skeleton`
-- 修正后提交：
+    - `ListDevicePreviews`
+- 审计证据：
+  - Rust 仅暴露 `HealthService` 和 `DiscoveryService`
+  - 代码位置：`../../flowarden/flowarden/src/service.rs`
+  - `ControlService`、`ProjectionService`、`GetRuntimeStatus` 尚不存在
+  - UI 虽有 `CoreLauncherService`、`CoreHealthService`，但 `App.axaml.cs` / `AppShellViewModel` 未将它们接入真实启动与连接流程
+- 未满足的验收项：
+  - UI 可拉起 core 或连接已运行 core
+  - UI 内部可判断 core 是否在线并更新真实状态
+  - 错误路径在 UI 内真实闭环
+- 已保留提交：
   - inner repo `7b1c4d8` `Rework M2-002 to gRPC service mode skeleton`
   - outer repo `83a8b89` `Rework M2-002 to gRPC ui client skeleton`
 
@@ -72,22 +102,17 @@
 
 - 状态：已完成
 - 完成内容：
-  - 冻结 `DeviceSummaryDto`
-  - 冻结 `DevicePreviewDto`
-  - 冻结 `CaptureSessionStateDto`
-  - 冻结 `OverviewSnapshotDto`
-  - 冻结 `InspectFilterDto`
-  - 冻结 `InspectResultDto`
-  - 冻结 `CoreErrorDto`
+  - `DeviceSummaryDto`
+  - `DevicePreviewDto`
+  - `CaptureSessionStateDto`
+  - `OverviewSnapshotDto`
+  - `InspectFilterDto`
+  - `InspectResultDto`
+  - `CoreErrorDto`
 - 结构约束：
-  - DTO 命名明确区分 UI 传输模型与 Rust 内部领域模型
-  - `DestinationMapPanel` 和 `TopDestinationsPanel` 已保留 placeholder 契约
-  - `InspectResultDto` 只承接 phase2 的连接明细和结果摘要，不提前引入 phase3 的 payload / session 字段
-  - 当前只冻结 UI 侧最小数据面，不新增 core 侧 proto 扩展
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - UI 项目未直接依赖 Rust 内部结构体
-  - phase2 页面所需最小数据面已齐备
+  - DTO 与 Rust 内部领域模型分离
+  - `Destination Map` placeholder 契约已预留
+  - 未提前引入 phase3 payload / session 字段
 - 提交：
   - outer repo `a21b72a` `Complete M2-003 phase 2 dto contract freeze`
 
@@ -99,144 +124,124 @@
   - `AppRailView`
   - `AppHeaderView`
   - `AppShellViewModel`
-- 具体落地：
-  - 固定 `Left Rail + Top App Bar + Main Workbench`
-  - 左 rail 已承载主导航与 `Start Capture` 主 CTA
-  - top app bar 已承载 mode 切换、core/capture 状态点、tools 入口
-  - main workbench 已作为稳定页面宿主，支持 `Source / Overview / Inspect / Settings` 切换
-  - `Overview` 仍保留 `Hero Chart / Status Cards / Top Destinations / Destination Map / Lower Detail Row` 的稳定版位
-- 范围边界：
-  - 当前任务只落 shell、切页、状态层与壳层样式
-  - `Source / Overview / Inspect / Settings` 的业务内容仍分别留给 `M2-005` 到 `M2-008`
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - shell 可启动并稳定切页面
-  - 全局状态点可显示 `core / capture` 状态
-  - 风格已脱离默认 Avalonia 壳，收敛到 `Cosmos Network System` 的 shell 基线
+- 已成立：
+  - `Left Rail + Top App Bar + Main Workbench`
+  - `Source / Overview / Inspect / Settings` 稳定切页
+  - `Cosmos Network System` shell 基线
+  - `Start Capture` 已收敛为导航到 `Source`
+  - 无多余 `Docs / Quit`
+- 边界说明：
+  - `core / capture` 状态点当前只是壳层状态位，不代表真实运行态
 - 提交：
   - outer repo `a457e25` `Complete M2-004 app shell and global state layer`
+  - outer repo `1ab36b9` `Tighten shell actions and remove extra rail items`
 
 ### M2-005 Source 页面 MVP
 
-- 状态：已完成
-- 完成内容：
+- 状态：进行中
+- 已成立：
   - `SourcePageView`
   - `SourceDeviceListView`
   - `SourcePreviewWorkbenchView`
   - `SourcePageViewModel`
-- 具体落地：
-  - Source 页已经进入 `AppShell` 的正式页面切换路径
-  - 设备列表、选中设备详情、preview 指标、offline import 入口、formal capture footer 已成型
-  - preview 与 formal capture 文案已明确区分
-  - 为满足页面数据面，`M2-005` 同步补齐了 discovery gRPC 的 `ListDevicePreviews`
-- 当前实现边界：
-  - UI 当前用稳定种子数据驱动 Source MVP 展示，不把 core 连接生命周期和自动刷新提前塞进本任务
-  - 但 gRPC preview 通道已经存在，后续可在不改页面契约的情况下接入真实调用
-  - 正式 capture 仍保持单 source 语义，没有被 preview 多设备行为污染
-- 验证结果：
-  - `cargo build -p flowarden` 通过
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - Source 页具备设备 preview 展示、单 source 选择和 offline import 入口
-- 提交：
+  - 页面结构为“左列表 + 右详情”
+  - preview / formal capture / offline import 文案边界清楚
+  - 正式 capture 仍保持单 source 语义
+- 审计证据：
+  - `SourcePageViewModel` 使用 `CreateSeedDevices()`
+  - `RefreshPreview()` 只更新时间标签
+  - `StartFormalCapture()` 只改本地 `CaptureStatus`
+  - 代码位置：`../../flowarden-ui/src/Flowarden.Ui/ViewModels/SourcePageViewModel.cs`
+- 未满足的验收项：
+  - 所有 device preview 来自真实 gRPC 调用，而不是本地样本
+  - 无权限、unsupported、无设备等场景来自真实运行时
+  - 用户选择 source 后能进入真实 formal capture 控制闭环
+- 已保留提交：
   - inner repo `f712ab5` `Complete M2-005 preview discovery gRPC path`
   - outer repo `8e9ab88` `Complete M2-005 source page mvp`
 
 ### M2-006 Overview 页面 MVP
 
-- 状态：已完成
-- 完成内容：
+- 状态：进行中
+- 已成立：
   - `HeroTrafficChartView`
   - `StatusCardsRowView`
   - `DestinationWorkbenchView`
   - `TopHostsView`
   - `TopServicesView`
   - `TopConnectionsView`
-- 具体落地：
-  - Overview 已从壳层占位切换成正式页面
-  - `hero chart + status cards + destination workbench + lower detail row` 结构已成立
-  - `Destination Map` 与 `Top Destinations` 保持成对存在
-  - `Top hosts / Top services / Top connections` 没有因新版布局丢失
-- 当前实现边界：
-  - 当前页面由稳定样本 `OverviewSnapshotDto` 驱动
-  - 尚未接入实时 projection stream
-  - 但字段口径严格限制在 phase1 已有聚合输出，没有提前引入 phase3 数据
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - 页面具备 live/offline 显示口径
-  - `Destination Map` 区域在布局中稳定存在，即使当前是 placeholder
-- 提交：
+  - `Destination Map + Top Destinations` 稳定留位
+- 审计证据：
+  - `OverviewPageViewModel` 使用 `CreateSeedSnapshot()`
+  - `ProjectionClient` 仍返回 placeholder
+  - 代码位置：
+    - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/OverviewPageViewModel.cs`
+    - `../../flowarden-ui/src/Flowarden.Ui/Services/ProjectionClient.cs`
+- 未满足的验收项：
+  - 页面数据与 phase1 CLI 同步口径一致
+  - live / offline 真实运行态显示
+  - `tick_snapshots / final_snapshot` 的真实 projection 接线
+- 已保留提交：
   - outer repo `d7cad13` `Complete M2-006 overview page mvp`
 
 ### M2-007 Inspect 页面 MVP
 
-- 状态：已完成
-- 完成内容：
+- 状态：进行中
+- 已成立：
   - `InspectPageView`
   - `InspectHeaderView`
   - `InspectFilterBarView`
   - `InspectResultsTableView`
   - `InspectFooterSummaryView`
-- 具体落地：
-  - Inspect 页已从壳层占位切换成正式页面
-  - 过滤条保持高可见性
-  - 结果表格成为主体区域
-  - footer 持续显示当前结果数、汇总字节数、汇总包数和排序口径
-  - `ConnectionRowDto` 已补齐 `service` 与 `direction` 列，满足 phase2 inspect MVP 表格需求
-- 当前实现边界：
-  - 当前过滤在本地稳定样本结果集上真实生效
-  - 尚未接入后端 inspect projection/query 通道
-  - 未引入 phase3 的 payload / session 级字段
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - 过滤条件可下发并影响当前结果集
-  - 表格仅依赖 phase2 可用聚合字段
-- 提交：
+  - 过滤条、结果表、footer summary 结构稳定
+- 审计证据：
+  - `InspectPageViewModel` 使用 `CreateSeedRows()`
+  - `ApplyFilters()` 仅过滤本地 `_allRows`
+  - 代码位置：`../../flowarden-ui/src/Flowarden.Ui/ViewModels/InspectPageViewModel.cs`
+- 未满足的验收项：
+  - 过滤条件可真实下发到 core
+  - 表格结果与 phase1 聚合结果真实一致
+  - Inspect 页由后端 query / projection 驱动
+- 已保留提交：
   - outer repo `307822b` `Complete M2-007 inspect page mvp`
 
 ### M2-008 Settings 与诊断页 MVP
 
-- 状态：已完成
-- 完成内容：
+- 状态：进行中
+- 已成立：
   - `SettingsPageView`
   - `SettingsRuntimePanelView`
   - `SettingsCorePanelView`
   - `SettingsDiagnosticsPanelView`
-- 具体落地：
-  - Settings 页已从壳层占位切换成正式页面
-  - runtime 面板可展示当前 source、BPF、tick interval、top N
-  - core 面板可展示 endpoint、process state、health、core version、UI version
-  - diagnostics 面板可展示错误日志入口和近期错误提示
-- 当前实现边界：
-  - 当前页面由稳定运行态样本驱动
-  - 未扩展为大而全设置中心
-  - 诊断面板聚焦 core / permission / filter 相关提示，不提前引入 phase3 诊断需求
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - 当前 source、BPF、tick interval、top N 可见
-  - core endpoint / process state / version 可见
-  - 错误日志入口与近期错误提示可见
-- 提交：
+  - 运行配置、core 状态、近期错误的版位与样式壳层已存在
+- 审计证据：
+  - `SettingsPageViewModel` 直接构造本地 `RuntimeState`、`CoreHealth`、`Diagnostics`
+  - `CoreHealthService` 存在，但未被页面接入
+  - 代码位置：
+    - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/SettingsPageViewModel.cs`
+    - `../../flowarden-ui/src/Flowarden.Ui/Services/CoreHealthService.cs`
+- 未满足的验收项：
+  - 当前 source / BPF / tick interval / top N 来自真实运行态
+  - core endpoint / process state / version 来自真实 core
+  - 近期错误提示来自真实跨进程错误语义
+- 已保留提交：
   - outer repo `272cbc9` `Complete M2-008 settings and diagnostics mvp`
 
 ### M2-009 第二阶段封板与质量门禁
 
-- 状态：已完成
-- 完成内容：
-  - 第二阶段封板版本
-  - 第二阶段运行说明
-  - 第二阶段验收记录模板
-- 具体落地：
-  - 补充 phase2 runbook
-  - 补充 phase2 acceptance template
-  - 补齐质量门禁记录
-- 质量门禁结果：
-  - `dotnet format flowarden-ui/Flowarden.Ui.sln --verify-no-changes` 通过
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - `cargo test -q -p flowarden` 通过
-- 封板边界：
-  - 第二阶段 UI 已可独立评审
-  - 后续 phase3 继续接真实地图能力和 session 详情，不需要推倒当前 UI 壳层
-- 提交：
+- 状态：进行中
+- 已成立：
+  - phase2 runbook
+  - phase2 acceptance template
+  - `dotnet format` / `dotnet build` / `cargo test -q -p flowarden`
+- 未满足的验收项：
+  - 从启动到抓包到关闭流程完整
+  - UI 与 core 可重复运行并形成真实闭环
+  - 无明显资源失控的真实长流程验证
+- 结论：
+  - 文档和质量门禁文件存在，不等于 phase2 已封板
+  - 在 `M2-002 / M2-005 / M2-006 / M2-007 / M2-008` 未收口前，不得标记 phase2 主线完成
+- 已保留提交：
   - outer repo `2618230` `Complete M2-009 phase 2 quality gates and docs`
 
 ### M2-101 Destination Workbench 增强预留
@@ -244,15 +249,32 @@
 - 状态：已完成
 - 完成内容：
   - 更明确的 destination placeholder model
-  - 地图区域空态 / future state 文案
+  - 地图区域空态 / reserved state / future state 文案
   - 更稳定的 destination ranking 辅助说明
-- 具体落地：
-  - `Destination Map` 区域不再只是空白框
-  - 用户可以明确理解该区域未来承载 destination 分布、区域热点、组织叠层等能力
-  - `Destination Map + Top Destinations` 的组合关系更明确
-- 验证结果：
-  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
-  - 地图区域已具备空态、reserved state、future state 的说明
-  - 不影响第二阶段主线封板结论
+- 说明：
+  - 本任务只评价 destination workbench 的 UI reserved shell
+  - 它不代表 phase2 主线已经形成真实运行闭环
 - 提交：
   - outer repo `fda2e27` `Complete M2-101 destination workbench reserve enhancement`
+
+---
+
+## 5. 当前未完成闭环项
+
+按初始总方案和 phase2 计划，当前至少还有以下缺口：
+
+1. UI 启动时真实检查 core、拉起 core 或连接已运行 core
+2. Source 页真实 `ListDevices / ListDevicePreviews` 接线
+3. `ControlService` 与 `Start / Stop / Pause / Resume`
+4. `ProjectionService` 与 `tick_snapshots / final_snapshot`
+5. Inspect 的真实 query / projection 接线
+6. Settings 对 runtime / health / version / diagnostics 的真实接线
+7. core 异常退出时，UI 真实进入可恢复状态
+
+这些缺口在收口前，phase2 只能表述为：
+
+> `样本驱动 UI MVP + gRPC skeleton`
+
+不能表述为：
+
+> `与初始总方案一致的第二阶段已完成`

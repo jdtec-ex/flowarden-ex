@@ -100,13 +100,27 @@
 
 ---
 
-## 5. 范围边界确认
+## 5. 运行闭环验收
+
+以下检查项用于判断是否真正达到初始总方案要求的第二阶段闭环：
+
+- UI 启动后可真实连接已运行 core，或真实拉起 core
+- Source 页设备与 preview 来自真实 gRPC 调用
+- 用户可选择单一 source 进入真实 formal capture
+- `Start / Stop / Pause / Resume` 可真实驱动 core
+- Overview 数据来自真实 `tick_snapshots / final_snapshot`
+- Inspect 结果来自真实后端 query / projection
+- Settings 数据来自真实 runtime / health / version / diagnostics
+- core 异常退出时，UI 可感知并进入可恢复状态
+
+结果：
+
+---
+
+## 6. 范围边界确认
 
 明确当前仍为后置能力：
 
-- Source 实时 gRPC preview/device 拉取
-- Overview 实时 projection stream
-- Inspect 后端 query/projection 接线
 - Settings 写回能力
 - `Destination Map` 真实地图
 - phase3 payload / session 能力
@@ -115,7 +129,7 @@
 
 ---
 
-## 6. 结论
+## 7. 结论
 
 - 是否通过：
 - 遗留问题：
