@@ -5,6 +5,10 @@
     <Setter Property="Foreground" Value="{StaticResource CosmosTextBrush}" />
   </Style>
 
+  <Style Selector="TextBlock.muted-text">
+    <Setter Property="Foreground" Value="{StaticResource CosmosMutedTextBrush}" />
+  </Style>
+
   <Style Selector="TextBlock.page-title">
     <Setter Property="FontSize" Value="24" />
     <Setter Property="FontWeight" Value="SemiBold" />
@@ -19,5 +23,74 @@
     <Setter Property="Background" Value="{StaticResource CosmosSurfaceBrush}" />
     <Setter Property="CornerRadius" Value="16" />
     <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Border.app-rail">
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceHighBrush}" />
+    <Setter Property="Padding" Value="24" />
+  </Style>
+
+  <Style Selector="Border.app-header">
+    <Setter Property="Padding" Value="20" />
+  </Style>
+
+  <Style Selector="Border.main-workbench">
+    <Setter Property="Padding" Value="20" />
+  </Style>
+
+  <Style Selector="Border.workbench-placeholder">
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceHighBrush}" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Padding" Value="20" />
+    <Setter Property="MinHeight" Value="420" />
+  </Style>
+
+  <Style Selector="Button.nav-button">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource CosmosTextBrush}" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="14,12" />
+  </Style>
+
+  <Style Selector="Button.rail-button">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource CosmosTextBrush}" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="14,10" />
+  </Style>
+
+  <Style Selector="Button.primary-cta">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="{StaticResource CosmosPrimaryBrush}" />
+    <Setter Property="Foreground" Value="#17131F" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Padding" Value="16,14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Button.mode-button">
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceHighBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource CosmosTextBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="14,10" />
+  </Style>
+
+  <Style Selector="Button.tools-button">
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceHighBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource CosmosTextBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="14,10" />
+  </Style>
+
+  <Style Selector="Border.status-pill">
+    <Setter Property="Background" Value="{StaticResource CosmosSurfaceHighBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="12,10" />
+  </Style>
+
+  <Style Selector="Border.status-pill-good">
+    <Setter Property="Background" Value="#20372F" />
   </Style>
 </Styles>

@@ -15,7 +15,7 @@
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
 | `M2-002` | 已完成 | 已用 `proto + tonic + .NET gRPC client` 重做最小 service mode 与本地通信骨架。 |
 | `M2-003` | 已完成 | phase2 UI 侧最小 DTO/契约模型已冻结，足以承接 Source / Overview / Inspect / Settings 开发。 |
-| `M2-004` | 未开始 | 等待 `M2-003` 完成并经确认。 |
+| `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 已落地，页面切换与全局状态点已稳定。 |
 | `M2-005` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-006` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-007` | 未开始 | 等待前置任务完成并经确认。 |
@@ -90,3 +90,28 @@
   - phase2 页面所需最小数据面已齐备
 - 提交：
   - outer repo `a21b72a` `Complete M2-003 phase 2 dto contract freeze`
+
+### M2-004 App Shell 与全局状态层
+
+- 状态：已完成
+- 完成内容：
+  - `AppShellView`
+  - `AppRailView`
+  - `AppHeaderView`
+  - `AppShellViewModel`
+- 具体落地：
+  - 固定 `Left Rail + Top App Bar + Main Workbench`
+  - 左 rail 已承载主导航与 `Start Capture` 主 CTA
+  - top app bar 已承载 mode 切换、core/capture 状态点、tools 入口
+  - main workbench 已作为稳定页面宿主，支持 `Source / Overview / Inspect / Settings` 切换
+  - `Overview` 仍保留 `Hero Chart / Status Cards / Top Destinations / Destination Map / Lower Detail Row` 的稳定版位
+- 范围边界：
+  - 当前任务只落 shell、切页、状态层与壳层样式
+  - `Source / Overview / Inspect / Settings` 的业务内容仍分别留给 `M2-005` 到 `M2-008`
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - shell 可启动并稳定切页面
+  - 全局状态点可显示 `core / capture` 状态
+  - 风格已脱离默认 Avalonia 壳，收敛到 `Cosmos Network System` 的 shell 基线
+- 提交：
+  - 待本轮提交后补充

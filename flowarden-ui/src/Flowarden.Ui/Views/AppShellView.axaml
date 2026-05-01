@@ -1,92 +1,88 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid ColumnDefinitions="240,*">
-    <Border Background="{StaticResource CosmosSurfaceBrush}" Padding="20">
-      <DockPanel LastChildFill="True">
-        <StackPanel DockPanel.Dock="Top" Spacing="24">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="page-title" Text="{Binding Title}" />
-            <TextBlock Foreground="{StaticResource CosmosMutedTextBrush}"
-                       Text="{Binding Subtitle}" />
-          </StackPanel>
-
-          <StackPanel Spacing="8">
-            <Button HorizontalAlignment="Stretch" Content="Source" />
-            <Button HorizontalAlignment="Stretch" Content="Overview" />
-            <Button HorizontalAlignment="Stretch" Content="Inspect" />
-            <Button HorizontalAlignment="Stretch" Content="Settings" />
-          </StackPanel>
-        </StackPanel>
-
-        <StackPanel DockPanel.Dock="Bottom" Spacing="12">
-          <Button HorizontalAlignment="Stretch" Content="Start Capture" />
-          <Button HorizontalAlignment="Stretch" Content="Docs" />
-          <Button HorizontalAlignment="Stretch" Content="Quit" />
-        </StackPanel>
-      </DockPanel>
-    </Border>
+  <Grid ColumnDefinitions="260,*">
+    <components:AppRailView />
 
     <Border Grid.Column="1"
             Background="{StaticResource CosmosBackgroundBrush}"
-            Padding="20">
+            Padding="24">
       <Grid RowDefinitions="Auto,*" RowSpacing="20">
-        <Border Classes="glass-panel" Grid.Row="0">
-          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
-            <StackPanel>
-              <TextBlock Classes="page-title" Text="{Binding CurrentPageTitle}" />
-              <TextBlock Foreground="{StaticResource CosmosMutedTextBrush}"
-                         Text="{Binding CurrentMode}" />
-            </StackPanel>
+        <components:AppHeaderView />
 
-            <TextBlock Grid.Column="1"
-                       VerticalAlignment="Center"
-                       Text="{Binding CoreStatus}" />
-            <TextBlock Grid.Column="2"
-                       VerticalAlignment="Center"
-                       Text="{Binding CaptureStatus}" />
+        <Border Grid.Row="1"
+                Classes="glass-panel main-workbench">
+          <Grid RowDefinitions="Auto,*" RowSpacing="16">
+            <TextBlock Classes="section-title" Text="{Binding CurrentPage.Title}" />
+
+            <Grid Grid.Row="1">
+              <Border IsVisible="{Binding IsSourcePageActive}" Classes="workbench-placeholder">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="section-title" Text="Source Workbench" />
+                  <TextBlock Classes="muted-text"
+                             Text="Source selection, preview summaries and session launch controls will land in M2-005." />
+                </StackPanel>
+              </Border>
+
+              <Grid IsVisible="{Binding IsOverviewPageActive}"
+                    ColumnDefinitions="2*,*"
+                    RowDefinitions="Auto,Auto,*"
+                    ColumnSpacing="20"
+                    RowSpacing="20">
+                <Border Classes="glass-panel" Grid.ColumnSpan="2" MinHeight="220">
+                  <StackPanel Spacing="8">
+                    <TextBlock Classes="section-title" Text="Hero Traffic Chart" />
+                    <TextBlock Classes="muted-text"
+                               Text="Traffic trend host panel reserved for Overview implementation." />
+                  </StackPanel>
+                </Border>
+
+                <Border Classes="glass-panel" Grid.Row="1" MinHeight="120">
+                  <TextBlock Classes="section-title" Text="Status Cards Row" />
+                </Border>
+
+                <Border Classes="glass-panel" Grid.Row="1" Grid.Column="1" MinHeight="120">
+                  <TextBlock Classes="section-title" Text="Top Destinations" />
+                </Border>
+
+                <Border Classes="glass-panel" Grid.Row="2" MinHeight="260">
+                  <StackPanel Spacing="8">
+                    <TextBlock Classes="section-title" Text="Destination Map" />
+                    <TextBlock Classes="muted-text"
+                               Text="Reserved panel required by phase 2 MVP." />
+                  </StackPanel>
+                </Border>
+
+                <Border Classes="glass-panel" Grid.Row="2" Grid.Column="1" MinHeight="260">
+                  <StackPanel Spacing="8">
+                    <TextBlock Classes="section-title" Text="Lower Detail Row" />
+                    <TextBlock Classes="muted-text"
+                               Text="Top hosts / top services / top connections placeholder." />
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <Border IsVisible="{Binding IsInspectPageActive}" Classes="workbench-placeholder">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="section-title" Text="Inspect Workbench" />
+                  <TextBlock Classes="muted-text"
+                             Text="Filter bar, results table and footer summary will land in M2-007." />
+                </StackPanel>
+              </Border>
+
+              <Border IsVisible="{Binding IsSettingsPageActive}" Classes="workbench-placeholder">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="section-title" Text="Settings Workbench" />
+                  <TextBlock Classes="muted-text"
+                             Text="Runtime endpoint, current source, BPF and diagnostics will land in M2-008." />
+                </StackPanel>
+              </Border>
+            </Grid>
           </Grid>
         </Border>
-
-        <Grid Grid.Row="1"
-              ColumnDefinitions="2*,*"
-              RowDefinitions="Auto,Auto,*"
-              ColumnSpacing="20"
-              RowSpacing="20">
-          <Border Classes="glass-panel" Grid.ColumnSpan="2" MinHeight="220">
-            <StackPanel Spacing="8">
-              <TextBlock Classes="section-title" Text="Hero Traffic Chart" />
-              <TextBlock Foreground="{StaticResource CosmosMutedTextBrush}"
-                         Text="Phase 2 shell placeholder for Overview hero chart." />
-            </StackPanel>
-          </Border>
-
-          <Border Classes="glass-panel" Grid.Row="1" MinHeight="120">
-            <TextBlock Classes="section-title" Text="Status Cards Row" />
-          </Border>
-
-          <Border Classes="glass-panel" Grid.Row="1" Grid.Column="1" MinHeight="120">
-            <TextBlock Classes="section-title" Text="Top Destinations" />
-          </Border>
-
-          <Border Classes="glass-panel" Grid.Row="2" MinHeight="260">
-            <StackPanel Spacing="8">
-              <TextBlock Classes="section-title" Text="Destination Map" />
-              <TextBlock Foreground="{StaticResource CosmosMutedTextBrush}"
-                         Text="Reserved panel required by phase 2 MVP." />
-            </StackPanel>
-          </Border>
-
-          <Border Classes="glass-panel" Grid.Row="2" Grid.Column="1" MinHeight="260">
-            <StackPanel Spacing="8">
-              <TextBlock Classes="section-title" Text="Lower Detail Row" />
-              <TextBlock Foreground="{StaticResource CosmosMutedTextBrush}"
-                         Text="Top hosts / top services / top connections placeholder." />
-            </StackPanel>
-          </Border>
-        </Grid>
       </Grid>
     </Border>
   </Grid>

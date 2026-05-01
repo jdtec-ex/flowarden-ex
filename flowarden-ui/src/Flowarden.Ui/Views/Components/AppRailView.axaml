@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.AppRailView"
+             x:DataType="vm:AppShellViewModel">
+  <Border Classes="app-rail">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Top" Spacing="24">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="page-title" Text="{Binding Title}" />
+          <TextBlock Classes="muted-text" Text="{Binding Subtitle}" />
+        </StackPanel>
+
+        <StackPanel Spacing="10">
+          <Button Classes="nav-button"
+                  IsEnabled="{Binding !IsSourcePageActive}"
+                  Command="{Binding NavigateCommand}"
+                  CommandParameter="source"
+                  Content="Source" />
+          <Button Classes="nav-button"
+                  IsEnabled="{Binding !IsOverviewPageActive}"
+                  Command="{Binding NavigateCommand}"
+                  CommandParameter="overview"
+                  Content="Overview" />
+          <Button Classes="nav-button"
+                  IsEnabled="{Binding !IsInspectPageActive}"
+                  Command="{Binding NavigateCommand}"
+                  CommandParameter="inspect"
+                  Content="Inspect" />
+          <Button Classes="nav-button"
+                  IsEnabled="{Binding !IsSettingsPageActive}"
+                  Command="{Binding NavigateCommand}"
+                  CommandParameter="settings"
+                  Content="Settings" />
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel DockPanel.Dock="Bottom" Spacing="12">
+        <Button Classes="primary-cta"
+                Command="{Binding StartCaptureCommand}"
+                Content="Start Capture" />
+        <Button Classes="rail-button" Content="Docs" />
+        <Button Classes="rail-button" Content="Quit" />
+      </StackPanel>
+    </DockPanel>
+  </Border>
+</UserControl>

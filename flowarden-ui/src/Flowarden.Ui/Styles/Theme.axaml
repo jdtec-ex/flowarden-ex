@@ -6,6 +6,8 @@
     <Color x:Key="CosmosSurfaceHighColor">#272935</Color>
     <Color x:Key="CosmosPrimaryColor">#D7BAFF</Color>
     <Color x:Key="CosmosSecondaryColor">#75D4E8</Color>
+    <Color x:Key="CosmosGoodColor">#76E3B1</Color>
+    <Color x:Key="CosmosWarningColor">#F8CA6A</Color>
     <Color x:Key="CosmosTextColor">#E1E1F1</Color>
     <Color x:Key="CosmosMutedTextColor">#968E9C</Color>
 
@@ -14,6 +16,8 @@
     <SolidColorBrush x:Key="CosmosSurfaceHighBrush" Color="{StaticResource CosmosSurfaceHighColor}" />
     <SolidColorBrush x:Key="CosmosPrimaryBrush" Color="{StaticResource CosmosPrimaryColor}" />
     <SolidColorBrush x:Key="CosmosSecondaryBrush" Color="{StaticResource CosmosSecondaryColor}" />
+    <SolidColorBrush x:Key="CosmosGoodBrush" Color="{StaticResource CosmosGoodColor}" />
+    <SolidColorBrush x:Key="CosmosWarningBrush" Color="{StaticResource CosmosWarningColor}" />
     <SolidColorBrush x:Key="CosmosTextBrush" Color="{StaticResource CosmosTextColor}" />
     <SolidColorBrush x:Key="CosmosMutedTextBrush" Color="{StaticResource CosmosMutedTextColor}" />
   </Styles.Resources>
