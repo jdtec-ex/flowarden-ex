@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SourcePreviewWorkbenchView"
+             x:DataType="vm:SourcePageViewModel">
+  <Border Classes="glass-panel">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
+      <TextBlock Classes="section-title" Text="Preview Workbench" />
+
+      <StackPanel Grid.Row="1" Spacing="4">
+        <TextBlock Text="{Binding SelectedDevice.DisplayName}" FontWeight="SemiBold" />
+        <TextBlock Classes="muted-text" Text="Preview only. Formal capture still requires one explicit source selection." />
+      </StackPanel>
+
+      <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+        <Border Classes="status-pill">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Packets Seen" />
+            <TextBlock Text="{Binding SelectedDevice.Preview.PacketsSeen}" FontSize="20" FontWeight="SemiBold" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="status-pill">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Bytes Seen" />
+            <TextBlock Text="{Binding SelectedDevice.Preview.BytesSeen}" FontSize="20" FontWeight="SemiBold" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <StackPanel Grid.Row="3" Spacing="8">
+        <TextBlock Classes="section-title" Text="Selected Device Details" />
+        <TextBlock Classes="muted-text" Text="{Binding SelectedDevice.StatusLabel}" />
+        <ItemsControl ItemsSource="{Binding SelectedDevice.Device.Addresses}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="status-pill">
+                <TextBlock Text="{Binding Address}" />
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <Border Grid.Row="4" Classes="status-pill">
+        <TextBlock Classes="muted-text"
+                   Text="Preview traffic is multi-device sampling. Formal capture remains single-source by design." />
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

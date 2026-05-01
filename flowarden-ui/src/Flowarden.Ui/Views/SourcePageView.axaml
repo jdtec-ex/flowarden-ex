@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.SourcePageView"
+             x:DataType="vm:SourcePageViewModel">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="16">
+    <Border Classes="glass-panel">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="12">
+        <Border Classes="status-pill">
+          <TextBlock Text="{Binding SelectedSourceMode}" />
+        </Border>
+        <Button Grid.Column="1"
+                Classes="mode-button"
+                Command="{Binding RefreshPreviewCommand}"
+                Content="Refresh Preview" />
+        <Button Grid.Column="2"
+                Classes="tools-button"
+                Command="{Binding ImportOfflineCommand}"
+                Content="Import Offline" />
+        <TextBlock Grid.Column="3"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Classes="muted-text"
+                   Text="{Binding LastPreviewLabel}" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="360,*" ColumnSpacing="16">
+      <components:SourceDeviceListView DataContext="{Binding}" />
+      <components:SourcePreviewWorkbenchView Grid.Column="1" DataContext="{Binding}" />
+    </Grid>
+
+    <Border Grid.Row="2" Classes="glass-panel">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+        <StackPanel>
+          <TextBlock Classes="section-title" Text="Formal Capture Boundary" />
+          <TextBlock Classes="muted-text" Text="{Binding FormalCaptureSummary}" />
+          <TextBlock Classes="muted-text" Text="{Binding OfflineImportSummary}" />
+        </StackPanel>
+
+        <Button Grid.Column="1"
+                Classes="mode-button"
+                IsEnabled="{Binding HasSelectedDevice}"
+                Content="Start In Live"
+                Command="{Binding StartFormalCaptureCommand}" />
+
+        <Button Grid.Column="2"
+                Classes="tools-button"
+                Content="Load Offline Pcap"
+                Command="{Binding ImportOfflineCommand}" />
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

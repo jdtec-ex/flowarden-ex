@@ -36,4 +36,29 @@ public sealed class DiscoveryClient
             })
             .ToArray();
     }
+
+    public async Task<IReadOnlyList<DevicePreviewDto>> GetDevicePreviewsAsync(
+        ulong previewSeconds,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var response = await _client.ListDevicePreviewsAsync(
+            new ListDevicePreviewsRequest
+            {
+                PreviewSeconds = previewSeconds,
+            },
+            cancellationToken: cancellationToken
+        );
+
+        return response.Previews
+            .Select(preview => new DevicePreviewDto
+            {
+                Name = preview.Name,
+                PacketsSeen = preview.PacketsSeen,
+                BytesSeen = preview.BytesSeen,
+                Unsupported = preview.Unsupported,
+                Error = string.IsNullOrWhiteSpace(preview.Error) ? null : preview.Error,
+            })
+            .ToArray();
+    }
 }

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SourceDeviceListView"
+             x:DataType="vm:SourcePageViewModel">
+  <Border Classes="glass-panel">
+    <Grid RowDefinitions="Auto,*" RowSpacing="12">
+      <TextBlock Classes="section-title" Text="Device List" />
+
+      <ItemsControl Grid.Row="1" ItemsSource="{Binding DeviceItems}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SourceDeviceItemViewModel">
+            <Button Classes="source-device-item"
+                    Command="{Binding $parent[vm:SourcePageViewModel].SelectDeviceCommand}"
+                    CommandParameter="{Binding}">
+              <StackPanel Spacing="6">
+                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                <TextBlock Classes="muted-text" Text="{Binding Description}" />
+                <TextBlock Classes="muted-text" Text="{Binding PreviewSummary}" />
+                <TextBlock Classes="muted-text" Text="{Binding StatusLabel}" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
+  </Border>
+</UserControl>

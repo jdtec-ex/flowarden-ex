@@ -16,7 +16,7 @@
 | `M2-002` | 已完成 | 已用 `proto + tonic + .NET gRPC client` 重做最小 service mode 与本地通信骨架。 |
 | `M2-003` | 已完成 | phase2 UI 侧最小 DTO/契约模型已冻结，足以承接 Source / Overview / Inspect / Settings 开发。 |
 | `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 已落地，页面切换与全局状态点已稳定。 |
-| `M2-005` | 未开始 | 等待前置任务完成并经确认。 |
+| `M2-005` | 已完成 | Source 页面 MVP 已落地，preview 与 formal capture 边界已图形化，并补齐最小 preview gRPC 通道。 |
 | `M2-006` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-007` | 未开始 | 等待前置任务完成并经确认。 |
 | `M2-008` | 未开始 | 等待前置任务完成并经确认。 |
@@ -115,3 +115,27 @@
   - 风格已脱离默认 Avalonia 壳，收敛到 `Cosmos Network System` 的 shell 基线
 - 提交：
   - outer repo `a457e25` `Complete M2-004 app shell and global state layer`
+
+### M2-005 Source 页面 MVP
+
+- 状态：已完成
+- 完成内容：
+  - `SourcePageView`
+  - `SourceDeviceListView`
+  - `SourcePreviewWorkbenchView`
+  - `SourcePageViewModel`
+- 具体落地：
+  - Source 页已经进入 `AppShell` 的正式页面切换路径
+  - 设备列表、选中设备详情、preview 指标、offline import 入口、formal capture footer 已成型
+  - preview 与 formal capture 文案已明确区分
+  - 为满足页面数据面，`M2-005` 同步补齐了 discovery gRPC 的 `ListDevicePreviews`
+- 当前实现边界：
+  - UI 当前用稳定种子数据驱动 Source MVP 展示，不把 core 连接生命周期和自动刷新提前塞进本任务
+  - 但 gRPC preview 通道已经存在，后续可在不改页面契约的情况下接入真实调用
+  - 正式 capture 仍保持单 source 语义，没有被 preview 多设备行为污染
+- 验证结果：
+  - `cargo build -p flowarden` 通过
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - Source 页具备设备 preview 展示、单 source 选择和 offline import 入口
+- 提交：
+  - 待本轮提交后补充
