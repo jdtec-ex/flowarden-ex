@@ -237,4 +237,4 @@
   - 第二阶段 UI 已可独立评审
   - 后续 phase3 继续接真实地图能力和 session 详情，不需要推倒当前 UI 壳层
 - 提交：
-  - 待本轮提交后补充
+  - outer repo `2618230` `Complete M2-009 phase 2 quality gates and docs`
