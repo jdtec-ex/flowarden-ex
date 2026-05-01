@@ -14,6 +14,8 @@
     <Folder Include="Styles\" />
     <Folder Include="Views\Components\" />
     <AvaloniaResource Include="Assets\**" />
+    <Protobuf Include="..\..\..\flowarden\proto\flowarden\health.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
+    <Protobuf Include="..\..\..\flowarden\proto\flowarden\discovery.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,5 +29,11 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.27.2" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.65.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
