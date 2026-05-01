@@ -21,7 +21,7 @@
 | `M2-007` | 已完成 | Inspect 页面 MVP 已落地，过滤条、结果表与 footer summary 已形成稳定工作台。 |
 | `M2-008` | 已完成 | Settings 与诊断页 MVP 已落地，运行配置、core 状态和近期错误提示已可见。 |
 | `M2-009` | 已完成 | 第二阶段已完成封板、质量门禁、运行说明与验收模板。 |
-| `M2-101` | 未开始 | 作为增强预留项，等待 `M2-006` 后评估。 |
+| `M2-101` | 已完成 | Destination workbench 的 placeholder 模型与 future-state 文案已增强，且未影响第二阶段主线封板。 |
 
 ---
 
@@ -238,3 +238,21 @@
   - 后续 phase3 继续接真实地图能力和 session 详情，不需要推倒当前 UI 壳层
 - 提交：
   - outer repo `2618230` `Complete M2-009 phase 2 quality gates and docs`
+
+### M2-101 Destination Workbench 增强预留
+
+- 状态：已完成
+- 完成内容：
+  - 更明确的 destination placeholder model
+  - 地图区域空态 / future state 文案
+  - 更稳定的 destination ranking 辅助说明
+- 具体落地：
+  - `Destination Map` 区域不再只是空白框
+  - 用户可以明确理解该区域未来承载 destination 分布、区域热点、组织叠层等能力
+  - `Destination Map + Top Destinations` 的组合关系更明确
+- 验证结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - 地图区域已具备空态、reserved state、future state 的说明
+  - 不影响第二阶段主线封板结论
+- 提交：
+  - 待本轮提交后补充

@@ -34,6 +34,15 @@ public sealed class OverviewPageViewModel : ViewModelBase
 
     public string DestinationPlaceholderMessage => Snapshot.DestinationMap.Message;
 
+    public string DestinationPlaceholderTitle => "Destination Distribution Future Slot";
+
+    public string DestinationPlaceholderState => Snapshot.DestinationMap.State;
+
+    public string DestinationPlaceholderHint =>
+        "This area is reserved for future geographic or destination-distribution visualization driven by destination projection data.";
+
+    public string DestinationFutureStateLabel => "Future state: destination density, region hot spots, organization overlays";
+
     private static OverviewSnapshotDto CreateSeedSnapshot()
     {
         return new OverviewSnapshotDto
