@@ -274,6 +274,12 @@ Flowarden phase2 不把它列为必做页面，但要在设计文档中记录：
 
 > 借鉴 Sniffnet 的“监控台”视觉语言和信息密度，但用 Avalonia 重新实现，更强调模块清晰、状态反馈和后续可扩展性。
 
+当前评审已进一步确定：
+
+1. phase2 默认风格固定为 `Cosmos Network System`
+2. 后续基于 Stitch 重做 layout 时，视觉基线直接采用 `docs/ui-images/stitch_avalonia_ui_refinement/DESIGN.md`
+3. `Destination Map` 必须作为 Overview 的固定预留区域出现，MVP 可先不实现地图内容，但布局上不能省略
+
 ---
 
 ## 3. 设计原则
@@ -304,62 +310,57 @@ Flowarden phase2 不把它列为必做页面，但要在设计文档中记录：
 
 ## 4. 主题方案
 
-## 4.1 默认主题建议
+## 4.1 默认主题
 
-默认主题建议命名为 `Signal Amber`。
+第二阶段默认主题固定为 `Cosmos Network System`。
 
 颜色角色：
 
 1. `ShellBand`
-   - 顶部/底部色带
-   - 暖金黄到琥珀橙
+   - 顶部/底部主带
+   - 冷紫到宇宙蓝的高对比渐变
 2. `SurfaceBase`
    - 主背景
-   - 深蓝黑
+   - 深宇宙底色
 3. `SurfacePanel`
    - 卡片与列表容器
-   - 稍亮的深蓝
+   - 玻璃感深色面板
 4. `AccentPrimary`
    - 高亮边框、主按钮、选中项
-   - 金黄
+   - 电紫
 5. `TrafficInbound`
    - 入站流量
-   - 琥珀黄
+   - 亮紫
 6. `TrafficOutbound`
    - 出站流量
    - 青蓝
 7. `Danger`
    - 错误与异常
-   - 红橙
+   - 高对比错误红
 
-建议的第一版变量：
+默认变量采用 `Cosmos Network System` 的主变量语义：
 
 ```text
---shell-band-start: #f0b12a
---shell-band-end:   #f29a1f
---surface-base:     #16213b
---surface-panel:    #1e2d52
---surface-panel-2:  #24345d
---accent-primary:   #ffc43b
---traffic-in:       #ffc43b
---traffic-out:      #46b2ff
---text-primary:     #f4f7ff
---text-muted:       #aeb7cd
---danger:           #ff6c54
+background:         #11131e
+surface-container:  #1d1f2b
+surface-glass:      rgba(17, 19, 30, 0.65)
+primary:            #d7baff
+secondary:          #75d4e8
+tertiary:           #ffafd7
+on-background:      #e1e1f1
+outline-variant:    #4a4451
+error:              #ffb4ab
 ```
 
-## 4.2 备用主题建议
+## 4.2 风格约束
 
-参考 `deep_cosmos.png`，建议在 phase2 只预留一个备用主题：
+`Cosmos Network System` 在 phase2 中意味着：
 
-- `Deep Cosmos`
-
-但不要在 MVP 中做复杂主题系统，只要：
-
-1. 默认主题可用
-2. 备用主题变量可切换
-
-即可。
+1. 使用 `Space Grotesk + Manrope` 的字体组合
+2. 容器优先采用 glass / mica 感表面
+3. 图表允许 glow path，但不能影响读数
+4. 激活态要明确，但避免噪声过强
+5. 所有页面都保持深色监控台的沉浸感
 
 ---
 
@@ -505,11 +506,17 @@ Flowarden phase2 建议：
 | Totals card                 | Traffic rate chart     |
 | inbound/outbound/dropped    | inbound/outbound trend |
 +-----------------------------+------------------------+
-| Top hosts                   | Top services           |
+| Destination map (reserved)  | Top hosts              |
 +-----------------------------+------------------------+
-| Top connections                                     |
+| Top services                | Top connections        |
 +------------------------------------------------------+
 ```
+
+这里按评审意见新增一条固定约束：
+
+1. `Destination Map` 是 Overview 的保留区域
+2. phase2 MVP 可先只放 placeholder / reserved panel
+3. 但整体 layout 必须提前为它留位
 
 ## 9.3 必备组件
 
@@ -520,9 +527,12 @@ Flowarden phase2 建议：
    - total packets
 2. `TrafficRateChart`
    - 以 `tick_snapshots` 为基础
-3. `TopHostsPanel`
-4. `TopServicesPanel`
-5. `TopConnectionsPanel`
+3. `DestinationMapPanel`
+   - MVP 中允许为 reserved panel
+   - 作用是为后续 destination 分布视图保留稳定区域
+4. `TopHostsPanel`
+5. `TopServicesPanel`
+6. `TopConnectionsPanel`
 
 ## 9.4 图表策略
 
@@ -538,8 +548,9 @@ Flowarden phase2 建议：
 ## 9.5 视觉重点
 
 1. 趋势图是页面视觉中心
-2. 榜单保持紧凑，避免空白感
-3. Summary strip 比 phase1 CLI 输出更易读，但口径不能变
+2. `Destination Map` 是第二层级视觉锚点，即使先不实现内容也要占位
+3. 榜单保持紧凑，避免空白感
+4. Summary strip 比 phase1 CLI 输出更易读，但口径不能变
 
 ---
 
@@ -677,6 +688,12 @@ phase2 只保留轻量动效：
 3. Inspect
 4. Settings
 5. core 状态与错误反馈
+6. `Destination Map` reserved panel
+
+说明：
+
+1. 这里要求的是“布局中必须有该区域”
+2. 不是要求 phase2 MVP 立刻做真实地图引擎
 
 ## 14.2 phase2 可以不做
 
@@ -685,6 +702,7 @@ phase2 只保留轻量动效：
 3. 多主题完整系统
 4. 程序图标展示
 5. 国家旗帜与组织名增强
+6. `Destination Map` 的真实地图绘制与交互
 
 这些都可留给 phase2.1 或 phase3。
 

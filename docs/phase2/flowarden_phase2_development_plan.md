@@ -67,6 +67,8 @@
 3. 不为了 phase3 预埋过度抽象
 4. 所有跨进程错误都要映射回稳定错误语义
 5. UI 设计借鉴 Sniffnet 的信息密度和视觉重心，但不复制其 `iced` 组件结构
+6. phase2 默认视觉基线固定为 `Cosmos Network System`
+7. `Destination Map` 必须在 Overview 布局中预留区域，MVP 可先不实现内容
 
 ---
 
@@ -132,6 +134,7 @@ flowarden-core service (Rust)
    - tick interval
    - top N
    - output mode 只读展示
+11. Overview 中的 `Destination Map` reserved panel
 
 ## 5.2 明确不做
 
@@ -143,6 +146,7 @@ flowarden-core service (Rust)
 6. 插件化
 7. 远程节点
 8. 多语言
+9. `Destination Map` 的真实地图引擎、地理增强与交互探索
 
 ---
 
@@ -327,15 +331,17 @@ flowarden-ui/
 
 1. 总量卡片
 2. 趋势图
-3. top hosts
-4. top services
-5. top connections
+3. `Destination Map` reserved panel
+4. top hosts
+5. top services
+6. top connections
 
 ### 验收条件
 
 1. 页面数据与 CLI 同步口径一致
 2. 页面更新不卡死
 3. live/offline 两种模式都可显示
+4. `Destination Map` 区域在布局中固定存在，即使当前只显示 placeholder
 
 ## M2-005 Inspect 页面 MVP
 
@@ -408,6 +414,7 @@ M2-001 -> M2-002 -> M2-003 -> M2-004 -> M2-005 -> M2-006
 8. UI 遇到 core 错误时提示明确
 9. core 意外退出时 UI 不崩溃
 10. 文档齐备，可复跑
+11. Overview 中已为 `Destination Map` 保留稳定布局区域
 
 ---
 
@@ -445,4 +452,4 @@ preview 与 formal capture 必须分开；正式 capture 仍保持单 source。
 
 > 基于第一阶段已稳定的投影模型，建立 `Rust core service + Avalonia UI` 的本地桌面闭环，并以 `net8.0 / dotnet 8.0.125` 为开发基线完成 Overview 与 Inspect 的 MVP。
 
-这样第二阶段结束时，Flowarden 将从“可运行 CLI 核心”升级为“可交互桌面监控器”，但仍不提前进入第三阶段的深度分析复杂度。
+这样第二阶段结束时，Flowarden 将从“可运行 CLI 核心”升级为“可交互桌面监控器”，并在 `Cosmos Network System` 风格下为后续 `Destination Map` 和 phase3 深度分析预留稳定版位，但仍不提前进入第三阶段的深度分析复杂度。
