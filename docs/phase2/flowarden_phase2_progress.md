@@ -90,7 +90,7 @@
     - `GetHealth`
     - `GetVersion`
     - `ListDevices`
-    - `ListDevicePreviews`
+    - `ListDevicePreviews` skeleton
     - `StartCapture / StopCapture / PauseCapture / ResumeCapture / SetSource / ApplyFilter` 骨架
     - `GetLatestOverview / GetInspectPage` 骨架
 - 审计证据：
@@ -98,6 +98,7 @@
   - 代码位置：`../../flowarden/flowarden/src/service.rs`
   - UI 已能探活并在需要时拉起 `flowarden core`
   - launcher 异常路径已映射为 `CoreErrorDto`，不会打断窗口初始化
+  - `ListDevicePreviews` 当前明确保留为 skeleton，真实 preview 采样推迟到 `M2-005`
 - 验收结果：
   - `cargo test -q -p flowarden` 通过
   - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
