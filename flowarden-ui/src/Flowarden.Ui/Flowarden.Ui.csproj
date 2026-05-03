@@ -16,6 +16,8 @@
     <AvaloniaResource Include="Assets\**" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\health.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\discovery.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
+    <Protobuf Include="..\..\..\flowarden\proto\flowarden\control.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
+    <Protobuf Include="..\..\..\flowarden\proto\flowarden\projection.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
   </ItemGroup>
 
   <ItemGroup>

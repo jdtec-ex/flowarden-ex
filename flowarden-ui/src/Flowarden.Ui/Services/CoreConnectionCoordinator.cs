@@ -37,7 +37,23 @@ public sealed class CoreConnectionCoordinator
             );
         }
 
-        var process = _coreLauncherService.Start(workingDirectory, binaryPath, bindAddress);
+        Process? process;
+        try
+        {
+            process = _coreLauncherService.Start(workingDirectory, binaryPath, bindAddress);
+        }
+        catch (System.Exception ex)
+        {
+            return CoreConnectionResult.Failed(
+                new CoreErrorDto
+                {
+                    Source = "CoreLauncher",
+                    Reason = "LaunchFailed",
+                    Message = $"Failed to start flowarden core process: {ex.Message}",
+                }
+            );
+        }
+
         if (process is null)
         {
             return CoreConnectionResult.Failed(
