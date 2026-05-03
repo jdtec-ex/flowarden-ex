@@ -51,7 +51,7 @@
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
 | `M2-002` | 已完成 | `flowarden core` resident mode、UI 探活/拉起、以及 `health/discovery/control/projection` gRPC 骨架已到位。 |
-| `M2-003` | 未重新验收 | 现有 DTO/契约实现只保留为代码基线，不计当前完成。 |
+| `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，并已按 `YAGNI` 删去未使用字段。 |
 | `M2-004` | 未重新验收 | 现有 shell/UI 壳层只保留为代码基线，不计当前完成。 |
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-006` | 未重新验收 | 现有 Overview 页面实现只保留为代码基线，不计当前完成。 |
@@ -111,7 +111,7 @@
 
 ### M2-003 phase2 契约模型冻结
 
-- 状态：未重新验收
+- 状态：已完成
 - 完成内容：
   - `DeviceSummaryDto`
   - `DevicePreviewDto`
@@ -124,9 +124,12 @@
   - DTO 与 Rust 内部领域模型分离
   - `Destination Map` placeholder 契约已预留
   - 未提前引入 phase3 payload / session 字段
-- 当前口径：
-  - 现有实现仅作为存量代码基线
-  - 必须在 `M2-002` 重新评审通过后，再单独按 backlog 重新验收
+- 收紧说明：
+  - 删除了当前未使用且未接通的冗余字段
+  - `M2-003` 仅冻结 phase2 最小 DTO 集，不包含 `M2-004+` 的真实页面数据接线
+- 验收结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - UI `Models/` 不直接依赖 Rust 内部结构体或 tonic 生成类型
 - 提交：
   - outer repo `a21b72a` `Complete M2-003 phase 2 dto contract freeze`
 
