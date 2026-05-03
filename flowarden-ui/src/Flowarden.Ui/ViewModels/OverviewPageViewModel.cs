@@ -109,7 +109,6 @@ public sealed class OverviewPageViewModel : ViewModelBase
                 {
                     Name = "https",
                     Transport = "tcp",
-                    Confidence = "high",
                     Packets = 188,
                     Bytes = 301_440,
                 },
@@ -117,7 +116,6 @@ public sealed class OverviewPageViewModel : ViewModelBase
                 {
                     Name = "dns",
                     Transport = "udp",
-                    Confidence = "medium",
                     Packets = 74,
                     Bytes = 22_800,
                 },

@@ -15,10 +15,4 @@ public sealed class DeviceSummaryDto
 public sealed class DeviceAddressDto
 {
     public string Address { get; init; } = string.Empty;
-
-    public string? Netmask { get; init; }
-
-    public string? BroadcastAddress { get; init; }
-
-    public string? DestinationAddress { get; init; }
 }
