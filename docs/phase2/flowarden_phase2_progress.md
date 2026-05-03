@@ -50,7 +50,7 @@
 | 任务 | 真实状态 | 说明 |
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
-| `M2-002` | 进行中 | 当前阶段已回退到本任务；`flowarden core` resident mode 与 UI 探活/拉起链路存在，但需按新基线重新评审。 |
+| `M2-002` | 已完成 | `flowarden core` resident mode、UI 探活/拉起、以及 `health/discovery/control/projection` gRPC 骨架已到位。 |
 | `M2-003` | 未重新验收 | 现有 DTO/契约实现只保留为代码基线，不计当前完成。 |
 | `M2-004` | 未重新验收 | 现有 shell/UI 壳层只保留为代码基线，不计当前完成。 |
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
@@ -77,11 +77,13 @@
 
 ### M2-002 resident core 模式与本地 gRPC 骨架
 
-- 状态：进行中
+- 状态：已完成
 - 已成立：
   - `flowarden core` 作为单一可执行程序内的 resident mode 入口
   - 共享 `proto/flowarden/health.proto`
   - 共享 `proto/flowarden/discovery.proto`
+  - 共享 `proto/flowarden/control.proto`
+  - 共享 `proto/flowarden/projection.proto`
   - Rust 侧 `tonic` gRPC 常驻模式 host
   - `.NET gRPC client`
   - 最小 RPC：
@@ -89,13 +91,17 @@
     - `GetVersion`
     - `ListDevices`
     - `ListDevicePreviews`
+    - `StartCapture / StopCapture / PauseCapture / ResumeCapture / SetSource / ApplyFilter` 骨架
+    - `GetLatestOverview / GetInspectPage` 骨架
 - 审计证据：
-  - Rust 仅暴露 `HealthService` 和 `DiscoveryService`
+  - Rust 当前已暴露 `HealthService`、`DiscoveryService`、`ControlService`、`ProjectionService`
   - 代码位置：`../../flowarden/flowarden/src/service.rs`
-  - `ControlService`、`ProjectionService`、`GetRuntimeStatus` 尚不存在
-  - UI 已能探活并在需要时拉起 `flowarden core`，但本任务仍需你按新基线完成重新评审后才可转为已完成
-- 未满足的验收项：
-  - 等待按当前回退口径完成重新验收
+  - UI 已能探活并在需要时拉起 `flowarden core`
+  - launcher 异常路径已映射为 `CoreErrorDto`，不会打断窗口初始化
+- 验收结果：
+  - `cargo test -q -p flowarden` 通过
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - 本任务完成的是 resident core 与本地 gRPC 骨架，不包含 `M2-003+` 的真实页面数据接线
 - 已保留提交：
   - inner repo `7b1c4d8` `Rework M2-002 to gRPC service mode skeleton`
   - outer repo `83a8b89` `Rework M2-002 to gRPC ui client skeleton`

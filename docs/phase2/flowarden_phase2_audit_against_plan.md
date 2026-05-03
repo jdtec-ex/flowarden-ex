@@ -39,7 +39,7 @@
 
 | 初始要求 | 来源文档 | 当前代码事实 | 结论 |
 | --- | --- | --- | --- |
-| UI 能拉起或连接本地 core | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | UI 已接入真实探活与拉起 `flowarden core` 的流程，但仍未完成后续 control / projection 闭环 | 部分完成 |
+| UI 能拉起或连接本地 core | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | UI 已接入真实探活与拉起 `flowarden core` 的流程；resident core 与本地 gRPC 骨架已成立，后续页面接线后置到 `M2-003+` | 已完成（限 M2-002 骨架范围） |
 | UI 能列出设备、显示多 device preview，并选择单一 source 正式抓包 | `flowarden_phase2_development_plan.md` 2 / 5.1 / 8 / 10 | `SourcePageViewModel` 使用 `CreateSeedDevices()`；`RefreshPreview()` 只更新时间；`StartFormalCapture()` 只改本地状态 | 未完成 |
 | UI 能完成 `Start / Stop / Pause / Resume` | `flowarden_phased_development_plan.md` 7.2 / 7.5；`flowarden_phase2_development_plan.md` 2 / 6.1 / 10 | Rust 无 `ControlService`；UI 无真实控制接线；shell 的 `Start Capture` 只是导航 | 未完成 |
 | UI 能实时展示 `tick_snapshots` 和 `final_snapshot` | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | `OverviewPageViewModel` 使用 `CreateSeedSnapshot()`；`ProjectionClient` 仅返回 placeholder | 未完成 |
@@ -143,15 +143,15 @@
 | 任务 | 修正后状态 |
 | --- | --- |
 | `M2-001` | 已完成 |
-| `M2-002` | 进行中 |
-| `M2-003` | 已完成 |
-| `M2-004` | 已完成 |
-| `M2-005` | 进行中 |
-| `M2-006` | 进行中 |
-| `M2-007` | 进行中 |
-| `M2-008` | 进行中 |
-| `M2-009` | 进行中 |
-| `M2-101` | 已完成 |
+| `M2-002` | 已完成（限 resident core + gRPC 骨架范围） |
+| `M2-003` | 未重新验收 |
+| `M2-004` | 未重新验收 |
+| `M2-005` | 未重新验收 |
+| `M2-006` | 未重新验收 |
+| `M2-007` | 未重新验收 |
+| `M2-008` | 未重新验收 |
+| `M2-009` | 未重新验收 |
+| `M2-101` | 未重新验收 |
 
 ---
 
