@@ -10,6 +10,7 @@
    - `flowarden_phase2_backlog.md`
 4. 页面壳层、样本驱动 MVP、真实运行闭环必须分开记录，禁止混写成“已完成”。
 5. 每个任务完成后先记录状态，再等待用户确认是否进入下一个任务。
+6. 若阶段执行被回退，则回退点之后的任务一律改为“未重新验收”，直到按新基线重新通过评审。
 
 ---
 
@@ -20,21 +21,23 @@
 结论如下：
 
 1. 第二阶段当前不能标记为“已封板完成”。
-2. 当前已经成立的是：
+2. 第二阶段任务状态已正式回退到 `M2-002` 重新开始推进。
+3. 当前已经成立的是：
    - Avalonia 工程骨架
    - gRPC 最小 skeleton
    - UI shell
    - Source / Overview / Inspect / Settings 的样本驱动 MVP
-3. 当前尚未成立的是：
+4. 这些已存在实现只作为代码基线，不自动视为当前任务已完成。
+5. 当前尚未成立的是：
    - UI 启动后真实拉起或连接 core 的运行闭环
    - Source 页面真实 `ListDevices / ListDevicePreviews` 接线
    - `Start / Stop / Pause / Resume`
    - Overview 对 `tick_snapshots / final_snapshot` 的真实投影接线
    - Inspect 对后端 query / projection 的真实接线
    - Settings 对 runtime / health / version / diagnostics 的真实接线
-4. 因此，第二阶段当前应被描述为：
+6. 因此，第二阶段当前应被描述为：
 
-> `gRPC skeleton + 样本驱动 UI MVP 已完成，但与初始总方案一致的真实运行闭环尚未完成。`
+> `gRPC skeleton + 样本驱动 UI MVP 已建立，但与初始总方案一致的真实运行闭环尚未完成。`
 
 详细对照见：
 
@@ -47,16 +50,15 @@
 | 任务 | 真实状态 | 说明 |
 | --- | --- | --- |
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
-| `M2-002` | 进行中 | `proto + tonic + .NET gRPC client` 最小 skeleton 已落地，但 UI 应用本身尚未真实使用 launcher / health 连接闭环。 |
-| `M2-002` | 进行中 | `flowarden core` resident mode 已改名并可常驻运行，UI 启动链已接入真实探活/拉起，但仍缺 UI 内更完整的运行态反馈与后续 control/projection 接线。 |
-| `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，且未直接依赖 Rust 内部结构体。 |
-| `M2-004` | 已完成 | `Left Rail + Top App Bar + Main Workbench` 壳层已落地并可稳定切页。 |
-| `M2-005` | 进行中 | Source 页面结构与文案边界已完成，但设备与 preview 仍是样本驱动，不是运行中 core 的真实结果。 |
-| `M2-006` | 进行中 | Overview 页面结构已完成，但未接入 `tick_snapshots / final_snapshot` 的真实 projection。 |
-| `M2-007` | 进行中 | Inspect 页面结构已完成，但过滤与结果仍作用于本地样本，不是后端 query / projection。 |
-| `M2-008` | 进行中 | Settings 页面结构已完成，但 runtime / core / diagnostics 仍由本地样本填充。 |
-| `M2-009` | 进行中 | runbook、模板和质量门禁文件已存在，但“从启动到抓包到关闭流程完整”的封板条件未满足。 |
-| `M2-101` | 已完成 | Destination workbench 的 reserved / future-state UI 壳增强已完成，但它不代表 phase2 主线已封板。 |
+| `M2-002` | 进行中 | 当前阶段已回退到本任务；`flowarden core` resident mode 与 UI 探活/拉起链路存在，但需按新基线重新评审。 |
+| `M2-003` | 未重新验收 | 现有 DTO/契约实现只保留为代码基线，不计当前完成。 |
+| `M2-004` | 未重新验收 | 现有 shell/UI 壳层只保留为代码基线，不计当前完成。 |
+| `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-006` | 未重新验收 | 现有 Overview 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-007` | 未重新验收 | 现有 Inspect 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-008` | 未重新验收 | 现有 Settings 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-009` | 未重新验收 | 现有封板文档与门禁只保留为代码基线，不计当前完成。 |
+| `M2-101` | 未重新验收 | 现有 destination workbench 增强只保留为代码基线，不计当前完成。 |
 
 ---
 
@@ -73,14 +75,14 @@
 - 提交：
   - outer repo `9315b9a` `Complete M2-001 Avalonia UI scaffold and sdk baseline`
 
-### M2-002 core service mode 与本地 IPC 骨架
+### M2-002 resident core 模式与本地 gRPC 骨架
 
 - 状态：进行中
 - 已成立：
   - `flowarden core` 作为单一可执行程序内的 resident mode 入口
   - 共享 `proto/flowarden/health.proto`
   - 共享 `proto/flowarden/discovery.proto`
-  - Rust 侧 `tonic` gRPC service mode
+  - Rust 侧 `tonic` gRPC 常驻模式 host
   - `.NET gRPC client`
   - 最小 RPC：
     - `GetHealth`
@@ -91,18 +93,18 @@
   - Rust 仅暴露 `HealthService` 和 `DiscoveryService`
   - 代码位置：`../../flowarden/flowarden/src/service.rs`
   - `ControlService`、`ProjectionService`、`GetRuntimeStatus` 尚不存在
-  - UI 已能探活并在需要时拉起 `flowarden core`，但 UI 内仍缺少后续更完整的运行态反馈与控制面接线
+  - UI 已能探活并在需要时拉起 `flowarden core`，但本任务仍需你按新基线完成重新评审后才可转为已完成
 - 未满足的验收项：
-  - UI 可拉起 core 或连接已运行 core
-  - UI 内部可判断 core 是否在线并更新真实状态
-  - 错误路径在 UI 内真实闭环
+  - 等待按当前回退口径完成重新验收
 - 已保留提交：
   - inner repo `7b1c4d8` `Rework M2-002 to gRPC service mode skeleton`
   - outer repo `83a8b89` `Rework M2-002 to gRPC ui client skeleton`
+  - inner repo `e6351e6` `Refine resident core mode under flowarden core`
+  - outer repo `557fd73` `Connect UI startup to resident core and update phase2 docs`
 
 ### M2-003 phase2 契约模型冻结
 
-- 状态：已完成
+- 状态：未重新验收
 - 完成内容：
   - `DeviceSummaryDto`
   - `DevicePreviewDto`
@@ -115,12 +117,15 @@
   - DTO 与 Rust 内部领域模型分离
   - `Destination Map` placeholder 契约已预留
   - 未提前引入 phase3 payload / session 字段
+- 当前口径：
+  - 现有实现仅作为存量代码基线
+  - 必须在 `M2-002` 重新评审通过后，再单独按 backlog 重新验收
 - 提交：
   - outer repo `a21b72a` `Complete M2-003 phase 2 dto contract freeze`
 
 ### M2-004 App Shell 与全局状态层
 
-- 状态：已完成
+- 状态：未重新验收
 - 完成内容：
   - `AppShellView`
   - `AppRailView`
@@ -134,13 +139,16 @@
   - 无多余 `Docs / Quit`
 - 边界说明：
   - `core / capture` 状态点当前只是壳层状态位，不代表真实运行态
+- 当前口径：
+  - 现有实现仅作为存量代码基线
+  - 必须在 `M2-002` 重新评审通过后，再单独按 backlog 重新验收
 - 提交：
   - outer repo `a457e25` `Complete M2-004 app shell and global state layer`
   - outer repo `1ab36b9` `Tighten shell actions and remove extra rail items`
 
 ### M2-005 Source 页面 MVP
 
-- 状态：进行中
+- 状态：未重新验收
 - 已成立：
   - `SourcePageView`
   - `SourceDeviceListView`
@@ -164,7 +172,7 @@
 
 ### M2-006 Overview 页面 MVP
 
-- 状态：进行中
+- 状态：未重新验收
 - 已成立：
   - `HeroTrafficChartView`
   - `StatusCardsRowView`
@@ -188,7 +196,7 @@
 
 ### M2-007 Inspect 页面 MVP
 
-- 状态：进行中
+- 状态：未重新验收
 - 已成立：
   - `InspectPageView`
   - `InspectHeaderView`
@@ -209,7 +217,7 @@
 
 ### M2-008 Settings 与诊断页 MVP
 
-- 状态：进行中
+- 状态：未重新验收
 - 已成立：
   - `SettingsPageView`
   - `SettingsRuntimePanelView`
@@ -231,7 +239,7 @@
 
 ### M2-009 第二阶段封板与质量门禁
 
-- 状态：进行中
+- 状态：未重新验收
 - 已成立：
   - phase2 runbook
   - phase2 acceptance template
@@ -248,7 +256,7 @@
 
 ### M2-101 Destination Workbench 增强预留
 
-- 状态：已完成
+- 状态：未重新验收
 - 完成内容：
   - 更明确的 destination placeholder model
   - 地图区域空态 / reserved state / future state 文案
@@ -256,6 +264,9 @@
 - 说明：
   - 本任务只评价 destination workbench 的 UI reserved shell
   - 它不代表 phase2 主线已经形成真实运行闭环
+- 当前口径：
+  - 现有实现仅作为存量代码基线
+  - 必须在主线恢复推进后再单独按 backlog 重新验收
 - 提交：
   - outer repo `fda2e27` `Complete M2-101 destination workbench reserve enhancement`
 

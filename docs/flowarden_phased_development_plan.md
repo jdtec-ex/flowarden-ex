@@ -6,6 +6,7 @@
 
 - `phase1/`：第一阶段实施、backlog、进度、运行与样本文档
 - `phase2/`：第二阶段开发计划与 UI 设计文档
+- `phase3/`：第三阶段深度解析与会话重建开发计划
 - 根目录：跨阶段总方案、Sniffnet 参考分析、UI 参考图片索引
 
 本方案基于当前 `docs` 中两份已有文档形成：
@@ -97,7 +98,7 @@
 核心产物：
 
 - `flowarden-ui` Avalonia 工程
-- `flowarden` 或独立 core 进程的 service mode
+- `flowarden` 单一可执行程序内的 `core` 常驻模式
 - `gRPC` 或等价本地 IPC 契约
 
 ### 阶段三
@@ -427,7 +428,7 @@ CLI 打印只是展示形式，核心输出应该先形成统一投影，例如�
 ### 必做范围
 
 1. `flowarden-ui` Avalonia 工程初始化
-2. 本地 core service mode
+2. 本地 resident core 模式
 3. `gRPC` 或等价本地 IPC 契约
 4. 设备选择页面
 5. Start / Stop / Pause / Resume
@@ -451,7 +452,7 @@ CLI 打印只是展示形式，核心输出应该先形成统一投影，例如�
 ```text
 flowarden-ui (Avalonia)
   <-> local gRPC
-flowarden-core service
+flowarden core
 ```
 
 原因：
@@ -462,11 +463,11 @@ flowarden-core service
 
 ## 7.4 阶段二内部里程碑
 
-### 里程碑 1：core service mode 与契约冻结
+### 里程碑 1：resident core 模式与契约冻结
 
 交付内容：
 
-- 本地监听模式
+- `flowarden core --bind ...` 常驻监听模式
 - proto 或等价契约文件
 - control / projection / health 基础接口
 

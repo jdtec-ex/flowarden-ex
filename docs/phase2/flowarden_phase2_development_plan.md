@@ -6,7 +6,7 @@
 
 第二阶段只做两件事：
 
-1. 建立 `Rust core service + Avalonia UI` 的稳定运行闭环
+1. 建立 `Rust resident core + Avalonia UI` 的稳定运行闭环
 2. 将第一阶段已经完成的投影结果图形化
 
 本文不进入第三阶段的 payload 深度解析和会话级重建。
@@ -19,6 +19,10 @@
    - `flowarden_phase2_audit_against_plan.md`
    为准。
 3. 若当前代码仅达到样本驱动 MVP，而未形成真实运行闭环，不得把本文目标条目表述成“已完成”。
+4. 当前执行口径已回退到 `M2-002` 重新开始推进：
+   - `M2-001` 保留已完成
+   - `M2-002` 作为当前任务重新评审
+   - `M2-003` 及之后的任务在重新验收前一律不得计为已完成
 
 配套的界面设计说明见：
 
@@ -40,7 +44,7 @@
 第二阶段完成，不等于“能打开一个窗口”，而是同时满足以下条件：
 
 1. `flowarden-ui` 能在本机 `dotnet` SDK `8.0.125` 下稳定构建与运行
-2. UI 能拉起或连接本地 `flowarden-core service`
+2. UI 能拉起或连接本地 `flowarden core`
 3. UI 能列出设备、显示多设备 preview，并选择单一 source 正式抓包
 4. UI 能完成 `Start / Stop / Pause / Resume`
 5. UI 能实时展示第一阶段的 `tick_snapshots` 和 `final_snapshot`
@@ -93,7 +97,7 @@ flowarden-ui (Avalonia, net8.0)
   -> views / viewmodels
   -> grpc client or equivalent IPC client
 
-flowarden-core service (Rust)
+flowarden core (Rust resident mode)
   -> capture runtime
   -> analysis
   -> aggregation
@@ -132,7 +136,7 @@ flowarden-core service (Rust)
 
 1. 建立 `flowarden-ui` Avalonia 工程
 2. 固定本机 `dotnet` SDK 与构建脚本
-3. 建立本地 core service mode
+3. 建立本地 resident core 模式
 4. 冻结 phase2 的本地 IPC / gRPC 契约
 5. 设备列表与多 device preview
 6. 设备选定后的正式 capture 启停控制
@@ -296,15 +300,15 @@ flowarden-ui/
 2. 窗口可启动
 3. 工程结构可承接后续页面
 
-## M2-002 core service mode 与 IPC 骨架
+## M2-002 resident core 模式与本地 gRPC 骨架
 
 ### 目标
 
-让 Rust core 可以以 service mode 运行，并有本地通信入口。
+让 Rust core 可以以 `flowarden core` 常驻模式运行，并有本地通信入口。
 
 ### 输出
 
-1. core service 启动模式
+1. `flowarden core` resident 启动模式
 2. 最小健康检查接口
 3. 控制与投影接口骨架
 
@@ -461,6 +465,6 @@ preview 与 formal capture 必须分开；正式 capture 仍保持单 source。
 
 如果用于评审，我建议把第二阶段的核心目标明确写成：
 
-> 基于第一阶段已稳定的投影模型，建立 `Rust core service + Avalonia UI` 的本地桌面闭环，并以 `net8.0 / dotnet 8.0.125` 为开发基线完成 Overview 与 Inspect 的 MVP。
+> 基于第一阶段已稳定的投影模型，建立 `Rust resident core + Avalonia UI` 的本地桌面闭环，并以 `net8.0 / dotnet 8.0.125` 为开发基线完成 Overview 与 Inspect 的 MVP。
 
 这样第二阶段结束时，Flowarden 将从“可运行 CLI 核心”升级为“可交互桌面监控器”，并在 `Cosmos Network System` 风格下为后续 `Destination Map` 和 phase3 深度分析预留稳定版位，但仍不提前进入第三阶段的深度分析复杂度。

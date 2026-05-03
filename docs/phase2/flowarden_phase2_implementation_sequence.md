@@ -17,6 +17,12 @@
 
 不假设第二阶段会一次性引入复杂多项目拆分。
 
+当前执行说明：
+
+1. 第二阶段任务状态已正式回退到 `M2-002`。
+2. `M2-001` 保留已完成。
+3. `M2-003` 及之后的任务即使已有代码，也只作为存量实现参考，必须在 `M2-002` 重新通过评审后再逐项恢复推进。
+
 ---
 
 ## 2. 当前文件基线
@@ -32,7 +38,7 @@
 
 #### UI 工程
 
-- 当前尚未建立 `flowarden-ui`
+- `flowarden-ui` 已建立，但当前仅能作为后续重新验收的代码基线
 
 结论：
 
@@ -44,7 +50,7 @@
 
 建议按 5 个实现波次推进，而不是严格按 9 个 backlog 单点逐个提交。
 
-### Wave 1：UI 工程与 service 边界
+### Wave 1：UI 工程与 resident core 边界
 
 对应 backlog：
 
@@ -85,6 +91,10 @@
 - `M2-101`
 
 如果主线顺利，建议插在 Wave 3 结束后。
+
+补充说明：
+
+- 在当前回退口径下，重新执行时必须先完成并评审 `M2-002`，然后才允许恢复 `M2-003+` 的推进。
 
 ---
 
@@ -194,7 +204,7 @@ docs/phase2/flowarden_phase2_acceptance_template.md
 
 ---
 
-## M2-002 core service mode 与本地 IPC 骨架
+## M2-002 resident core 模式与本地 gRPC 骨架
 
 ### 主要修改文件
 
@@ -209,7 +219,7 @@ docs/phase2/flowarden_phase2_acceptance_template.md
 
 ### 目标落点
 
-1. 让 `flowarden` 支持 service mode。
+1. 让 `flowarden` 支持 `core` resident mode。
 2. 建立最小 health / version / discovery 通道。
 3. 让 UI 可检查 core 是否在线。
 
@@ -219,7 +229,7 @@ docs/phase2/flowarden_phase2_acceptance_template.md
 
 原因：
 
-- service mode 和契约模型是两类变化，拆开更容易 review。
+- resident mode 和契约模型是两类变化，拆开更容易 review。
 
 ---
 

@@ -57,7 +57,7 @@ M2-101 可在 M2-006 之后插入
 
 说明：
 
-- `M2-001` 到 `M2-003` 是工程基线、service mode 和契约骨架。
+- `M2-001` 到 `M2-003` 是工程基线、resident core 模式和契约骨架。
 - `M2-004` 到 `M2-006` 是 shell、source、overview 主线。
 - `M2-007` 到 `M2-009` 是 inspect、settings、封板主线。
 - `M2-101` 是 destination workbench 的增强预留项，不阻塞第二阶段封板。
@@ -103,11 +103,11 @@ M2-101 可在 M2-006 之后插入
 
 ---
 
-## M2-002 core service mode 与本地 IPC 骨架
+## M2-002 resident core 模式与本地 gRPC 骨架
 
 ### 目标
 
-让 Rust core 可以以本地 service mode 运行，并建立 UI 可连接的最小通信边界。
+让 Rust core 可以以本地 `flowarden core` 常驻模式运行，并建立 UI 可连接的最小通信边界。
 
 ### 输入
 
@@ -116,7 +116,7 @@ M2-101 可在 M2-006 之后插入
 
 ### 输出
 
-- core service mode
+- resident core mode
 - health/version 接口
 - control / discovery / projection 骨架
 
@@ -482,7 +482,7 @@ M2-101 可在 M2-006 之后插入
 从风险角度，第二阶段最需要盯住的是：
 
 1. `M2-002`
-   - service mode 和 UI 拉起/连接逻辑不稳，后续页面都会悬空。
+   - resident core mode 和 UI 拉起/连接逻辑不稳，后续页面都会悬空。
 2. `M2-003`
    - 契约模型不先冻结，UI 和 core 会来回返工。
 3. `M2-004`
