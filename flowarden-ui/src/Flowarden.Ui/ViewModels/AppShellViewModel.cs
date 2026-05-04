@@ -13,15 +13,20 @@ public sealed partial class AppShellViewModel : ViewModelBase
 {
     private readonly IReadOnlyDictionary<string, AppShellPageViewModel> _pages;
     private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
+    private readonly DiscoveryClient? _discoveryClient;
 
     public AppShellViewModel()
         : this(null)
     {
     }
 
-    public AppShellViewModel(CoreConnectionCoordinator? coreConnectionCoordinator)
+    public AppShellViewModel(
+        CoreConnectionCoordinator? coreConnectionCoordinator,
+        DiscoveryClient? discoveryClient = null
+    )
     {
         _coreConnectionCoordinator = coreConnectionCoordinator;
+        _discoveryClient = discoveryClient;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source" },
@@ -58,6 +63,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 Description = "Runtime-oriented endpoint, source and diagnostics settings for phase 2.",
             },
         };
+
+        SourcePage = new SourcePageViewModel(_discoveryClient);
+        OverviewPage = new OverviewPageViewModel();
+        InspectPage = new InspectPageViewModel();
+        SettingsPage = new SettingsPageViewModel();
 
         ActiveMode = "Live";
         CoreStatus = new StatusIndicatorViewModel
@@ -96,6 +106,14 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     [ObservableProperty]
     private AppShellPageViewModel currentPage;
+
+    public SourcePageViewModel SourcePage { get; }
+
+    public OverviewPageViewModel OverviewPage { get; }
+
+    public InspectPageViewModel InspectPage { get; }
+
+    public SettingsPageViewModel SettingsPage { get; }
 
     [ObservableProperty]
     private string connectionMessage = "Connecting to flowarden core...";
@@ -185,6 +203,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 ? "flowarden core launched and connected."
                 : "Connected to an already running flowarden core.";
             OnPropertyChanged(nameof(HasLatestCoreError));
+            await LoadSourcePageAsync();
             return;
         }
 
@@ -197,5 +216,15 @@ public sealed partial class AppShellViewModel : ViewModelBase
         };
         ConnectionMessage = result.Error?.Message ?? "Failed to connect to flowarden core.";
         OnPropertyChanged(nameof(HasLatestCoreError));
+    }
+
+    private async Task LoadSourcePageAsync()
+    {
+        if (SourcePage is null)
+        {
+            return;
+        }
+
+        await SourcePage.LoadAsync();
     }
 }

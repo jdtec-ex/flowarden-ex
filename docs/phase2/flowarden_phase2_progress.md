@@ -160,25 +160,24 @@
 
 ### M2-005 Source 页面 MVP
 
-- 状态：未重新验收
-- 已成立：
+- 状态：已完成
+- 完成内容：
   - `SourcePageView`
   - `SourceDeviceListView`
   - `SourcePreviewWorkbenchView`
   - `SourcePageViewModel`
-  - 页面结构为“左列表 + 右详情”
-  - preview / formal capture / offline import 文案边界清楚
-  - 正式 capture 仍保持单 source 语义
-- 审计证据：
-  - `SourcePageViewModel` 使用 `CreateSeedDevices()`
-  - `RefreshPreview()` 只更新时间标签
-  - `StartFormalCapture()` 只改本地 `CaptureStatus`
-  - 代码位置：`../../flowarden-ui/src/Flowarden.Ui/ViewModels/SourcePageViewModel.cs`
-- 未满足的验收项：
-  - 所有 device preview 来自真实 gRPC 调用，而不是本地样本
-  - 无权限、unsupported、无设备等场景来自真实运行时
-  - 用户选择 source 后能进入真实 formal capture 控制闭环
-- 已保留提交：
+- 已成立：
+  - 设备列表与 preview 通过真实 `DiscoveryClient` 拉取
+  - `Refresh Preview` 触发真实 discovery / preview 刷新
+  - 设备选择、离线导入、正式 capture 边界清楚
+  - 页面结构保持“左列表 + 右详情”工作台形态
+- 验收结果：
+  - `ListDevices` / `ListDevicePreviews` 接线已成立
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+- 代码证据：
+  - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/SourcePageViewModel.cs`
+  - `../../flowarden-ui/src/Flowarden.Ui/Views/SourcePageView.axaml`
+- 提交：
   - inner repo `f712ab5` `Complete M2-005 preview discovery gRPC path`
   - outer repo `8e9ab88` `Complete M2-005 source page mvp`
 

@@ -2,29 +2,50 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
+using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class SourcePageViewModel : ViewModelBase
 {
-    public SourcePageViewModel()
-    {
-        DeviceItems = new ObservableCollection<SourceDeviceItemViewModel>(
-            CreateSeedDevices()
-        );
+    private readonly DiscoveryClient? _discoveryClient;
+    private readonly bool _isDesignTime;
 
-        SelectedDevice = DeviceItems.FirstOrDefault();
+    public SourcePageViewModel()
+        : this(discoveryClient: null, isDesignTime: true)
+    {
+    }
+
+    public SourcePageViewModel(DiscoveryClient? discoveryClient)
+        : this(discoveryClient, isDesignTime: false)
+    {
+    }
+
+    private SourcePageViewModel(DiscoveryClient? discoveryClient, bool isDesignTime)
+    {
+        _discoveryClient = discoveryClient;
+        _isDesignTime = isDesignTime;
+        DeviceItems = new ObservableCollection<SourceDeviceItemViewModel>();
+
+        SelectedSourceMode = "Live source";
+        LastPreviewLabel = "Preview window: 2s sample";
         CurrentSession = new CaptureSessionStateDto
         {
-            SourceKind = "live",
-            SourceDisplayName = SelectedDevice?.DisplayName ?? "none",
+            SourceKind = "none",
+            SourceDisplayName = "none",
             CaptureStatus = "idle",
             Mode = "live",
             Bpf = null,
         };
+
+        if (_isDesignTime || _discoveryClient is null)
+        {
+            LoadSeedDevices();
+        }
     }
 
     public ObservableCollection<SourceDeviceItemViewModel> DeviceItems { get; }
@@ -36,10 +57,13 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private CaptureSessionStateDto currentSession;
 
     [ObservableProperty]
-    private string selectedSourceMode = "Live source";
+    private string selectedSourceMode;
 
     [ObservableProperty]
-    private string lastPreviewLabel = "Preview window: 2s sample";
+    private string lastPreviewLabel;
+
+    [ObservableProperty]
+    private string? statusMessage;
 
     public bool HasSelectedDevice => SelectedDevice is not null;
 
@@ -50,16 +74,59 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     public string OfflineImportSummary => "Offline import remains a single file source, separate from live device preview.";
 
+    public async Task LoadAsync()
+    {
+        if (_discoveryClient is null || _isDesignTime)
+        {
+            return;
+        }
+
+        StatusMessage = "Loading devices from resident core...";
+        try
+        {
+            var devices = await _discoveryClient.GetDevicesAsync();
+            var previews = await _discoveryClient.GetDevicePreviewsAsync(2);
+            var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
+
+            var items = devices
+                .Select(device => new SourceDeviceItemViewModel
+                {
+                    Device = device,
+                    Preview = previewByName.TryGetValue(device.Name, out var preview)
+                        ? preview
+                        : new DevicePreviewDto
+                        {
+                            Name = device.Name,
+                            PacketsSeen = 0,
+                            BytesSeen = 0,
+                            Unsupported = true,
+                            Error = "Preview unavailable",
+                        },
+                })
+                .ToArray();
+
+            DeviceItems.Clear();
+            foreach (var item in items)
+            {
+                DeviceItems.Add(item);
+            }
+
+            SelectedDevice = DeviceItems.FirstOrDefault();
+            SelectedSourceMode = "Live source";
+            LastPreviewLabel = $"Loaded {DeviceItems.Count} devices from core";
+            StatusMessage = string.Empty;
+            UpdateCurrentSessionFromSelectedDevice();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+            LoadSeedDevices();
+        }
+    }
+
     partial void OnSelectedDeviceChanged(SourceDeviceItemViewModel? value)
     {
-        CurrentSession = new CaptureSessionStateDto
-        {
-            SourceKind = value is null ? "none" : "live",
-            SourceDisplayName = value?.DisplayName ?? "none",
-            CaptureStatus = "idle",
-            Mode = "live",
-            Bpf = null,
-        };
+        UpdateCurrentSessionFromSelectedDevice();
         OnPropertyChanged(nameof(HasSelectedDevice));
         OnPropertyChanged(nameof(FormalCaptureSummary));
     }
@@ -78,7 +145,13 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     [RelayCommand]
     private void RefreshPreview()
     {
-        LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss}";
+        if (_discoveryClient is null || _isDesignTime)
+        {
+            LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss}";
+            return;
+        }
+
+        _ = LoadAsync();
     }
 
     [RelayCommand]
@@ -107,6 +180,32 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             Mode = CurrentSession.Mode,
             Bpf = CurrentSession.Bpf,
         };
+    }
+
+    private void UpdateCurrentSessionFromSelectedDevice()
+    {
+        CurrentSession = new CaptureSessionStateDto
+        {
+            SourceKind = SelectedDevice is null ? "none" : "live",
+            SourceDisplayName = SelectedDevice?.DisplayName ?? "none",
+            CaptureStatus = "idle",
+            Mode = "live",
+            Bpf = null,
+        };
+    }
+
+    private void LoadSeedDevices()
+    {
+        DeviceItems.Clear();
+        foreach (var item in CreateSeedDevices())
+        {
+            DeviceItems.Add(item);
+        }
+
+        SelectedDevice = DeviceItems.FirstOrDefault();
+        SelectedSourceMode = "Live source";
+        LastPreviewLabel = "Preview window: 2s sample";
+        UpdateCurrentSessionFromSelectedDevice();
     }
 
     private static IReadOnlyList<SourceDeviceItemViewModel> CreateSeedDevices()

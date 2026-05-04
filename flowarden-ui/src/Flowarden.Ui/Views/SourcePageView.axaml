@@ -6,7 +6,7 @@
              x:DataType="vm:SourcePageViewModel">
   <Grid RowDefinitions="Auto,*,Auto" RowSpacing="16">
     <Border Classes="glass-panel">
-      <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="12">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="12">
         <Border Classes="status-pill">
           <TextBlock Text="{Binding SelectedSourceMode}" />
         </Border>
@@ -19,6 +19,10 @@
                 Command="{Binding ImportOfflineCommand}"
                 Content="Import Offline" />
         <TextBlock Grid.Column="3"
+                   VerticalAlignment="Center"
+                   Classes="muted-text"
+                   Text="{Binding StatusMessage}" />
+        <TextBlock Grid.Column="4"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Classes="muted-text"
