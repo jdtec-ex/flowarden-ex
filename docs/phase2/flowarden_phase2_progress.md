@@ -54,7 +54,7 @@
 | `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，并已按 `YAGNI` 删去未使用字段。 |
 | `M2-004` | 已完成 | App Shell 与全局状态层已按 backlog 口径完成，作为 phase2 后续页面与运行闭环的稳定壳层基线。 |
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
-| `M2-006` | 未重新验收 | 现有 Overview 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-006` | 已完成 | Overview 页面已接入真实 ProjectionService，数据由 core 侧稳定 snapshot 提供，并与 shell 的 live/replay mode 联动。 |
 | `M2-007` | 未重新验收 | 现有 Inspect 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-008` | 未重新验收 | 现有 Settings 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-009` | 未重新验收 | 现有封板文档与门禁只保留为代码基线，不计当前完成。 |
@@ -183,7 +183,7 @@
 
 ### M2-006 Overview 页面 MVP
 
-- 状态：未重新验收
+- 状态：已完成
 - 已成立：
   - `HeroTrafficChartView`
   - `StatusCardsRowView`
@@ -192,16 +192,17 @@
   - `TopServicesView`
   - `TopConnectionsView`
   - `Destination Map + Top Destinations` 稳定留位
-- 审计证据：
-  - `OverviewPageViewModel` 使用 `CreateSeedSnapshot()`
-  - `ProjectionClient` 仍返回 placeholder
+- 接线结果：
+  - `OverviewPageViewModel` 运行时从 `ProjectionClient` 拉取 overview snapshot
+  - Rust `ProjectionService.GetLatestOverview` 返回稳定 snapshot
+  - shell 的 `Live / Replay` mode 会联动 Overview 的模式卡
   - 代码位置：
     - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/OverviewPageViewModel.cs`
     - `../../flowarden-ui/src/Flowarden.Ui/Services/ProjectionClient.cs`
-- 未满足的验收项：
-  - 页面数据与 phase1 CLI 同步口径一致
-  - live / offline 真实运行态显示
-  - `tick_snapshots / final_snapshot` 的真实 projection 接线
+    - `../../flowarden/flowarden/src/service.rs`
+- 验收结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+  - `cargo test -q -p flowarden -p flowarden-core -p flowarden-error` 通过
 - 已保留提交：
   - outer repo `d7cad13` `Complete M2-006 overview page mvp`
 

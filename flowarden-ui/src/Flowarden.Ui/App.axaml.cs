@@ -34,11 +34,16 @@ public partial class App : Application
             var coreHealthService = new CoreHealthService(_coreChannel);
             var coreLauncherService = new CoreLauncherService();
             var discoveryClient = new DiscoveryClient(_coreChannel);
+            var projectionClient = new ProjectionClient(_coreChannel);
             var coreConnectionCoordinator = new CoreConnectionCoordinator(
                 coreHealthService,
                 coreLauncherService
             );
-            var shellViewModel = new AppShellViewModel(coreConnectionCoordinator, discoveryClient);
+            var shellViewModel = new AppShellViewModel(
+                coreConnectionCoordinator,
+                discoveryClient,
+                projectionClient
+            );
             desktop.MainWindow = new MainWindow
             {
                 DataContext = shellViewModel,

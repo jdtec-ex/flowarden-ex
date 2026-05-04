@@ -1,31 +1,40 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Flowarden.Ui.Models;
+using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.ViewModels;
 
-public sealed class OverviewPageViewModel : ViewModelBase
+public sealed partial class OverviewPageViewModel : ViewModelBase
 {
-    public OverviewPageViewModel()
-    {
-        Snapshot = CreateSeedSnapshot();
+    private readonly ProjectionClient? _projectionClient;
+    private readonly bool _isDesignTime;
+    private string? _modeOverride;
 
-        StatusCards = new ReadOnlyCollection<OverviewStatusCardViewModel>(
-            [
-                new OverviewStatusCardViewModel("Packets", Snapshot.Totals.Packets.ToString(), "Phase1 aggregate total"),
-                new OverviewStatusCardViewModel("Bytes", Snapshot.Totals.Bytes.ToString(), "Phase1 aggregate total"),
-                new OverviewStatusCardViewModel("Dropped", Snapshot.DroppedPackets.ToString(), "Capture drop metric"),
-                new OverviewStatusCardViewModel("Mode", ModeLabel, "Live / offline display"),
-            ]
-        );
+    public OverviewPageViewModel()
+        : this(projectionClient: null, isDesignTime: true)
+    {
     }
 
-    public OverviewSnapshotDto Snapshot { get; }
+    public OverviewPageViewModel(ProjectionClient? projectionClient)
+        : this(projectionClient, isDesignTime: false)
+    {
+    }
 
-    public IReadOnlyList<OverviewStatusCardViewModel> StatusCards { get; }
+    private OverviewPageViewModel(ProjectionClient? projectionClient, bool isDesignTime)
+    {
+        _projectionClient = projectionClient;
+        _isDesignTime = isDesignTime;
+        Snapshot = CreateSeedSnapshot();
+        StatusCards = BuildStatusCards(Snapshot, ModeLabel);
+    }
 
-    public string ModeLabel => Snapshot.CaptureId.StartsWith("offline") ? "Offline" : "Live";
+    public OverviewSnapshotDto Snapshot { get; private set; }
+
+    public IReadOnlyList<OverviewStatusCardViewModel> StatusCards { get; private set; }
+
+    public string ModeLabel => ResolveModeLabel(_modeOverride, Snapshot);
 
     public string HeroTitle => "Traffic Overview";
 
@@ -42,6 +51,59 @@ public sealed class OverviewPageViewModel : ViewModelBase
         "This area is reserved for future geographic or destination-distribution visualization driven by destination projection data.";
 
     public string DestinationFutureStateLabel => "Future state: destination density, region hot spots, organization overlays";
+
+    public async Task LoadAsync()
+    {
+        if (_projectionClient is null || _isDesignTime)
+        {
+            return;
+        }
+
+        var snapshot = await _projectionClient.GetLatestOverviewAsync();
+        Snapshot = snapshot;
+        StatusCards = BuildStatusCards(snapshot, ModeLabel);
+        OnPropertyChanged(nameof(Snapshot));
+        OnPropertyChanged(nameof(StatusCards));
+        OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(HeroSummary));
+        OnPropertyChanged(nameof(DestinationPlaceholderMessage));
+        OnPropertyChanged(nameof(DestinationPlaceholderState));
+    }
+
+    public void SetMode(string mode)
+    {
+        _modeOverride = mode;
+        StatusCards = BuildStatusCards(Snapshot, ModeLabel);
+        OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(StatusCards));
+        OnPropertyChanged(nameof(HeroSummary));
+    }
+
+    private static IReadOnlyList<OverviewStatusCardViewModel> BuildStatusCards(
+        OverviewSnapshotDto snapshot,
+        string modeLabel
+    )
+    {
+        return
+        [
+            new OverviewStatusCardViewModel("Packets", snapshot.Totals.Packets.ToString(), "Phase1 aggregate total"),
+            new OverviewStatusCardViewModel("Bytes", snapshot.Totals.Bytes.ToString(), "Phase1 aggregate total"),
+            new OverviewStatusCardViewModel("Dropped", snapshot.DroppedPackets.ToString(), "Capture drop metric"),
+            new OverviewStatusCardViewModel("Mode", modeLabel, "Live / offline display"),
+        ];
+    }
+
+    private static string ResolveModeLabel(string? modeOverride, OverviewSnapshotDto snapshot)
+    {
+        if (!string.IsNullOrWhiteSpace(modeOverride))
+        {
+            return string.Equals(modeOverride, "Replay", System.StringComparison.OrdinalIgnoreCase)
+                ? "Offline"
+                : "Live";
+        }
+
+        return snapshot.CaptureId.StartsWith("offline") ? "Offline" : "Live";
+    }
 
     private static OverviewSnapshotDto CreateSeedSnapshot()
     {
@@ -74,6 +136,8 @@ public sealed class OverviewPageViewModel : ViewModelBase
                     DestinationAddress = "142.250.72.14",
                     DestinationPort = 443,
                     Protocol = "tcp",
+                    ServiceName = "https",
+                    Direction = "outbound",
                     Packets = 144,
                     Bytes = 212_540,
                 },
@@ -84,6 +148,8 @@ public sealed class OverviewPageViewModel : ViewModelBase
                     DestinationAddress = "127.0.0.1",
                     DestinationPort = 39091,
                     Protocol = "tcp",
+                    ServiceName = "grpc",
+                    Direction = "loopback",
                     Packets = 88,
                     Bytes = 10_928,
                 },

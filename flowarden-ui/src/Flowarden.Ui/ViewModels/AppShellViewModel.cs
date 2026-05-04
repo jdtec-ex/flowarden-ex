@@ -14,6 +14,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly IReadOnlyDictionary<string, AppShellPageViewModel> _pages;
     private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
     private readonly DiscoveryClient? _discoveryClient;
+    private readonly ProjectionClient? _projectionClient;
 
     public AppShellViewModel()
         : this(null)
@@ -22,11 +23,13 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public AppShellViewModel(
         CoreConnectionCoordinator? coreConnectionCoordinator,
-        DiscoveryClient? discoveryClient = null
+        DiscoveryClient? discoveryClient = null,
+        ProjectionClient? projectionClient = null
     )
     {
         _coreConnectionCoordinator = coreConnectionCoordinator;
         _discoveryClient = discoveryClient;
+        _projectionClient = projectionClient;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source" },
@@ -65,7 +68,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         };
 
         SourcePage = new SourcePageViewModel(_discoveryClient);
-        OverviewPage = new OverviewPageViewModel();
+        OverviewPage = new OverviewPageViewModel(_projectionClient);
         InspectPage = new InspectPageViewModel();
         SettingsPage = new SettingsPageViewModel();
 
@@ -151,6 +154,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private void ToggleMode()
     {
         ActiveMode = ActiveMode == "Live" ? "Replay" : "Live";
+        OverviewPage.SetMode(ActiveMode);
     }
 
     [RelayCommand]
@@ -204,6 +208,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 : "Connected to an already running flowarden core.";
             OnPropertyChanged(nameof(HasLatestCoreError));
             await LoadSourcePageAsync();
+            await LoadOverviewPageAsync();
             return;
         }
 
@@ -226,5 +231,15 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         await SourcePage.LoadAsync();
+    }
+
+    private async Task LoadOverviewPageAsync()
+    {
+        if (OverviewPage is null)
+        {
+            return;
+        }
+
+        await OverviewPage.LoadAsync();
     }
 }

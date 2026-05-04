@@ -23,7 +23,8 @@
    - Avalonia 工程基线
    - gRPC 最小 skeleton
    - UI shell
-   - 各页面的样本驱动 MVP
+   - Source 页的真实 discovery / preview 接线
+   - Overview 页的真实 projection 接线
 3. 当前未完成的是：
    - UI 与 Rust core 的真实运行时接线
    - control plane
@@ -31,7 +32,7 @@
    - 页面从运行中的 core 拉取真实数据
 4. 因此，phase2 当前应被定性为：
 
-> `阶段二 UI 壳层与契约样本 MVP 已完成，但与初始总方案一致的运行闭环未完成。`
+> `阶段二已完成 UI 壳层、Source/Overview 的真实数据接线以及最小 gRPC skeleton，但 control、inspect、settings 的运行闭环仍未完成。`
 
 ---
 
@@ -42,8 +43,8 @@
 | UI 能拉起或连接本地 core | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | UI 已接入真实探活与拉起 `flowarden core` 的流程；resident core 与本地 gRPC 骨架已成立，后续页面接线后置到 `M2-003+` | 已完成（限 M2-002 骨架范围） |
 | UI 能列出设备、显示多 device preview，并选择单一 source 正式抓包 | `flowarden_phase2_development_plan.md` 2 / 5.1 / 8 / 10 | `ListDevices` 与 `ListDevicePreviews` 已接通；`SourcePageViewModel` 通过真实 `DiscoveryClient` 拉取设备与 preview | 已完成 |
 | UI 能完成 `Start / Stop / Pause / Resume` | `flowarden_phased_development_plan.md` 7.2 / 7.5；`flowarden_phase2_development_plan.md` 2 / 6.1 / 10 | Rust 无 `ControlService`；UI 无真实控制接线；shell 的 `Start Capture` 只是导航 | 未完成 |
-| UI 能实时展示 `tick_snapshots` 和 `final_snapshot` | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | `OverviewPageViewModel` 使用 `CreateSeedSnapshot()`；`ProjectionClient` 仅返回 placeholder | 未完成 |
-| Overview / Inspect 页面数据与 CLI 输出一致 | `flowarden_phase2_development_plan.md` 2 / 8 / 10；`flowarden_phase2_backlog.md` M2-006 / M2-007 | Overview 与 Inspect 都由本地样本驱动，不是运行中的 phase1 输出投影 | 未完成 |
+| UI 能实时展示 `tick_snapshots` 和 `final_snapshot` | `flowarden_phase2_development_plan.md` 2 / 8 / 10 | Overview 已接入 `ProjectionService.GetLatestOverview`，可展示稳定 projection snapshot；但尚未提供流式刷新 | 部分完成 |
+| Overview / Inspect 页面数据与 CLI 输出一致 | `flowarden_phase2_development_plan.md` 2 / 8 / 10；`flowarden_phase2_backlog.md` M2-006 / M2-007 | Overview 已接入 core 侧稳定 snapshot；Inspect 仍为本地样本驱动 | 部分完成 |
 | Settings 显示最小运行参数与 core 状态 | `flowarden_phase2_development_plan.md` 5.1 / 8；`flowarden_phase2_backlog.md` M2-008 | `SettingsPageViewModel` 使用本地样本 `RuntimeState / CoreHealth / Diagnostics` | 未完成 |
 | UI 与 core 通过稳定契约通信，UI 不直接依赖 Rust 内部结构体 | `flowarden_phase2_development_plan.md` 2 / 6.3 | DTO 存在，UI 未直接引用 Rust 内部结构体 | 已完成 |
 | 本地 gRPC / IPC 基线固定为双进程 | `flowarden_phased_development_plan.md` 7.3；`flowarden_phase2_development_plan.md` 4 | 已有 `tonic` gRPC server 与 .NET gRPC client skeleton，且 `flowarden core` 已可作为常驻进程运行 | 部分完成 |
@@ -66,17 +67,19 @@
 2. `SourcePageViewModel` 通过 `DiscoveryClient.GetDevicePreviewsAsync(2)` 拉取 preview。
 3. `RefreshPreview()` 在运行时会重新触发 discovery / preview 刷新。
 
-### 4.2 Overview 仍是样本驱动
+### 4.2 Overview 已接通真实 projection
 
 文件：
 
 - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/OverviewPageViewModel.cs`
 - `../../flowarden-ui/src/Flowarden.Ui/Services/ProjectionClient.cs`
+- `../../flowarden/flowarden/src/service.rs`
 
 证据：
 
-1. `OverviewPageViewModel` 直接调用 `CreateSeedSnapshot()`。
-2. `ProjectionClient` 只有 `GetPlaceholderOverviewAsync()`。
+1. `OverviewPageViewModel` 运行时从 `ProjectionClient.GetLatestOverviewAsync()` 拉取 snapshot。
+2. `ProjectionClient` 通过 `GetLatestOverview` 真实连接 Rust `ProjectionService`。
+3. Rust `ProjectionService.GetLatestOverview` 返回稳定 overview snapshot。
 
 ### 4.3 Inspect 仍是样本驱动
 
@@ -147,7 +150,7 @@
 | `M2-003` | 已完成（限最小 DTO/契约冻结范围） |
 | `M2-004` | 已完成 |
 | `M2-005` | 已完成 |
-| `M2-006` | 未重新验收 |
+| `M2-006` | 已完成 |
 | `M2-007` | 未重新验收 |
 | `M2-008` | 未重新验收 |
 | `M2-009` | 未重新验收 |
@@ -178,4 +181,4 @@
 
 审计后，推荐统一使用以下表述：
 
-> 第二阶段当前已完成 UI 壳层、契约模型和样本驱动 MVP，并建立了最小 gRPC skeleton；但 UI 与 Rust core 的真实运行闭环尚未完成，因此不能按初始总方案口径宣告 phase2 已封板。
+> 第二阶段当前已完成 UI 壳层、Source/Overview 的真实数据接线以及最小 gRPC skeleton；但 control、Inspect、Settings 的运行闭环尚未完成，因此不能按初始总方案口径宣告 phase2 已封板。

@@ -3,6 +3,7 @@
              xmlns:components="using:Flowarden.Ui.Views.Components"
              xmlns:views="using:Flowarden.Ui.Views"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
   <Grid ColumnDefinitions="260,*">
@@ -20,13 +21,17 @@
             <TextBlock Classes="section-title" Text="{Binding CurrentPage.Title}" />
 
             <Grid Grid.Row="1">
-              <views:SourcePageView IsVisible="{Binding IsSourcePageActive}" />
+              <views:SourcePageView DataContext="{Binding SourcePage}"
+                                    IsVisible="{Binding DataContext.IsSourcePageActive, ElementName=ShellRoot}" />
 
-              <views:OverviewPageView IsVisible="{Binding IsOverviewPageActive}" />
+              <views:OverviewPageView DataContext="{Binding OverviewPage}"
+                                      IsVisible="{Binding DataContext.IsOverviewPageActive, ElementName=ShellRoot}" />
 
-              <views:InspectPageView IsVisible="{Binding IsInspectPageActive}" />
+              <views:InspectPageView DataContext="{Binding InspectPage}"
+                                     IsVisible="{Binding DataContext.IsInspectPageActive, ElementName=ShellRoot}" />
 
-              <views:SettingsPageView IsVisible="{Binding IsSettingsPageActive}" />
+              <views:SettingsPageView DataContext="{Binding SettingsPage}"
+                                      IsVisible="{Binding DataContext.IsSettingsPageActive, ElementName=ShellRoot}" />
             </Grid>
           </Grid>
         </Border>
