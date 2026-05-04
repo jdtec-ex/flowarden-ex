@@ -52,7 +52,7 @@
 | `M2-001` | 已完成 | Avalonia 工程骨架与 `net8.0` / `8.0.125` 基线已落地。 |
 | `M2-002` | 已完成 | `flowarden core` resident mode、UI 探活/拉起、以及 `health/discovery/control/projection` gRPC 骨架已到位。 |
 | `M2-003` | 已完成 | phase2 最小 DTO/契约模型已冻结，并已按 `YAGNI` 删去未使用字段。 |
-| `M2-004` | 未重新验收 | 现有 shell/UI 壳层只保留为代码基线，不计当前完成。 |
+| `M2-004` | 已完成 | App Shell 与全局状态层已按 backlog 口径完成，作为 phase2 后续页面与运行闭环的稳定壳层基线。 |
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-006` | 未重新验收 | 现有 Overview 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-007` | 未重新验收 | 现有 Inspect 页面实现只保留为代码基线，不计当前完成。 |
@@ -135,7 +135,7 @@
 
 ### M2-004 App Shell 与全局状态层
 
-- 状态：未重新验收
+- 状态：已完成
 - 完成内容：
   - `AppShellView`
   - `AppRailView`
@@ -150,8 +150,10 @@
 - 边界说明：
   - `core / capture` 状态点当前只是壳层状态位，不代表真实运行态
 - 当前口径：
-  - 现有实现仅作为存量代码基线
-  - 必须在 `M2-002` 重新评审通过后，再单独按 backlog 重新验收
+  - App Shell、全局状态层、页面切换与主题基线已按 backlog 口径完成
+  - 后续页面与运行闭环直接建立在该壳层之上
+- 验收结果：
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
 - 提交：
   - outer repo `a457e25` `Complete M2-004 app shell and global state layer`
   - outer repo `1ab36b9` `Tighten shell actions and remove extra rail items`
