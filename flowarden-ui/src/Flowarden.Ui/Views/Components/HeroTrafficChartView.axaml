@@ -26,113 +26,109 @@
                     HorizontalAlignment="Right"
                     Spacing="8">
           <Border Classes="status-pill">
-            <TextBlock Text="{Binding HeroLegendPrimary}" />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border Width="10"
+                      Height="10"
+                      CornerRadius="5"
+                      Background="{StaticResource CosmosSecondaryBrush}"
+                      VerticalAlignment="Center" />
+              <TextBlock Text="{Binding HeroLegendPrimary}" />
+            </StackPanel>
           </Border>
           <Border Classes="status-pill">
-            <TextBlock Text="{Binding HeroLegendSecondary}" />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border Width="10"
+                      Height="10"
+                      CornerRadius="5"
+                      Background="{StaticResource CosmosPrimaryBrush}"
+                      VerticalAlignment="Center" />
+              <TextBlock Text="{Binding HeroLegendSecondary}" />
+            </StackPanel>
           </Border>
         </StackPanel>
       </Grid>
 
       <Border Grid.Row="2" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="12" ClipToBounds="True">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-          <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
+          <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
             <Border Classes="status-pill">
               <TextBlock Text="Traffic timeline" />
             </Border>
             <Border Grid.Column="1" Classes="status-pill">
-              <TextBlock Text="Snapshot-aligned time" />
-            </Border>
-            <Border Grid.Column="2" Classes="status-pill">
-              <TextBlock Text="Indicative curve" />
+              <TextBlock Text="Real tick history" />
             </Border>
           </Grid>
 
           <Grid Grid.Row="1" ColumnDefinitions="44,*" ColumnSpacing="10">
             <Grid RowDefinitions="*,*,*,*,*" Margin="0,4,0,18">
-              <TextBlock Grid.Row="0" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="100" />
-              <TextBlock Grid.Row="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="75" />
-              <TextBlock Grid.Row="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="50" />
-              <TextBlock Grid.Row="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="25" />
-              <TextBlock Grid.Row="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="0" />
+              <TextBlock Grid.Row="0" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisTopLabel}" />
+              <TextBlock Grid.Row="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisUpperMidLabel}" />
+              <TextBlock Grid.Row="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisMidLabel}" />
+              <TextBlock Grid.Row="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisLowerMidLabel}" />
+              <TextBlock Grid.Row="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisZeroLabel}" />
             </Grid>
 
             <Border Grid.Column="1" Background="{StaticResource CosmosSurfaceBrush}" CornerRadius="10" Padding="10" ClipToBounds="True">
-              <Viewbox Stretch="Fill">
-                <Canvas Width="640" Height="84" ClipToBounds="True">
-                  <Grid Width="640" Height="84" Opacity="0.32">
-                    <Border VerticalAlignment="Top" Margin="0,14,0,0" Height="1" Background="#2A313D" />
-                    <Border VerticalAlignment="Top" Margin="0,32,0,0" Height="1" Background="#2A313D" />
-                    <Border VerticalAlignment="Top" Margin="0,50,0,0" Height="1" Background="#2A313D" />
-                    <Border VerticalAlignment="Top" Margin="0,68,0,0" Height="1" Background="#2A313D" />
-                  </Grid>
+              <Grid>
+                <Grid Width="640" Height="84" Opacity="0.32"
+                      IsVisible="{Binding HasTimeline}">
+                  <Border VerticalAlignment="Top" Margin="0,14,0,0" Height="1" Background="#2A313D" />
+                  <Border VerticalAlignment="Top" Margin="0,32,0,0" Height="1" Background="#2A313D" />
+                  <Border VerticalAlignment="Top" Margin="0,50,0,0" Height="1" Background="#2A313D" />
+                  <Border VerticalAlignment="Top" Margin="0,68,0,0" Height="1" Background="#2A313D" />
+                </Grid>
 
-                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                               Opacity="0.14"
-                               StrokeThickness="0">
-                    <shapes:Path.Fill>
-                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
-                        <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.48" />
-                        <GradientStop Color="#0511131E" Offset="1" />
-                      </LinearGradientBrush>
-                    </shapes:Path.Fill>
-                    <shapes:Path.Data>
-                      M 18,60
-                      C 52,56 74,36 100,32
-                      S 154,18 194,22
-                      S 248,46 304,40
-                      S 380,12 446,24
-                      S 536,54 596,34
-                      S 626,22 632,20
-                      L 632,74
-                      L 18,74
-                      Z
-                    </shapes:Path.Data>
-                  </shapes:Path>
+                <Viewbox Stretch="Fill" IsVisible="{Binding HasTimeline}">
+                  <Canvas Width="640" Height="84" ClipToBounds="True">
+                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                                 Opacity="0.08"
+                                 StrokeThickness="0"
+                                 Fill="{StaticResource CosmosSecondaryBrush}"
+                                 Data="{Binding OutboundAreaPathData}" />
 
-                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                               Opacity="0.18"
-                               Stroke="{StaticResource CosmosSecondaryBrush}"
-                               StrokeThickness="7"
-                               Fill="Transparent"
-                               Data="M 18,60 C 52,56 74,36 100,32 S 154,18 194,22 S 248,46 304,40 S 380,12 446,24 S 536,54 596,34 S 626,22 632,20" />
+                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                                 Opacity="0.10"
+                                 Stroke="{StaticResource CosmosSecondaryBrush}"
+                                 StrokeThickness="4"
+                                 Fill="Transparent"
+                                 Data="{Binding OutboundPathData}" />
 
-                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                               Opacity="0.12"
-                               Stroke="{StaticResource CosmosPrimaryBrush}"
-                               StrokeThickness="6"
-                               Fill="Transparent"
-                               Data="M 18,68 C 48,62 88,48 124,44 S 198,36 256,48 S 340,58 398,42 S 492,30 560,46 S 610,38 632,34" />
+                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                                 Opacity="0.08"
+                                 Stroke="{StaticResource CosmosPrimaryBrush}"
+                                 StrokeThickness="3.5"
+                                 Fill="Transparent"
+                                 Data="{Binding InboundPathData}" />
 
-                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                               StrokeThickness="3"
-                               Fill="Transparent">
-                    <shapes:Path.Stroke>
-                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
-                        <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.5" />
-                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="1" />
-                      </LinearGradientBrush>
-                    </shapes:Path.Stroke>
-                    <shapes:Path.Data>
-                      M 18,60
-                      C 52,56 74,36 100,32
-                      S 154,18 194,22
-                      S 248,46 304,40
-                      S 380,12 446,24
-                      S 536,54 596,34
-                      S 626,22 632,20
-                    </shapes:Path.Data>
-                  </shapes:Path>
+                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                                 StrokeThickness="2"
+                                 Stroke="{StaticResource CosmosSecondaryBrush}"
+                                 Fill="Transparent"
+                                 Data="{Binding OutboundPathData}" />
 
-                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                               StrokeThickness="2.5"
-                               Fill="Transparent"
-                               Stroke="{StaticResource CosmosPrimaryBrush}"
-                               Data="M 18,68 C 48,62 88,48 124,44 S 198,36 256,48 S 340,58 398,42 S 492,30 560,46 S 610,38 632,34" />
-                </Canvas>
-              </Viewbox>
+                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                                 StrokeThickness="1.85"
+                                 Stroke="{StaticResource CosmosPrimaryBrush}"
+                                 Fill="Transparent"
+                                 Data="{Binding InboundPathData}" />
+                  </Canvas>
+                </Viewbox>
+
+                <StackPanel IsVisible="{Binding HasNoTimeline}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Spacing="6">
+                  <TextBlock FontWeight="SemiBold"
+                             HorizontalAlignment="Center"
+                             Text="{Binding TimelineEmptyTitle}" />
+                  <TextBlock Classes="muted-text"
+                             HorizontalAlignment="Center"
+                             TextAlignment="Center"
+                             TextWrapping="Wrap"
+                             MaxWidth="360"
+                             Text="{Binding TimelineEmptyMessage}" />
+                </StackPanel>
+              </Grid>
             </Border>
           </Grid>
 
@@ -155,7 +151,7 @@
           <TextBlock Text="Phase1 snapshot aligned" />
         </Border>
         <Border Grid.Column="2" Classes="status-pill">
-          <TextBlock Text="Curves are indicative until live timeline projection is introduced" />
+          <TextBlock Text="Real timeline" />
         </Border>
         <StackPanel Grid.Column="4"
                     Orientation="Horizontal"

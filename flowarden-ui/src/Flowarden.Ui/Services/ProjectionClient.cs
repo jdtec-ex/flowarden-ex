@@ -108,6 +108,20 @@ public sealed class ProjectionClient
             MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
                 ? "bytes"
                 : response.MetricMode,
+            TimelinePoints = response.TimelinePoints
+                .Select(point => new TimelinePointDto
+                {
+                    Timestamp = point.Timestamp is null
+                        ? new PacketTimestampDto()
+                        : new PacketTimestampDto
+                        {
+                            Seconds = point.Timestamp.Seconds,
+                            Microseconds = point.Timestamp.Microseconds,
+                        },
+                    InboundBytes = point.InboundBytes,
+                    OutboundBytes = point.OutboundBytes,
+                })
+                .ToArray(),
         };
     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
@@ -40,8 +41,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string HeroTitle => "Traffic Overview";
 
-    public string HeroSummary =>
-        $"Sequence {Snapshot.Sequence} · last packet {Snapshot.LastPacketTimestamp?.Seconds ?? 0}s";
+    public string HeroSummary => BuildHeroSummary();
 
     public string SourceSummary => Snapshot.SourceLabel;
 
@@ -49,23 +49,48 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string MetricModeSummary => $"Metric · {Snapshot.MetricMode}";
 
-    public string InboundSummary => Snapshot.Totals.BytesIn.ToString();
+    public string InboundSummary => FormatByteRate(Snapshot.Totals.BytesIn);
 
-    public string OutboundSummary => Snapshot.Totals.BytesOut.ToString();
+    public string OutboundSummary => FormatByteRate(Snapshot.Totals.BytesOut);
 
-    public string HeroLegendPrimary => "Outbound bytes";
+    public string HeroLegendPrimary => "Outbound";
 
-    public string HeroLegendSecondary => "Inbound bytes";
+    public string HeroLegendSecondary => "Inbound";
 
-    public string AxisLabelStart => FormatAxisTime(-20);
+    public bool HasTimeline => Snapshot.TimelinePoints.Count >= 2;
 
-    public string AxisLabelMidLeft => FormatAxisTime(-15);
+    public bool HasNoTimeline => !HasTimeline;
 
-    public string AxisLabelCenter => FormatAxisTime(-10);
+    public string TimelineEmptyTitle => "Timeline unavailable";
 
-    public string AxisLabelMidRight => FormatAxisTime(-5);
+    public string TimelineEmptyMessage =>
+        "Resident core has not produced enough tick history yet. Start a capture session to render a real timeline.";
 
-    public string AxisLabelEnd => FormatAxisTime(0);
+    public string AxisLabelStart => FormatAxisTimeAt(0);
+
+    public string AxisLabelMidLeft => FormatAxisTimeAt(1);
+
+    public string AxisLabelCenter => FormatAxisTimeAt(2);
+
+    public string AxisLabelMidRight => FormatAxisTimeAt(3);
+
+    public string AxisLabelEnd => FormatAxisTimeAt(4);
+
+    public string YAxisTopLabel => FormatByteRate(MaxTimelineValue);
+
+    public string YAxisUpperMidLabel => FormatByteRate(MaxTimelineValue * 3 / 4);
+
+    public string YAxisMidLabel => FormatByteRate(MaxTimelineValue / 2);
+
+    public string YAxisLowerMidLabel => FormatByteRate(MaxTimelineValue / 4);
+
+    public string YAxisZeroLabel => "0 B/s";
+
+    public string OutboundPathData => BuildTimelinePath(selectOutbound: true);
+
+    public string InboundPathData => BuildTimelinePath(selectOutbound: false);
+
+    public string OutboundAreaPathData => BuildAreaPath(selectOutbound: true);
 
     public string DestinationPlaceholderMessage => Snapshot.DestinationMap.Message;
 
@@ -77,6 +102,13 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         "This area is reserved for future geographic or destination-distribution visualization driven by destination projection data.";
 
     public string DestinationFutureStateLabel => "Future state: destination density, region hot spots, organization overlays";
+
+    private ulong MaxTimelineValue =>
+        Snapshot.TimelinePoints.Count == 0
+            ? 0
+            : Snapshot.TimelinePoints
+                .SelectMany(point => new[] { point.InboundBytes, point.OutboundBytes })
+                .Max();
 
     public async Task LoadAsync()
     {
@@ -94,11 +126,23 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(HeroSummary));
         OnPropertyChanged(nameof(DestinationPlaceholderMessage));
         OnPropertyChanged(nameof(DestinationPlaceholderState));
+        OnPropertyChanged(nameof(HasTimeline));
+        OnPropertyChanged(nameof(HasNoTimeline));
+        OnPropertyChanged(nameof(TimelineEmptyTitle));
+        OnPropertyChanged(nameof(TimelineEmptyMessage));
         OnPropertyChanged(nameof(AxisLabelStart));
         OnPropertyChanged(nameof(AxisLabelMidLeft));
         OnPropertyChanged(nameof(AxisLabelCenter));
         OnPropertyChanged(nameof(AxisLabelMidRight));
         OnPropertyChanged(nameof(AxisLabelEnd));
+        OnPropertyChanged(nameof(YAxisTopLabel));
+        OnPropertyChanged(nameof(YAxisUpperMidLabel));
+        OnPropertyChanged(nameof(YAxisMidLabel));
+        OnPropertyChanged(nameof(YAxisLowerMidLabel));
+        OnPropertyChanged(nameof(YAxisZeroLabel));
+        OnPropertyChanged(nameof(OutboundPathData));
+        OnPropertyChanged(nameof(InboundPathData));
+        OnPropertyChanged(nameof(OutboundAreaPathData));
     }
 
     public void SetMode(string mode)
@@ -110,10 +154,23 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(HeroSummary));
     }
 
-    private string FormatAxisTime(int secondsOffset)
+    private string FormatAxisTimeAt(int index)
     {
-        var baseSeconds = Snapshot.LastPacketTimestamp?.Seconds ?? Snapshot.Timestamp.Seconds;
-        var axisSeconds = baseSeconds + secondsOffset;
+        if (Snapshot.TimelinePoints.Count == 0)
+        {
+            return "--:--:--";
+        }
+
+        var timelineIndex = index switch
+        {
+            0 => 0,
+            1 => Snapshot.TimelinePoints.Count / 4,
+            2 => Snapshot.TimelinePoints.Count / 2,
+            3 => (Snapshot.TimelinePoints.Count * 3) / 4,
+            _ => Snapshot.TimelinePoints.Count - 1,
+        };
+
+        var axisSeconds = Snapshot.TimelinePoints[timelineIndex].Timestamp.Seconds;
 
         if (axisSeconds <= 0)
         {
@@ -122,6 +179,82 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
         var localTime = DateTimeOffset
             .FromUnixTimeSeconds(axisSeconds)
+            .ToLocalTime();
+
+        return localTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+    }
+
+    private string BuildTimelinePath(bool selectOutbound)
+    {
+        if (Snapshot.TimelinePoints.Count < 2)
+        {
+            return string.Empty;
+        }
+
+        const double width = 640;
+        const double height = 84;
+        var maxValue = (double)Math.Max(MaxTimelineValue, 1);
+        var step = width / (Snapshot.TimelinePoints.Count - 1);
+        var builder = new StringBuilder();
+
+        for (var i = 0; i < Snapshot.TimelinePoints.Count; i++)
+        {
+            var point = Snapshot.TimelinePoints[i];
+            var value = selectOutbound ? point.OutboundBytes : point.InboundBytes;
+            var x = i * step;
+            var y = height - ((double)value / maxValue * height);
+            builder.Append(i == 0 ? "M " : " L ");
+            builder.Append(x.ToString("0.##", CultureInfo.InvariantCulture));
+            builder.Append(',');
+            builder.Append(y.ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        return builder.ToString();
+    }
+
+    private string BuildAreaPath(bool selectOutbound)
+    {
+        var line = BuildTimelinePath(selectOutbound);
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return string.Empty;
+        }
+
+        const double width = 640;
+        const double height = 84;
+        return $"{line} L {width.ToString(CultureInfo.InvariantCulture)},{height.ToString(CultureInfo.InvariantCulture)} L 0,{height.ToString(CultureInfo.InvariantCulture)} Z";
+    }
+
+    private static string FormatByteRate(ulong bytes)
+    {
+        if (bytes >= 1_048_576)
+        {
+            return $"{bytes / 1_048_576.0:0.##} MB/s";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024.0:0.##} KB/s";
+        }
+
+        return $"{bytes} B/s";
+    }
+
+    private string BuildHeroSummary()
+    {
+        var timestamp = Snapshot.LastPacketTimestamp;
+        if (timestamp is null || timestamp.Seconds <= 0)
+        {
+            return $"Sequence {Snapshot.Sequence} · waiting for packets";
+        }
+
+        return $"Sequence {Snapshot.Sequence} · last packet {FormatPacketTimestamp(timestamp)}";
+    }
+
+    private static string FormatPacketTimestamp(PacketTimestampDto timestamp)
+    {
+        var localTime = DateTimeOffset
+            .FromUnixTimeSeconds(timestamp.Seconds)
             .ToLocalTime();
 
         return localTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
@@ -255,6 +388,39 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
                 },
             ],
             DestinationMap = DestinationMapPlaceholderDto.CreateReserved(),
+            TimelinePoints =
+            [
+                new TimelinePointDto
+                {
+                    Timestamp = new PacketTimestampDto { Seconds = 1_714_587_182, Microseconds = 0 },
+                    InboundBytes = 4_096,
+                    OutboundBytes = 8_192,
+                },
+                new TimelinePointDto
+                {
+                    Timestamp = new PacketTimestampDto { Seconds = 1_714_587_187, Microseconds = 0 },
+                    InboundBytes = 10_240,
+                    OutboundBytes = 14_336,
+                },
+                new TimelinePointDto
+                {
+                    Timestamp = new PacketTimestampDto { Seconds = 1_714_587_192, Microseconds = 0 },
+                    InboundBytes = 6_144,
+                    OutboundBytes = 8_704,
+                },
+                new TimelinePointDto
+                {
+                    Timestamp = new PacketTimestampDto { Seconds = 1_714_587_197, Microseconds = 0 },
+                    InboundBytes = 12_288,
+                    OutboundBytes = 15_360,
+                },
+                new TimelinePointDto
+                {
+                    Timestamp = new PacketTimestampDto { Seconds = 1_714_587_202, Microseconds = 0 },
+                    InboundBytes = 7_168,
+                    OutboundBytes = 16_384,
+                },
+            ],
         };
     }
 }

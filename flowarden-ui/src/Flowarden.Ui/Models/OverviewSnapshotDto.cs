@@ -32,6 +32,8 @@ public sealed class OverviewSnapshotDto
     public string FilterLabel { get; init; } = "Filter · none";
 
     public string MetricMode { get; init; } = "bytes";
+
+    public IReadOnlyList<TimelinePointDto> TimelinePoints { get; init; } = Array.Empty<TimelinePointDto>();
 }
 
 public sealed class PacketTimestampDto
@@ -50,6 +52,15 @@ public sealed class AggregateTotalsDto
     public ulong BytesIn { get; init; }
 
     public ulong BytesOut { get; init; }
+}
+
+public sealed class TimelinePointDto
+{
+    public PacketTimestampDto Timestamp { get; init; } = new();
+
+    public ulong InboundBytes { get; init; }
+
+    public ulong OutboundBytes { get; init; }
 }
 
 public sealed class DestinationMapPlaceholderDto
