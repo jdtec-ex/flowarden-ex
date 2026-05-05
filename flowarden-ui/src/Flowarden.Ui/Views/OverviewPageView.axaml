@@ -6,7 +6,33 @@
              x:DataType="vm:OverviewPageViewModel">
   <Grid ColumnDefinitions="2*,*" RowDefinitions="Auto,Auto,*" ColumnSpacing="20" RowSpacing="20">
     <components:HeroTrafficChartView Grid.ColumnSpan="2" DataContext="{Binding}" />
-    <components:StatusCardsRowView Grid.Row="1" DataContext="{Binding}" />
+    <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="16">
+      <Border Classes="glass-panel">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="10">
+          <Border Classes="status-pill">
+            <TextBlock Text="{Binding SourceSummary}" />
+          </Border>
+          <Border Grid.Column="1" Classes="status-pill">
+            <TextBlock Text="{Binding FilterSummary}" />
+          </Border>
+          <Border Grid.Column="2" Classes="status-pill">
+            <TextBlock Text="{Binding MetricModeSummary}" />
+          </Border>
+          <StackPanel Grid.Column="3"
+                      Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Border Classes="status-pill">
+              <TextBlock Text="{Binding HeroLegendPrimary}" />
+            </Border>
+            <Border Classes="status-pill">
+              <TextBlock Text="{Binding HeroLegendSecondary}" />
+            </Border>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <components:StatusCardsRowView Grid.Row="1" DataContext="{Binding}" />
+    </Grid>
     <components:DestinationWorkbenchView Grid.Row="1" Grid.Column="1" Grid.RowSpan="2" DataContext="{Binding}" />
 
     <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="20">

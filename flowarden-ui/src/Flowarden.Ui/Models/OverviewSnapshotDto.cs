@@ -26,6 +26,12 @@ public sealed class OverviewSnapshotDto
     public DestinationMapPlaceholderDto DestinationMap { get; init; } = DestinationMapPlaceholderDto.CreateReserved();
 
     public IReadOnlyList<DestinationSummaryDto> TopDestinations { get; init; } = Array.Empty<DestinationSummaryDto>();
+
+    public string SourceLabel { get; init; } = "Live source · unknown";
+
+    public string FilterLabel { get; init; } = "Filter · none";
+
+    public string MetricMode { get; init; } = "bytes";
 }
 
 public sealed class PacketTimestampDto
@@ -40,6 +46,10 @@ public sealed class AggregateTotalsDto
     public ulong Packets { get; init; }
 
     public ulong Bytes { get; init; }
+
+    public ulong BytesIn { get; init; }
+
+    public ulong BytesOut { get; init; }
 }
 
 public sealed class DestinationMapPlaceholderDto

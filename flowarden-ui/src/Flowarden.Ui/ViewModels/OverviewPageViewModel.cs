@@ -41,6 +41,20 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     public string HeroSummary =>
         $"Sequence {Snapshot.Sequence} · last packet {Snapshot.LastPacketTimestamp?.Seconds ?? 0}s";
 
+    public string SourceSummary => Snapshot.SourceLabel;
+
+    public string FilterSummary => Snapshot.FilterLabel;
+
+    public string MetricModeSummary => $"Metric · {Snapshot.MetricMode}";
+
+    public string InboundSummary => Snapshot.Totals.BytesIn.ToString();
+
+    public string OutboundSummary => Snapshot.Totals.BytesOut.ToString();
+
+    public string HeroLegendPrimary => "Outbound";
+
+    public string HeroLegendSecondary => "Inbound";
+
     public string DestinationPlaceholderMessage => Snapshot.DestinationMap.Message;
 
     public string DestinationPlaceholderTitle => "Destination Distribution Future Slot";
@@ -111,6 +125,9 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         {
             CaptureId = "live-seed",
             Sequence = 42,
+            SourceLabel = "Live source · en0",
+            FilterLabel = "Filter · tcp",
+            MetricMode = "bytes",
             Timestamp = new PacketTimestampDto
             {
                 Seconds = 1_714_587_200,
@@ -120,6 +137,8 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             {
                 Packets = 823,
                 Bytes = 541_120,
+                BytesIn = 158_640,
+                BytesOut = 382_480,
             },
             DroppedPackets = 3,
             LastPacketTimestamp = new PacketTimestampDto

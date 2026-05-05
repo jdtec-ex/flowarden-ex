@@ -9,13 +9,29 @@
       <ItemsControl ItemsSource="{Binding Snapshot.TopConnections}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <StackPanel Margin="0,0,0,10">
-              <TextBlock Text="{Binding SourceAddress}" />
-              <TextBlock Classes="muted-text"
-                         Text="{Binding DestinationAddress}" />
-              <TextBlock Classes="muted-text"
-                         Text="{Binding Bytes}" />
-            </StackPanel>
+            <Border Classes="status-pill" Margin="0,0,0,8" Padding="14,12">
+              <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="{Binding SourceAddress}" />
+                  <TextBlock Classes="muted-text" Text="{Binding DestinationAddress}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
+                  <TextBlock Text="{Binding Bytes}" HorizontalAlignment="Right" />
+                  <TextBlock Classes="muted-text" Text="{Binding Packets, StringFormat={}{0} pkts}" HorizontalAlignment="Right" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                  <Border Background="#2A3142" CornerRadius="999" Padding="8,4">
+                    <TextBlock Classes="muted-text" Text="{Binding ServiceName}" />
+                  </Border>
+                  <Border Background="#2A3142" CornerRadius="999" Padding="8,4">
+                    <TextBlock Classes="muted-text" Text="{Binding Direction}" />
+                  </Border>
+                  <Border Background="#2A3142" CornerRadius="999" Padding="8,4">
+                    <TextBlock Classes="muted-text" Text="{Binding Protocol}" />
+                  </Border>
+                </StackPanel>
+              </Grid>
+            </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>

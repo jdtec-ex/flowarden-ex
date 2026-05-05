@@ -5,7 +5,7 @@
              x:Class="Flowarden.Ui.Views.Components.HeroTrafficChartView"
              x:DataType="vm:OverviewPageViewModel">
   <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" MinHeight="196">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" MinHeight="212">
       <StackPanel>
         <TextBlock Classes="section-title" Text="{Binding HeroTitle}" />
         <TextBlock Classes="muted-text" Text="{Binding HeroSummary}" />
@@ -13,12 +13,15 @@
 
       <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="14" ClipToBounds="True">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-          <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+          <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
             <Border Classes="status-pill">
-              <TextBlock Text="Smooth traffic curve" />
+              <TextBlock Text="Traffic timeline" />
             </Border>
             <Border Grid.Column="1" Classes="status-pill">
               <TextBlock Text="Scale 0-100" />
+            </Border>
+            <Border Grid.Column="2" Classes="status-pill">
+              <TextBlock Text="{Binding MetricModeSummary}" />
             </Border>
           </Grid>
 
@@ -73,6 +76,13 @@
                                Data="M 18,60 C 52,56 74,36 100,32 S 154,18 194,22 S 248,46 304,40 S 380,12 446,24 S 536,54 596,34 S 626,22 632,20" />
 
                   <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                               Opacity="0.12"
+                               Stroke="{StaticResource CosmosPrimaryBrush}"
+                               StrokeThickness="6"
+                               Fill="Transparent"
+                               Data="M 18,68 C 48,62 88,48 124,44 S 198,36 256,48 S 340,58 398,42 S 492,30 560,46 S 610,38 632,34" />
+
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
                                StrokeThickness="3"
                                Fill="Transparent">
                     <shapes:Path.Stroke>
@@ -92,6 +102,12 @@
                       S 626,22 632,20
                     </shapes:Path.Data>
                   </shapes:Path>
+
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                               StrokeThickness="2.5"
+                               Fill="Transparent"
+                               Stroke="{StaticResource CosmosPrimaryBrush}"
+                               Data="M 18,68 C 48,62 88,48 124,44 S 198,36 256,48 S 340,58 398,42 S 492,30 560,46 S 610,38 632,34" />
 
                   <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="98" Canvas.Top="30" />
                   <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="194" Canvas.Top="18" />
@@ -114,13 +130,36 @@
         </Grid>
       </Border>
 
-      <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="12">
         <Border Classes="status-pill">
           <TextBlock Text="Live/Offline Supported" />
         </Border>
         <Border Grid.Column="1" Classes="status-pill">
           <TextBlock Text="Phase1 snapshot aligned" />
         </Border>
+        <Border Grid.Column="2" Classes="status-pill">
+          <TextBlock Text="{Binding HeroLegendPrimary}" />
+        </Border>
+        <Border Grid.Column="3" Classes="status-pill">
+          <TextBlock Text="{Binding HeroLegendSecondary}" />
+        </Border>
+        <StackPanel Grid.Column="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10">
+          <Border Classes="status-pill">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="Out" FontWeight="SemiBold" />
+              <TextBlock Classes="muted-text" Text="{Binding OutboundSummary}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="status-pill">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="In" FontWeight="SemiBold" />
+              <TextBlock Classes="muted-text" Text="{Binding InboundSummary}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
       </Grid>
     </Grid>
   </Border>

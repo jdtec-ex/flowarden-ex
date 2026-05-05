@@ -43,6 +43,8 @@ public sealed class ProjectionClient
                 {
                     Packets = response.Totals.Packets,
                     Bytes = response.Totals.Bytes,
+                    BytesIn = response.Totals.BytesIn,
+                    BytesOut = response.Totals.BytesOut,
                 },
             DroppedPackets = response.DroppedPackets,
             LastPacketTimestamp = response.LastPacketTimestamp is null
@@ -97,6 +99,15 @@ public sealed class ProjectionClient
                     Ratio = destination.Ratio,
                 })
                 .ToArray(),
+            SourceLabel = string.IsNullOrWhiteSpace(response.SourceLabel)
+                ? "Live source · unknown"
+                : response.SourceLabel,
+            FilterLabel = string.IsNullOrWhiteSpace(response.FilterLabel)
+                ? "Filter · none"
+                : response.FilterLabel,
+            MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
+                ? "bytes"
+                : response.MetricMode,
         };
     }
 
