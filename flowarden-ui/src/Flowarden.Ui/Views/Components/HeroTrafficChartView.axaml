@@ -5,23 +5,46 @@
              x:Class="Flowarden.Ui.Views.Components.HeroTrafficChartView"
              x:DataType="vm:OverviewPageViewModel">
   <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" MinHeight="212">
-      <StackPanel>
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10" MinHeight="188">
+      <StackPanel Spacing="4">
         <TextBlock Classes="section-title" Text="{Binding HeroTitle}" />
         <TextBlock Classes="muted-text" Text="{Binding HeroSummary}" />
       </StackPanel>
 
-      <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="14" ClipToBounds="True">
+      <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
+        <Border Classes="status-pill">
+          <TextBlock Text="{Binding SourceSummary}" />
+        </Border>
+        <Border Grid.Column="1" Classes="status-pill">
+          <TextBlock Text="{Binding FilterSummary}" />
+        </Border>
+        <Border Grid.Column="2" Classes="status-pill">
+          <TextBlock Text="{Binding MetricModeSummary}" />
+        </Border>
+        <StackPanel Grid.Column="3"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="8">
+          <Border Classes="status-pill">
+            <TextBlock Text="{Binding HeroLegendPrimary}" />
+          </Border>
+          <Border Classes="status-pill">
+            <TextBlock Text="{Binding HeroLegendSecondary}" />
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <Border Grid.Row="2" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="12" ClipToBounds="True">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
           <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
             <Border Classes="status-pill">
               <TextBlock Text="Traffic timeline" />
             </Border>
             <Border Grid.Column="1" Classes="status-pill">
-              <TextBlock Text="Scale 0-100" />
+              <TextBlock Text="Snapshot-aligned time" />
             </Border>
             <Border Grid.Column="2" Classes="status-pill">
-              <TextBlock Text="{Binding MetricModeSummary}" />
+              <TextBlock Text="Indicative curve" />
             </Border>
           </Grid>
 
@@ -108,12 +131,6 @@
                                Fill="Transparent"
                                Stroke="{StaticResource CosmosPrimaryBrush}"
                                Data="M 18,68 C 48,62 88,48 124,44 S 198,36 256,48 S 340,58 398,42 S 492,30 560,46 S 610,38 632,34" />
-
-                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="98" Canvas.Top="30" />
-                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="194" Canvas.Top="18" />
-                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="304" Canvas.Top="38" />
-                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="446" Canvas.Top="22" />
-                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="596" Canvas.Top="32" />
                 </Canvas>
               </Viewbox>
             </Border>
@@ -130,7 +147,7 @@
         </Grid>
       </Border>
 
-      <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="12">
+      <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="10">
         <Border Classes="status-pill">
           <TextBlock Text="Live/Offline Supported" />
         </Border>
@@ -138,15 +155,12 @@
           <TextBlock Text="Phase1 snapshot aligned" />
         </Border>
         <Border Grid.Column="2" Classes="status-pill">
-          <TextBlock Text="{Binding HeroLegendPrimary}" />
-        </Border>
-        <Border Grid.Column="3" Classes="status-pill">
-          <TextBlock Text="{Binding HeroLegendSecondary}" />
+          <TextBlock Text="Curves are indicative until live timeline projection is introduced" />
         </Border>
         <StackPanel Grid.Column="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"
-                    Spacing="10">
+                    Spacing="8">
           <Border Classes="status-pill">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <TextBlock Text="Out" FontWeight="SemiBold" />

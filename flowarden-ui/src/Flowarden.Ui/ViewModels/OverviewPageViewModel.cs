@@ -53,9 +53,9 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string OutboundSummary => Snapshot.Totals.BytesOut.ToString();
 
-    public string HeroLegendPrimary => "Outbound";
+    public string HeroLegendPrimary => "Outbound bytes";
 
-    public string HeroLegendSecondary => "Inbound";
+    public string HeroLegendSecondary => "Inbound bytes";
 
     public string AxisLabelStart => FormatAxisTime(-20);
 
