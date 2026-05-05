@@ -11,10 +11,12 @@ namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class AppShellViewModel : ViewModelBase
 {
+    private readonly string _bindAddress;
     private readonly IReadOnlyDictionary<string, AppShellPageViewModel> _pages;
     private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
     private readonly DiscoveryClient? _discoveryClient;
     private readonly ProjectionClient? _projectionClient;
+    private readonly CoreHealthService? _coreHealthService;
 
     public AppShellViewModel()
         : this(null)
@@ -24,12 +26,16 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public AppShellViewModel(
         CoreConnectionCoordinator? coreConnectionCoordinator,
         DiscoveryClient? discoveryClient = null,
-        ProjectionClient? projectionClient = null
+        ProjectionClient? projectionClient = null,
+        CoreHealthService? coreHealthService = null,
+        string bindAddress = "127.0.0.1:39091"
     )
     {
+        _bindAddress = bindAddress;
         _coreConnectionCoordinator = coreConnectionCoordinator;
         _discoveryClient = discoveryClient;
         _projectionClient = projectionClient;
+        _coreHealthService = coreHealthService;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source" },
@@ -70,7 +76,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
         SourcePage = new SourcePageViewModel(_discoveryClient);
         OverviewPage = new OverviewPageViewModel(_projectionClient);
         InspectPage = new InspectPageViewModel(_projectionClient);
-        SettingsPage = new SettingsPageViewModel();
+        SettingsPage = new SettingsPageViewModel(
+            _coreHealthService,
+            _discoveryClient,
+            _bindAddress,
+            LatestCoreError
+        );
 
         ActiveMode = "Live";
         CoreStatus = new StatusIndicatorViewModel
@@ -210,10 +221,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
             await LoadSourcePageAsync();
             await LoadOverviewPageAsync();
             await LoadInspectPageAsync();
+            await LoadSettingsPageAsync();
             return;
         }
 
         LatestCoreError = result.Error;
+        await LoadSettingsPageAsync();
         CoreStatus = new StatusIndicatorViewModel
         {
             Label = "Core",
@@ -252,5 +265,15 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         await InspectPage.LoadAsync();
+    }
+
+    private async Task LoadSettingsPageAsync()
+    {
+        if (SettingsPage is null)
+        {
+            return;
+        }
+
+        await SettingsPage.LoadAsync(LatestCoreError);
     }
 }

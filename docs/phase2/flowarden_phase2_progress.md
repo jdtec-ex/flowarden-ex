@@ -56,7 +56,7 @@
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-006` | 已完成 | Overview 页面已接入真实 ProjectionService，数据由 core 侧稳定 snapshot 提供，并与 shell 的 live/replay mode 联动。 |
 | `M2-007` | 已完成 | Inspect 页面已接入真实 `ProjectionService.GetInspectPage`，过滤条件可下发到 core。 |
-| `M2-008` | 未重新验收 | 现有 Settings 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-008` | 已完成 | Settings 页面已接入真实 health/discovery/error 状态组合，展示最小运行态与诊断信息。 |
 | `M2-009` | 未重新验收 | 现有封板文档与门禁只保留为代码基线，不计当前完成。 |
 | `M2-101` | 未重新验收 | 现有 destination workbench 增强只保留为代码基线，不计当前完成。 |
 
@@ -232,24 +232,23 @@
 
 ### M2-008 Settings 与诊断页 MVP
 
-- 状态：未重新验收
+- 状态：已完成
 - 已成立：
   - `SettingsPageView`
   - `SettingsRuntimePanelView`
   - `SettingsCorePanelView`
   - `SettingsDiagnosticsPanelView`
-  - 运行配置、core 状态、近期错误的版位与样式壳层已存在
-- 审计证据：
-  - `SettingsPageViewModel` 直接构造本地 `RuntimeState`、`CoreHealth`、`Diagnostics`
-  - `CoreHealthService` 存在，但未被页面接入
-  - 代码位置：
-    - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/SettingsPageViewModel.cs`
-    - `../../flowarden-ui/src/Flowarden.Ui/Services/CoreHealthService.cs`
-- 未满足的验收项：
-  - 当前 source / BPF / tick interval / top N 来自真实运行态
-  - core endpoint / process state / version 来自真实 core
-  - 近期错误提示来自真实跨进程错误语义
-- 已保留提交：
+  - `SettingsPageViewModel` 运行时组合真实 `CoreHealthService`、`DiscoveryClient` 和 shell 级错误状态
+- 代码证据：
+  - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/SettingsPageViewModel.cs`
+  - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/AppShellViewModel.cs`
+  - `../../flowarden-ui/src/Flowarden.Ui/App.axaml.cs`
+- 验收结果：
+  - 当前 source / BPF / tick interval / top N 可展示
+  - core endpoint / process state / version 可展示
+  - 错误日志入口与近期错误提示可见
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+- 提交：
   - outer repo `272cbc9` `Complete M2-008 settings and diagnostics mvp`
 
 ### M2-009 第二阶段封板与质量门禁

@@ -93,7 +93,7 @@
 2. `ApplyFilters()` 会把 `InspectFilterDto` 下发到 Rust `ProjectionService.GetInspectPage`。
 3. Rust `ProjectionService.GetInspectPage` 现在返回稳定的 `ConnectionRow` 结果集。
 
-### 4.4 Settings 仍是样本驱动
+### 4.4 Settings 已接入最小运行态与诊断状态
 
 文件：
 
@@ -101,9 +101,9 @@
 
 证据：
 
-1. `RuntimeState` 本地构造。
-2. `CoreHealth` 本地构造。
-3. `Diagnostics` 本地构造。
+1. `SettingsPageViewModel.LoadAsync()` 会调用 `CoreHealthService.GetHealthAsync()`。
+2. 当前 source 信息通过 `DiscoveryClient.GetDevicesAsync()` 组合展示。
+3. `Diagnostics` 会包含 shell 级 `LatestCoreError` 与最小权限提示。
 
 ### 4.5 gRPC 仅到最小 skeleton
 

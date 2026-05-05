@@ -17,6 +17,7 @@ namespace Flowarden.Ui;
 public partial class App : Application
 {
     private static GrpcChannel? _coreChannel;
+    private const string CoreBindAddress = "127.0.0.1:39091";
 
     public override void Initialize()
     {
@@ -30,7 +31,7 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            _coreChannel = CreateCoreChannel("http://127.0.0.1:39091");
+            _coreChannel = CreateCoreChannel($"http://{CoreBindAddress}");
             var coreHealthService = new CoreHealthService(_coreChannel);
             var coreLauncherService = new CoreLauncherService();
             var discoveryClient = new DiscoveryClient(_coreChannel);
@@ -42,7 +43,9 @@ public partial class App : Application
             var shellViewModel = new AppShellViewModel(
                 coreConnectionCoordinator,
                 discoveryClient,
-                projectionClient
+                projectionClient,
+                coreHealthService,
+                CoreBindAddress
             );
             desktop.MainWindow = new MainWindow
             {
@@ -67,7 +70,7 @@ public partial class App : Application
         await shellViewModel.InitializeCoreConnectionAsync(
             workingDirectory,
             binaryPath,
-            "127.0.0.1:39091"
+            CoreBindAddress
         );
     }
 
