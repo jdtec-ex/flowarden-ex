@@ -69,7 +69,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
         SourcePage = new SourcePageViewModel(_discoveryClient);
         OverviewPage = new OverviewPageViewModel(_projectionClient);
-        InspectPage = new InspectPageViewModel();
+        InspectPage = new InspectPageViewModel(_projectionClient);
         SettingsPage = new SettingsPageViewModel();
 
         ActiveMode = "Live";
@@ -209,6 +209,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             OnPropertyChanged(nameof(HasLatestCoreError));
             await LoadSourcePageAsync();
             await LoadOverviewPageAsync();
+            await LoadInspectPageAsync();
             return;
         }
 
@@ -241,5 +242,15 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         await OverviewPage.LoadAsync();
+    }
+
+    private async Task LoadInspectPageAsync()
+    {
+        if (InspectPage is null)
+        {
+            return;
+        }
+
+        await InspectPage.LoadAsync();
     }
 }

@@ -8,6 +8,8 @@ public sealed class InspectResultDto
     public IReadOnlyList<ConnectionRowDto> Rows { get; init; } = Array.Empty<ConnectionRowDto>();
 
     public InspectResultSummaryDto Summary { get; init; } = new();
+
+    public string State { get; init; } = "seed";
 }
 
 public sealed class InspectResultSummaryDto

@@ -81,7 +81,7 @@
 2. `ProjectionClient` 通过 `GetLatestOverview` 真实连接 Rust `ProjectionService`。
 3. Rust `ProjectionService.GetLatestOverview` 返回稳定 overview snapshot。
 
-### 4.3 Inspect 仍是样本驱动
+### 4.3 Inspect 已接入后端 query / projection
 
 文件：
 
@@ -89,8 +89,9 @@
 
 证据：
 
-1. `_allRows = CreateSeedRows()`。
-2. `ApplyFilters()` 只过滤本地 `_allRows`。
+1. `InspectPageViewModel.LoadAsync()` 会调用 `ProjectionClient.GetInspectPageAsync()`。
+2. `ApplyFilters()` 会把 `InspectFilterDto` 下发到 Rust `ProjectionService.GetInspectPage`。
+3. Rust `ProjectionService.GetInspectPage` 现在返回稳定的 `ConnectionRow` 结果集。
 
 ### 4.4 Settings 仍是样本驱动
 

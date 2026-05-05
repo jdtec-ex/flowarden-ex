@@ -2,18 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
+using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class InspectPageViewModel : ViewModelBase
 {
-    private readonly IReadOnlyList<ConnectionRowDto> _allRows;
+    private readonly ProjectionClient? _projectionClient;
+    private readonly bool _isDesignTime;
+    private IReadOnlyList<ConnectionRowDto> _allRows;
 
     public InspectPageViewModel()
+        : this(projectionClient: null, isDesignTime: true)
     {
+    }
+
+    public InspectPageViewModel(ProjectionClient? projectionClient)
+        : this(projectionClient, isDesignTime: false)
+    {
+    }
+
+    private InspectPageViewModel(ProjectionClient? projectionClient, bool isDesignTime)
+    {
+        _projectionClient = projectionClient;
+        _isDesignTime = isDesignTime;
         _allRows = CreateSeedRows();
         Filter = new InspectFilterDto();
         Rows = new ObservableCollection<ConnectionRowDto>(_allRows);
@@ -52,8 +68,25 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     public string ResultCountLabel => $"{Summary.VisibleRows} visible / {Summary.TotalRows} total";
 
+    public async Task LoadAsync()
+    {
+        if (_projectionClient is null || _isDesignTime)
+        {
+            return;
+        }
+
+        var result = await _projectionClient.GetInspectPageAsync(Filter);
+        _allRows = result.Rows;
+        ReplaceRows(_allRows);
+        Summary = result.Summary;
+        ActiveFilterSummary = string.Equals(result.State, "ready", StringComparison.OrdinalIgnoreCase)
+            ? "Backend projection ready"
+            : $"Projection state: {result.State}";
+        OnPropertyChanged(nameof(ResultCountLabel));
+    }
+
     [RelayCommand]
-    private void ApplyFilters()
+    private async Task ApplyFilters()
     {
         Filter = new InspectFilterDto
         {
@@ -65,14 +98,19 @@ public sealed partial class InspectPageViewModel : ViewModelBase
             Bpf = NullIfEmpty(BpfInput),
         };
 
-        var filtered = _allRows.Where(MatchesFilter).ToArray();
-
-        Rows.Clear();
-        foreach (var row in filtered)
+        if (_projectionClient is not null && !_isDesignTime)
         {
-            Rows.Add(row);
+            var result = await _projectionClient.GetInspectPageAsync(Filter);
+            _allRows = result.Rows;
+            ReplaceRows(_allRows);
+            Summary = result.Summary;
+            ActiveFilterSummary = BuildFilterSummary();
+            OnPropertyChanged(nameof(ResultCountLabel));
+            return;
         }
 
+        var filtered = _allRows.Where(MatchesFilter).ToArray();
+        ReplaceRows(filtered);
         Summary = BuildSummary(filtered);
         ActiveFilterSummary = BuildFilterSummary();
         OnPropertyChanged(nameof(ResultCountLabel));
@@ -88,16 +126,19 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         DirectionInput = string.Empty;
         BpfInput = string.Empty;
         Filter = new InspectFilterDto();
-
-        Rows.Clear();
-        foreach (var row in _allRows)
-        {
-            Rows.Add(row);
-        }
-
+        ReplaceRows(_allRows);
         Summary = BuildSummary(_allRows);
         ActiveFilterSummary = "No active filters";
         OnPropertyChanged(nameof(ResultCountLabel));
+    }
+
+    private void ReplaceRows(IEnumerable<ConnectionRowDto> rows)
+    {
+        Rows.Clear();
+        foreach (var row in rows)
+        {
+            Rows.Add(row);
+        }
     }
 
     private bool MatchesFilter(ConnectionRowDto row)

@@ -100,13 +100,50 @@ public sealed class ProjectionClient
         };
     }
 
-    public Task<InspectResultDto> GetPlaceholderInspectResultAsync(
+    public async Task<InspectResultDto> GetInspectPageAsync(
         InspectFilterDto filter,
         CancellationToken cancellationToken = default
     )
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        _ = filter;
-        return Task.FromResult(new InspectResultDto());
+        var response = await _client.GetInspectPageAsync(
+            new GetInspectPageRequest
+            {
+                SourceAddress = filter.SourceAddress ?? string.Empty,
+                DestinationAddress = filter.DestinationAddress ?? string.Empty,
+                ServiceName = filter.ServiceName ?? string.Empty,
+                Protocol = filter.Protocol ?? string.Empty,
+                Direction = filter.Direction ?? string.Empty,
+                Bpf = filter.Bpf ?? string.Empty,
+            },
+            cancellationToken: cancellationToken
+        );
+
+        return new InspectResultDto
+        {
+            State = response.State,
+            Rows = response.Rows
+                .Select(row => new ConnectionRowDto
+                {
+                    SourceAddress = row.SourceAddress,
+                    SourcePort = row.SourcePort == 0 ? null : (ushort?)row.SourcePort,
+                    DestinationAddress = row.DestinationAddress,
+                    DestinationPort = row.DestinationPort == 0 ? null : (ushort?)row.DestinationPort,
+                    Protocol = row.Protocol,
+                    ServiceName = row.ServiceName,
+                    Direction = row.Direction,
+                    Packets = row.Packets,
+                    Bytes = row.Bytes,
+                })
+                .ToArray(),
+            Summary = new InspectResultSummaryDto
+            {
+                TotalRows = (ulong)response.Rows.Count,
+                VisibleRows = (ulong)response.Rows.Count,
+                TotalPackets = response.Rows.Aggregate(0UL, (acc, row) => acc + row.Packets),
+                TotalBytes = response.Rows.Aggregate(0UL, (acc, row) => acc + row.Bytes),
+                SortBy = "bytes",
+                SortDirection = "desc",
+            },
+        };
     }
 }

@@ -55,7 +55,7 @@
 | `M2-004` | 已完成 | App Shell 与全局状态层已按 backlog 口径完成，作为 phase2 后续页面与运行闭环的稳定壳层基线。 |
 | `M2-005` | 未重新验收 | 现有 Source 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-006` | 已完成 | Overview 页面已接入真实 ProjectionService，数据由 core 侧稳定 snapshot 提供，并与 shell 的 live/replay mode 联动。 |
-| `M2-007` | 未重新验收 | 现有 Inspect 页面实现只保留为代码基线，不计当前完成。 |
+| `M2-007` | 已完成 | Inspect 页面已接入真实 `ProjectionService.GetInspectPage`，过滤条件可下发到 core。 |
 | `M2-008` | 未重新验收 | 现有 Settings 页面实现只保留为代码基线，不计当前完成。 |
 | `M2-009` | 未重新验收 | 现有封板文档与门禁只保留为代码基线，不计当前完成。 |
 | `M2-101` | 未重新验收 | 现有 destination workbench 增强只保留为代码基线，不计当前完成。 |
@@ -208,23 +208,26 @@
 
 ### M2-007 Inspect 页面 MVP
 
-- 状态：未重新验收
+- 状态：已完成
 - 已成立：
   - `InspectPageView`
   - `InspectHeaderView`
   - `InspectFilterBarView`
   - `InspectResultsTableView`
   - `InspectFooterSummaryView`
-  - 过滤条、结果表、footer summary 结构稳定
-- 审计证据：
-  - `InspectPageViewModel` 使用 `CreateSeedRows()`
-  - `ApplyFilters()` 仅过滤本地 `_allRows`
-  - 代码位置：`../../flowarden-ui/src/Flowarden.Ui/ViewModels/InspectPageViewModel.cs`
-- 未满足的验收项：
-  - 过滤条件可真实下发到 core
-  - 表格结果与 phase1 聚合结果真实一致
-  - Inspect 页由后端 query / projection 驱动
-- 已保留提交：
+  - `InspectPageViewModel` 运行时通过 `ProjectionClient.GetInspectPageAsync()` 拉取真实后端结果
+  - `ApplyFilters()` 会把 `InspectFilterDto` 下发到 Rust `ProjectionService.GetInspectPage`
+- 代码证据：
+  - `../../flowarden-ui/src/Flowarden.Ui/ViewModels/InspectPageViewModel.cs`
+  - `../../flowarden-ui/src/Flowarden.Ui/Services/ProjectionClient.cs`
+  - `../../flowarden/flowarden/src/service.rs`
+- 验收结果：
+  - 过滤条件可下发
+  - 结果表由后端 query / projection 驱动
+  - 未引入 phase3 payload / session 字段
+  - `cargo test -q -p flowarden -p flowarden-core -p flowarden-error` 通过
+  - `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过
+- 提交：
   - outer repo `307822b` `Complete M2-007 inspect page mvp`
 
 ### M2-008 Settings 与诊断页 MVP
