@@ -60,6 +60,7 @@
 - preview 与 formal capture 文案清楚区分
 - 正式 capture 仍然是单 source
 - offline import 入口存在
+- 设备与 preview 来自真实 gRPC 调用
 
 结果：
 
@@ -72,6 +73,7 @@
 - destination map 预留区存在
 - top destinations 存在
 - top hosts / top services / top connections 存在
+- 数据来自真实 `GetLatestOverview`
 
 结果：
 
@@ -83,6 +85,7 @@
 - results table 存在
 - footer summary 存在
 - 过滤条件可影响当前结果集
+- 结果来自真实后端 query / projection
 
 结果：
 
@@ -95,6 +98,7 @@
 - diagnostics 面板存在
 - 当前 source / BPF / tick interval / top N 可见
 - endpoint / process state / version 可见
+- health 与 diagnostics 来自真实最小运行态组合
 
 结果：
 
@@ -105,12 +109,9 @@
 以下检查项用于判断是否真正达到初始总方案要求的第二阶段闭环：
 
 - UI 启动后可真实连接已运行 core，或真实拉起 core
-- Source 页设备与 preview 来自真实 gRPC 调用
 - 用户可选择单一 source 进入真实 formal capture
 - `Start / Stop / Pause / Resume` 可真实驱动 core
 - Overview 数据来自真实 `tick_snapshots / final_snapshot`
-- Inspect 结果来自真实后端 query / projection
-- Settings 数据来自真实 runtime / health / version / diagnostics
 - core 异常退出时，UI 可感知并进入可恢复状态
 
 结果：

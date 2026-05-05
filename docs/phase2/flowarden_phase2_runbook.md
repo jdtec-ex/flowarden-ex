@@ -8,7 +8,7 @@
 
 1. 如何构建 Rust core
 2. 如何构建 Avalonia UI
-3. 如何启动本地 gRPC core service
+3. 如何启动本地 resident core
 4. 如何启动 UI
 5. 如何验证 `Source / Overview / Inspect / Settings`
 6. 当前哪些能力已经实现，哪些仍未达到初始总方案要求
@@ -73,6 +73,8 @@ cargo run -p flowarden -- core --bind 127.0.0.1:39091
 2. `GetVersion`
 3. `ListDevices`
 4. `ListDevicePreviews`
+5. `GetLatestOverview`
+6. `GetInspectPage`
 
 ---
 
@@ -119,9 +121,8 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 
 说明：
 
-- 当前页面由稳定种子数据驱动
-- `ListDevicePreviews` gRPC 通道已存在，但还未在 UI 中接成实时拉取
-- `ListDevices` 也尚未在 UI 页面中接成真实拉取
+- 当前页面通过真实 `DiscoveryClient` 拉取设备与 preview
+- 正式 capture 控制仍未接入 `ControlService`
 
 ### 7.2 Overview
 
@@ -135,10 +136,9 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 
 说明：
 
-- 当前页面由稳定样本 `OverviewSnapshotDto` 驱动
+- 当前页面通过真实 `ProjectionService.GetLatestOverview` 拉取稳定 snapshot
 - 口径受限于 phase1 聚合输出
 - 尚未接入实时 projection stream
-- 当前不能据此判定“与 CLI 输出真实一致”，因为还不是运行态投影
 
 ### 7.3 Inspect
 
@@ -152,10 +152,9 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 
 说明：
 
-- 当前过滤作用于本地稳定样本结果集
-- 尚未接入后端 inspect query/projection 通道
+- 当前页面通过真实 `ProjectionService.GetInspectPage` 拉取结果
+- 过滤条件会下发到 core
 - 未引入 payload / session 字段
-- 当前不能据此判定“过滤条件已真实下发到 core”
 
 ### 7.4 Settings
 
@@ -170,8 +169,8 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 
 说明：
 
-- 当前 runtime / core / diagnostics 仍由本地样本填充
-- 页面尚未接入真实 `CoreHealthService` 或 runtime 状态
+- 当前页面通过 `CoreHealthService`、`DiscoveryClient` 和 shell 级错误状态组合最小运行态
+- 仍未接入 runtime write-back 或 control plane
 
 ---
 
@@ -180,22 +179,18 @@ dotnet run --project /Users/wangli/workspace/coding/flowarden/flowarden-ui/src/F
 ### 8.1 当前已实现
 
 1. Avalonia shell
-2. Source 页面 MVP
-3. Overview 页面 MVP
-4. Inspect 页面 MVP
-5. Settings 页面 MVP
-6. Rust core 本地 gRPC service skeleton
+2. Source 页面真实 discovery / preview 接线
+3. Overview 页面真实 latest projection 接线
+4. Inspect 页面真实 query / projection 接线
+5. Settings 页面最小 runtime / health / diagnostics 接线
+6. Rust core 本地 gRPC skeleton
 7. `Destination Map` 稳定预留区
 
 ### 8.2 当前未实现但原方案要求第二阶段完成
 
-1. UI 启动后真实拉起或连接 core
-2. Source 页真实 gRPC preview/device 拉取
-3. `Start / Stop / Pause / Resume`
-4. Overview 实时 projection stream
-5. Inspect 后端 query/projection 接线
-6. Settings 的真实 runtime / health / version / diagnostics 接线
-7. core 异常退出后的 UI 可恢复状态
+1. `Start / Stop / Pause / Resume`
+2. Overview 实时 projection stream
+3. core 异常退出后的 UI 可恢复状态
 
 ### 8.3 明确后置
 

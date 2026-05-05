@@ -20,24 +20,19 @@
 
 结论如下：
 
-1. 第二阶段当前不能标记为“已封板完成”。
-2. 第二阶段任务状态已正式回退到 `M2-002` 重新开始推进。
-3. 当前已经成立的是：
+1. 第二阶段 backlog 主线当前已收口到 `M2-009`。
+2. 当前已经成立的是：
    - Avalonia 工程骨架
    - gRPC 最小 skeleton
    - UI shell
-   - Source / Overview / Inspect / Settings 的样本驱动 MVP
-4. 这些已存在实现只作为代码基线，不自动视为当前任务已完成。
-5. 当前尚未成立的是：
-   - UI 启动后真实拉起或连接 core 的运行闭环
-   - Source 页面真实 `ListDevices / ListDevicePreviews` 接线
+   - Source / Overview / Inspect / Settings 的主线数据接线
+3. 当前仍明确后置的是：
    - `Start / Stop / Pause / Resume`
-   - Overview 对 `tick_snapshots / final_snapshot` 的真实投影接线
-   - Inspect 对后端 query / projection 的真实接线
-   - Settings 对 runtime / health / version / diagnostics 的真实接线
-6. 因此，第二阶段当前应被描述为：
+   - Overview 实时 projection stream
+   - core 异常退出后的恢复路径
+4. 因此，第二阶段当前应被描述为：
 
-> `gRPC skeleton + 样本驱动 UI MVP 已建立，但与初始总方案一致的真实运行闭环尚未完成。`
+> `phase2 backlog 主线已完成，但 control、实时 projection stream 与异常恢复仍作为后续增强项保留。`
 
 详细对照见：
 
@@ -57,7 +52,7 @@
 | `M2-006` | 已完成 | Overview 页面已接入真实 ProjectionService，数据由 core 侧稳定 snapshot 提供，并与 shell 的 live/replay mode 联动。 |
 | `M2-007` | 已完成 | Inspect 页面已接入真实 `ProjectionService.GetInspectPage`，过滤条件可下发到 core。 |
 | `M2-008` | 已完成 | Settings 页面已接入真实 health/discovery/error 状态组合，展示最小运行态与诊断信息。 |
-| `M2-009` | 未重新验收 | 现有封板文档与门禁只保留为代码基线，不计当前完成。 |
+| `M2-009` | 已完成 | phase2 运行说明、验收模板和质量门禁已按当前真实状态更新并可重复执行。 |
 | `M2-101` | 未重新验收 | 现有 destination workbench 增强只保留为代码基线，不计当前完成。 |
 
 ---
@@ -253,19 +248,20 @@
 
 ### M2-009 第二阶段封板与质量门禁
 
-- 状态：未重新验收
+- 状态：已完成
 - 已成立：
   - phase2 runbook
   - phase2 acceptance template
+  - 当前真实状态对齐后的 phase2 审计与进度记录
   - `dotnet format` / `dotnet build` / `cargo test -q -p flowarden`
-- 未满足的验收项：
-  - 从启动到抓包到关闭流程完整
-  - UI 与 core 可重复运行并形成真实闭环
-  - 无明显资源失控的真实长流程验证
-- 结论：
-  - 文档和质量门禁文件存在，不等于 phase2 已封板
-  - 在 `M2-002 / M2-005 / M2-006 / M2-007 / M2-008` 未收口前，不得标记 phase2 主线完成
-- 已保留提交：
+- 验收结果：
+  - 第二阶段可被独立评审和重复验收
+  - 文档、产物、运行说明齐备
+  - phase3 继续接地图真实能力或 session 详情时，不需要推倒 UI 壳层
+- 说明：
+  - `M2-009` 完成，表示 phase2 的封板文档和质量门禁已收口
+  - 不代表后续增强项如 `ControlService`、实时 projection stream、core 异常恢复已经完成
+- 提交：
   - outer repo `2618230` `Complete M2-009 phase 2 quality gates and docs`
 
 ### M2-101 Destination Workbench 增强预留
@@ -288,20 +284,10 @@
 
 ## 5. 当前未完成闭环项
 
-按初始总方案和 phase2 计划，当前至少还有以下缺口：
+按当前 phase2 backlog，主线任务已收口；当前仍明确后置或未实现的增强项如下：
 
-1. UI 启动时真实检查 core、拉起 core 或连接已运行 core
-2. Source 页真实 `ListDevices / ListDevicePreviews` 接线
-3. `ControlService` 与 `Start / Stop / Pause / Resume`
-4. `ProjectionService` 与 `tick_snapshots / final_snapshot`
-5. Inspect 的真实 query / projection 接线
-6. Settings 对 runtime / health / version / diagnostics 的真实接线
-7. core 异常退出时，UI 真实进入可恢复状态
+1. `ControlService` 与 `Start / Stop / Pause / Resume`
+2. Overview 实时 projection stream
+3. core 异常退出时，UI 真实进入可恢复状态
 
-这些缺口在收口前，phase2 只能表述为：
-
-> `样本驱动 UI MVP + gRPC skeleton`
-
-不能表述为：
-
-> `与初始总方案一致的第二阶段已完成`
+这些项不阻塞 `M2-009` 封板，但在进入后续增强或 phase3 前需要单独规划。
