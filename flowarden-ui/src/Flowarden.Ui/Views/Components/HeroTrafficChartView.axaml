@@ -81,33 +81,33 @@
                 <Viewbox Stretch="Fill" IsVisible="{Binding HasTimeline}">
                   <Canvas Width="640" Height="84" ClipToBounds="True">
                     <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.08"
+                                 Opacity="0.05"
                                  StrokeThickness="0"
                                  Fill="{StaticResource CosmosSecondaryBrush}"
                                  Data="{Binding OutboundAreaPathData}" />
 
                     <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.10"
+                                 Opacity="0.07"
                                  Stroke="{StaticResource CosmosSecondaryBrush}"
-                                 StrokeThickness="4"
+                                 StrokeThickness="2.6"
                                  Fill="Transparent"
                                  Data="{Binding OutboundPathData}" />
 
                     <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.08"
+                                 Opacity="0.06"
                                  Stroke="{StaticResource CosmosPrimaryBrush}"
-                                 StrokeThickness="3.5"
+                                 StrokeThickness="2.3"
                                  Fill="Transparent"
                                  Data="{Binding InboundPathData}" />
 
                     <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 StrokeThickness="2"
+                                 StrokeThickness="1.35"
                                  Stroke="{StaticResource CosmosSecondaryBrush}"
                                  Fill="Transparent"
                                  Data="{Binding OutboundPathData}" />
 
                     <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 StrokeThickness="1.85"
+                                 StrokeThickness="1.2"
                                  Stroke="{StaticResource CosmosPrimaryBrush}"
                                  Fill="Transparent"
                                  Data="{Binding InboundPathData}" />
