@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.HeroTrafficChartView"
              x:DataType="vm:OverviewPageViewModel">
@@ -10,12 +11,84 @@
         <TextBlock Classes="muted-text" Text="{Binding HeroSummary}" />
       </StackPanel>
 
-      <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="16">
-        <Grid ColumnDefinitions="*,*,*,*" VerticalAlignment="Bottom" Height="120" ColumnSpacing="10">
-          <Border Background="{StaticResource CosmosSecondaryBrush}" CornerRadius="10,10,0,0" Height="42" VerticalAlignment="Bottom" />
-          <Border Grid.Column="1" Background="{StaticResource CosmosPrimaryBrush}" CornerRadius="10,10,0,0" Height="85" VerticalAlignment="Bottom" />
-          <Border Grid.Column="2" Background="{StaticResource CosmosSecondaryBrush}" CornerRadius="10,10,0,0" Height="58" VerticalAlignment="Bottom" />
-          <Border Grid.Column="3" Background="{StaticResource CosmosPrimaryBrush}" CornerRadius="10,10,0,0" Height="103" VerticalAlignment="Bottom" />
+      <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="16" ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*" RowSpacing="12">
+          <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+            <Border Classes="status-pill">
+              <TextBlock Text="Smooth traffic curve" />
+            </Border>
+            <Border Grid.Column="1" Classes="status-pill">
+              <TextBlock Text="Gradient flow" />
+            </Border>
+          </Grid>
+
+          <Viewbox Grid.Row="1" Stretch="Fill" Margin="0,4,0,0">
+            <Canvas Width="700" Height="140" ClipToBounds="True">
+              <Grid Width="700" Height="140" Opacity="0.36">
+                <Border VerticalAlignment="Top" Margin="0,30,0,0" Height="1" Background="#2A313D" />
+                <Border VerticalAlignment="Top" Margin="0,66,0,0" Height="1" Background="#2A313D" />
+                <Border VerticalAlignment="Top" Margin="0,102,0,0" Height="1" Background="#2A313D" />
+              </Grid>
+
+              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
+                           Opacity="0.18"
+                           StrokeThickness="0">
+                <shapes:Path.Fill>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
+                    <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.45" />
+                    <GradientStop Color="#0511131E" Offset="1" />
+                  </LinearGradientBrush>
+                </shapes:Path.Fill>
+                <shapes:Path.Data>
+                  M 22,112
+                  C 58,110 72,90 96,80
+                  S 150,46 190,52
+                  S 258,88 318,72
+                  S 396,28 466,44
+                  S 560,98 618,70
+                  S 660,48 678,36
+                  L 678,122
+                  L 22,122
+                  Z
+                </shapes:Path.Data>
+              </shapes:Path>
+
+              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
+                           Opacity="0.20"
+                           Stroke="{StaticResource CosmosSecondaryBrush}"
+                           StrokeThickness="10"
+                           Fill="Transparent"
+                           Data="M 22,112 C 58,110 72,90 96,80 S 150,46 190,52 S 258,88 318,72 S 396,28 466,44 S 560,98 618,70 S 660,48 678,36" />
+
+              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
+                           StrokeThickness="4"
+                           Fill="Transparent">
+                <shapes:Path.Stroke>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
+                    <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.52" />
+                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="1" />
+                  </LinearGradientBrush>
+                </shapes:Path.Stroke>
+                <shapes:Path.Data>
+                  M 22,112
+                  C 58,110 72,90 96,80
+                  S 150,46 190,52
+                  S 258,88 318,72
+                  S 396,28 466,44
+                  S 560,98 618,70
+                  S 660,48 678,36
+                </shapes:Path.Data>
+              </shapes:Path>
+
+              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="92" Canvas.Top="75" />
+              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="188" Canvas.Top="47" />
+              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="318" Canvas.Top="67" />
+              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="466" Canvas.Top="40" />
+              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="618" Canvas.Top="66" />
+            </Canvas>
+          </Viewbox>
         </Grid>
       </Border>
 
