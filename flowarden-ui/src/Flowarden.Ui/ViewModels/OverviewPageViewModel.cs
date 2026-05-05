@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Flowarden.Ui.Models;
@@ -55,6 +57,16 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string HeroLegendSecondary => "Inbound";
 
+    public string AxisLabelStart => FormatAxisTime(-20);
+
+    public string AxisLabelMidLeft => FormatAxisTime(-15);
+
+    public string AxisLabelCenter => FormatAxisTime(-10);
+
+    public string AxisLabelMidRight => FormatAxisTime(-5);
+
+    public string AxisLabelEnd => FormatAxisTime(0);
+
     public string DestinationPlaceholderMessage => Snapshot.DestinationMap.Message;
 
     public string DestinationPlaceholderTitle => "Destination Distribution Future Slot";
@@ -82,6 +94,11 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(HeroSummary));
         OnPropertyChanged(nameof(DestinationPlaceholderMessage));
         OnPropertyChanged(nameof(DestinationPlaceholderState));
+        OnPropertyChanged(nameof(AxisLabelStart));
+        OnPropertyChanged(nameof(AxisLabelMidLeft));
+        OnPropertyChanged(nameof(AxisLabelCenter));
+        OnPropertyChanged(nameof(AxisLabelMidRight));
+        OnPropertyChanged(nameof(AxisLabelEnd));
     }
 
     public void SetMode(string mode)
@@ -91,6 +108,23 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(ModeLabel));
         OnPropertyChanged(nameof(StatusCards));
         OnPropertyChanged(nameof(HeroSummary));
+    }
+
+    private string FormatAxisTime(int secondsOffset)
+    {
+        var baseSeconds = Snapshot.LastPacketTimestamp?.Seconds ?? Snapshot.Timestamp.Seconds;
+        var axisSeconds = baseSeconds + secondsOffset;
+
+        if (axisSeconds <= 0)
+        {
+            return "--:--:--";
+        }
+
+        var localTime = DateTimeOffset
+            .FromUnixTimeSeconds(axisSeconds)
+            .ToLocalTime();
+
+        return localTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
     private static IReadOnlyList<OverviewStatusCardViewModel> BuildStatusCards(

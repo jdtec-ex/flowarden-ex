@@ -5,10 +5,9 @@
              x:DataType="vm:AppShellViewModel">
   <Border Classes="glass-panel app-header">
     <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="16">
-      <StackPanel>
+      <StackPanel Spacing="4">
         <TextBlock Classes="page-title" Text="{Binding CurrentPage.Title}" />
-        <TextBlock Classes="muted-text" Text="{Binding CurrentPage.Description}" TextWrapping="Wrap" />
-        <TextBlock Classes="muted-text" Text="{Binding ConnectionMessage}" />
+        <TextBlock Classes="muted-text" Text="{Binding HeaderSupportingText}" TextWrapping="Wrap" />
       </StackPanel>
 
       <Button Grid.Column="1"

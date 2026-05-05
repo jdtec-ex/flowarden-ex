@@ -135,6 +135,10 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [ObservableProperty]
     private CoreErrorDto? latestCoreError;
 
+    public string HeaderSupportingText =>
+        LatestCoreError?.Message
+        ?? (CoreStatus.Value == "Connected" ? CurrentPage.Description : ConnectionMessage);
+
     public bool IsSourcePageActive => CurrentPageId == "source";
 
     public bool IsOverviewPageActive => CurrentPageId == "overview";
@@ -144,6 +148,27 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public bool IsSettingsPageActive => CurrentPageId == "settings";
 
     public bool HasLatestCoreError => LatestCoreError is not null;
+
+    partial void OnCoreStatusChanged(StatusIndicatorViewModel value)
+    {
+        OnPropertyChanged(nameof(HeaderSupportingText));
+    }
+
+    partial void OnCurrentPageChanged(AppShellPageViewModel value)
+    {
+        OnPropertyChanged(nameof(HeaderSupportingText));
+    }
+
+    partial void OnConnectionMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HeaderSupportingText));
+    }
+
+    partial void OnLatestCoreErrorChanged(CoreErrorDto? value)
+    {
+        OnPropertyChanged(nameof(HeaderSupportingText));
+        OnPropertyChanged(nameof(HasLatestCoreError));
+    }
 
     [RelayCommand]
     private void Navigate(string? pageId)
@@ -217,7 +242,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
             ConnectionMessage = result.LaunchedByUi
                 ? "flowarden core launched and connected."
                 : "Connected to an already running flowarden core.";
-            OnPropertyChanged(nameof(HasLatestCoreError));
             await LoadSourcePageAsync();
             await LoadOverviewPageAsync();
             await LoadInspectPageAsync();
@@ -234,7 +258,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
             Tone = "warning",
         };
         ConnectionMessage = result.Error?.Message ?? "Failed to connect to flowarden core.";
-        OnPropertyChanged(nameof(HasLatestCoreError));
     }
 
     private async Task LoadSourcePageAsync()

@@ -121,11 +121,11 @@
 
           <Grid Grid.Row="2" ColumnDefinitions="44,*,*,*,*,*" ColumnSpacing="8" Margin="0,0,2,0">
             <TextBlock Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="" />
-            <TextBlock Grid.Column="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Left" Text="00:00" />
-            <TextBlock Grid.Column="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="06:00" />
-            <TextBlock Grid.Column="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="12:00" />
-            <TextBlock Grid.Column="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="18:00" />
-            <TextBlock Grid.Column="5" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="Now" />
+            <TextBlock Grid.Column="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Left" Text="{Binding AxisLabelStart}" />
+            <TextBlock Grid.Column="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidLeft}" />
+            <TextBlock Grid.Column="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelCenter}" />
+            <TextBlock Grid.Column="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidRight}" />
+            <TextBlock Grid.Column="5" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding AxisLabelEnd}" />
           </Grid>
         </Grid>
       </Border>
