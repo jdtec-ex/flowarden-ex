@@ -5,90 +5,112 @@
              x:Class="Flowarden.Ui.Views.Components.HeroTrafficChartView"
              x:DataType="vm:OverviewPageViewModel">
   <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" MinHeight="220">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" MinHeight="196">
       <StackPanel>
         <TextBlock Classes="section-title" Text="{Binding HeroTitle}" />
         <TextBlock Classes="muted-text" Text="{Binding HeroSummary}" />
       </StackPanel>
 
-      <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="16" ClipToBounds="True">
-        <Grid RowDefinitions="Auto,*" RowSpacing="12">
+      <Border Grid.Row="1" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="14" ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
           <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
             <Border Classes="status-pill">
               <TextBlock Text="Smooth traffic curve" />
             </Border>
             <Border Grid.Column="1" Classes="status-pill">
-              <TextBlock Text="Gradient flow" />
+              <TextBlock Text="Scale 0-100" />
             </Border>
           </Grid>
 
-          <Viewbox Grid.Row="1" Stretch="Fill" Margin="0,4,0,0">
-            <Canvas Width="700" Height="140" ClipToBounds="True">
-              <Grid Width="700" Height="140" Opacity="0.36">
-                <Border VerticalAlignment="Top" Margin="0,30,0,0" Height="1" Background="#2A313D" />
-                <Border VerticalAlignment="Top" Margin="0,66,0,0" Height="1" Background="#2A313D" />
-                <Border VerticalAlignment="Top" Margin="0,102,0,0" Height="1" Background="#2A313D" />
-              </Grid>
+          <Grid Grid.Row="1" ColumnDefinitions="44,*" ColumnSpacing="10">
+            <Grid RowDefinitions="*,*,*,*,*" Margin="0,4,0,18">
+              <TextBlock Grid.Row="0" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="100" />
+              <TextBlock Grid.Row="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="75" />
+              <TextBlock Grid.Row="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="50" />
+              <TextBlock Grid.Row="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="25" />
+              <TextBlock Grid.Row="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="0" />
+            </Grid>
 
-              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
-                           Opacity="0.18"
-                           StrokeThickness="0">
-                <shapes:Path.Fill>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
-                    <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.45" />
-                    <GradientStop Color="#0511131E" Offset="1" />
-                  </LinearGradientBrush>
-                </shapes:Path.Fill>
-                <shapes:Path.Data>
-                  M 22,112
-                  C 58,110 72,90 96,80
-                  S 150,46 190,52
-                  S 258,88 318,72
-                  S 396,28 466,44
-                  S 560,98 618,70
-                  S 660,48 678,36
-                  L 678,122
-                  L 22,122
-                  Z
-                </shapes:Path.Data>
-              </shapes:Path>
+            <Border Grid.Column="1" Background="{StaticResource CosmosSurfaceBrush}" CornerRadius="10" Padding="10" ClipToBounds="True">
+              <Viewbox Stretch="Fill">
+                <Canvas Width="640" Height="84" ClipToBounds="True">
+                  <Grid Width="640" Height="84" Opacity="0.32">
+                    <Border VerticalAlignment="Top" Margin="0,14,0,0" Height="1" Background="#2A313D" />
+                    <Border VerticalAlignment="Top" Margin="0,32,0,0" Height="1" Background="#2A313D" />
+                    <Border VerticalAlignment="Top" Margin="0,50,0,0" Height="1" Background="#2A313D" />
+                    <Border VerticalAlignment="Top" Margin="0,68,0,0" Height="1" Background="#2A313D" />
+                  </Grid>
 
-              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
-                           Opacity="0.20"
-                           Stroke="{StaticResource CosmosSecondaryBrush}"
-                           StrokeThickness="10"
-                           Fill="Transparent"
-                           Data="M 22,112 C 58,110 72,90 96,80 S 150,46 190,52 S 258,88 318,72 S 396,28 466,44 S 560,98 618,70 S 660,48 678,36" />
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                               Opacity="0.14"
+                               StrokeThickness="0">
+                    <shapes:Path.Fill>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
+                        <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.48" />
+                        <GradientStop Color="#0511131E" Offset="1" />
+                      </LinearGradientBrush>
+                    </shapes:Path.Fill>
+                    <shapes:Path.Data>
+                      M 18,60
+                      C 52,56 74,36 100,32
+                      S 154,18 194,22
+                      S 248,46 304,40
+                      S 380,12 446,24
+                      S 536,54 596,34
+                      S 626,22 632,20
+                      L 632,74
+                      L 18,74
+                      Z
+                    </shapes:Path.Data>
+                  </shapes:Path>
 
-              <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="700" Height="140"
-                           StrokeThickness="4"
-                           Fill="Transparent">
-                <shapes:Path.Stroke>
-                  <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
-                    <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.52" />
-                    <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="1" />
-                  </LinearGradientBrush>
-                </shapes:Path.Stroke>
-                <shapes:Path.Data>
-                  M 22,112
-                  C 58,110 72,90 96,80
-                  S 150,46 190,52
-                  S 258,88 318,72
-                  S 396,28 466,44
-                  S 560,98 618,70
-                  S 660,48 678,36
-                </shapes:Path.Data>
-              </shapes:Path>
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                               Opacity="0.18"
+                               Stroke="{StaticResource CosmosSecondaryBrush}"
+                               StrokeThickness="7"
+                               Fill="Transparent"
+                               Data="M 18,60 C 52,56 74,36 100,32 S 154,18 194,22 S 248,46 304,40 S 380,12 446,24 S 536,54 596,34 S 626,22 632,20" />
 
-              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="92" Canvas.Top="75" />
-              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="188" Canvas.Top="47" />
-              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="318" Canvas.Top="67" />
-              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="466" Canvas.Top="40" />
-              <Border Width="10" Height="10" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="618" Canvas.Top="66" />
-            </Canvas>
-          </Viewbox>
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
+                               StrokeThickness="3"
+                               Fill="Transparent">
+                    <shapes:Path.Stroke>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="0" />
+                        <GradientStop Color="{StaticResource CosmosPrimaryColor}" Offset="0.5" />
+                        <GradientStop Color="{StaticResource CosmosSecondaryColor}" Offset="1" />
+                      </LinearGradientBrush>
+                    </shapes:Path.Stroke>
+                    <shapes:Path.Data>
+                      M 18,60
+                      C 52,56 74,36 100,32
+                      S 154,18 194,22
+                      S 248,46 304,40
+                      S 380,12 446,24
+                      S 536,54 596,34
+                      S 626,22 632,20
+                    </shapes:Path.Data>
+                  </shapes:Path>
+
+                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="98" Canvas.Top="30" />
+                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="194" Canvas.Top="18" />
+                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="304" Canvas.Top="38" />
+                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosSecondaryBrush}" Canvas.Left="446" Canvas.Top="22" />
+                  <Border Width="8" Height="8" CornerRadius="999" Background="{StaticResource CosmosPrimaryBrush}" Canvas.Left="596" Canvas.Top="32" />
+                </Canvas>
+              </Viewbox>
+            </Border>
+          </Grid>
+
+          <Grid Grid.Row="2" ColumnDefinitions="44,*,*,*,*,*" ColumnSpacing="8" Margin="0,0,2,0">
+            <TextBlock Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="" />
+            <TextBlock Grid.Column="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Left" Text="00:00" />
+            <TextBlock Grid.Column="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="06:00" />
+            <TextBlock Grid.Column="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="12:00" />
+            <TextBlock Grid.Column="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="18:00" />
+            <TextBlock Grid.Column="5" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="Now" />
+          </Grid>
         </Grid>
       </Border>
 
