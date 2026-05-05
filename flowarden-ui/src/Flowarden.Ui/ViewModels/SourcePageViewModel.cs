@@ -14,6 +14,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 {
     private readonly DiscoveryClient? _discoveryClient;
     private readonly bool _isDesignTime;
+    private const ulong PreviewWindowSeconds = 2;
 
     public SourcePageViewModel()
         : this(discoveryClient: null, isDesignTime: true)
@@ -32,7 +33,9 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         DeviceItems = new ObservableCollection<SourceDeviceItemViewModel>();
 
         SelectedSourceMode = "Live source";
-        LastPreviewLabel = "Preview window: 2s sample";
+        LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
+        PreviewStatusLabel = "Preview not started";
+        PreviewStatusDetail = "Select one device to review multi-device sampling before formal capture.";
         CurrentSession = new CaptureSessionStateDto
         {
             SourceKind = "none",
@@ -65,6 +68,18 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     [ObservableProperty]
     private string? statusMessage;
 
+    [ObservableProperty]
+    private string previewStatusLabel;
+
+    [ObservableProperty]
+    private string previewStatusDetail;
+
+    [ObservableProperty]
+    private bool previewStateIsWarning;
+
+    [ObservableProperty]
+    private bool previewStateIsError;
+
     public bool HasSelectedDevice => SelectedDevice is not null;
 
     public string FormalCaptureSummary =>
@@ -81,11 +96,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             return;
         }
 
-        StatusMessage = "Loading devices from resident core...";
+        SetPreviewState("Preview loading", "Loading devices and preview samples from resident core.", isWarning: false, isError: false);
+        StatusMessage = "Loading source inventory...";
         try
         {
             var devices = await _discoveryClient.GetDevicesAsync();
-            var previews = await _discoveryClient.GetDevicePreviewsAsync(2);
+            var previews = await _discoveryClient.GetDevicePreviewsAsync(PreviewWindowSeconds);
             var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
 
             var items = devices
@@ -113,20 +129,33 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
             SelectedDevice = DeviceItems.FirstOrDefault();
             SelectedSourceMode = "Live source";
-            LastPreviewLabel = $"Loaded {DeviceItems.Count} devices from core";
-            StatusMessage = string.Empty;
+            LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
+            StatusMessage = "Review one source, then continue into formal capture.";
             UpdateCurrentSessionFromSelectedDevice();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            StatusMessage = ex.Message;
+            StatusMessage = "Preview unavailable";
+            SetPreviewState(
+                "Preview unavailable",
+                "Preview sampling is not currently wired or failed to return from the resident core. You can still review devices and continue with explicit source selection.",
+                isWarning: true,
+                isError: false
+            );
+            LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
             LoadSeedDevices();
         }
     }
 
     partial void OnSelectedDeviceChanged(SourceDeviceItemViewModel? value)
     {
+        foreach (var item in DeviceItems)
+        {
+            item.IsSelected = ReferenceEquals(item, value);
+        }
+
         UpdateCurrentSessionFromSelectedDevice();
+        UpdatePreviewStateFromSelectedDevice();
         OnPropertyChanged(nameof(HasSelectedDevice));
         OnPropertyChanged(nameof(FormalCaptureSummary));
     }
@@ -148,6 +177,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         if (_discoveryClient is null || _isDesignTime)
         {
             LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss}";
+            SetPreviewState(
+                "Preview ready",
+                "Design-time source preview refreshed. Formal capture still requires explicit source selection.",
+                isWarning: false,
+                isError: false
+            );
             return;
         }
 
@@ -158,6 +193,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private void ImportOffline()
     {
         SelectedSourceMode = "Offline file";
+        SetPreviewState(
+            "Offline import selected",
+            "Preview sampling applies only to live devices. Offline capture remains a single file source.",
+            isWarning: false,
+            isError: false
+        );
         CurrentSession = new CaptureSessionStateDto
         {
             SourceKind = "offline",
@@ -172,6 +213,14 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     [RelayCommand]
     private void StartFormalCapture()
     {
+        SetPreviewState(
+            "Capture armed",
+            SelectedDevice is null
+                ? "Formal capture requires selecting one source."
+                : $"Formal capture is armed for {SelectedDevice.DisplayName}. Actual start remains a separate control-plane action.",
+            isWarning: SelectedDevice is null,
+            isError: false
+        );
         CurrentSession = new CaptureSessionStateDto
         {
             SourceKind = CurrentSession.SourceKind,
@@ -204,8 +253,60 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
         SelectedDevice = DeviceItems.FirstOrDefault();
         SelectedSourceMode = "Live source";
-        LastPreviewLabel = "Preview window: 2s sample";
+        LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
         UpdateCurrentSessionFromSelectedDevice();
+        UpdatePreviewStateFromSelectedDevice();
+    }
+
+    private void UpdatePreviewStateFromSelectedDevice()
+    {
+        if (SelectedDevice is null)
+        {
+            SetPreviewState(
+                "Select a source",
+                "Choose one device to review preview sampling and formal capture readiness.",
+                isWarning: false,
+                isError: false
+            );
+            return;
+        }
+
+        if (SelectedDevice.Preview.Unsupported)
+        {
+            SetPreviewState(
+                "Preview unsupported",
+                "This interface is still selectable, but preview sampling is not supported on it.",
+                isWarning: true,
+                isError: false
+            );
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedDevice.Preview.Error))
+        {
+            SetPreviewState(
+                "Preview unavailable",
+                "Preview could not be sampled for the selected device. Formal capture still requires explicit selection and may need permission review.",
+                isWarning: false,
+                isError: true
+            );
+            return;
+        }
+
+        SetPreviewState(
+            "Preview ready",
+            "Multi-device preview is healthy. Continue with explicit source selection for formal capture.",
+            isWarning: false,
+            isError: false
+        );
+    }
+
+    private void SetPreviewState(string label, string detail, bool isWarning, bool isError)
+    {
+        PreviewStatusLabel = label;
+        PreviewStatusDetail = detail;
+        PreviewStateIsWarning = isWarning;
+        PreviewStateIsError = isError;
     }
 
     private static IReadOnlyList<SourceDeviceItemViewModel> CreateSeedDevices()

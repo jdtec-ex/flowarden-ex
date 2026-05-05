@@ -11,14 +11,42 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:SourceDeviceItemViewModel">
             <Button Classes="source-device-item"
+                    Background="{Binding CardBackground}"
+                    BorderBrush="{Binding CardBorderBrush}"
+                    BorderThickness="{Binding CardBorderThickness}"
                     Command="{Binding $parent[vm:SourcePageViewModel].SelectDeviceCommand}"
                     CommandParameter="{Binding}">
-              <StackPanel Spacing="6">
-                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                <TextBlock Classes="muted-text" Text="{Binding Description}" />
-                <TextBlock Classes="muted-text" Text="{Binding PreviewSummary}" />
-                <TextBlock Classes="muted-text" Text="{Binding StatusLabel}" />
-              </StackPanel>
+              <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted-text" Text="{Binding Description}" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Background="{Binding StatusBackground}"
+                          CornerRadius="999"
+                          Padding="10,6">
+                    <TextBlock FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding StatusForeground}"
+                               Text="{Binding PreviewStatusLabel}" />
+                  </Border>
+                </Grid>
+
+                <TextBlock Grid.Row="1"
+                           Classes="muted-text"
+                           Text="{Binding PreviewSummary}" />
+
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontSize="12"
+                             FontWeight="SemiBold"
+                             Foreground="{Binding StatusForeground}"
+                             Text="{Binding SelectionLabel}" />
+                  <TextBlock Grid.Column="1"
+                             Classes="muted-text"
+                             Text="{Binding ReadinessLabel}" />
+                </Grid>
+              </Grid>
             </Button>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
