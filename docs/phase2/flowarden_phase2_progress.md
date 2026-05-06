@@ -291,3 +291,7 @@
 3. core 异常退出时，UI 真实进入可恢复状态
 
 这些项不阻塞 `M2-009` 封板，但在进入后续增强或 phase3 前需要单独规划。
+
+详细清单见：
+
+- `flowarden_phase2_followup_enhancements.md`
