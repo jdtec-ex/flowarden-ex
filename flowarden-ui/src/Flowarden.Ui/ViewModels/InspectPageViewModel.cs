@@ -33,11 +33,15 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         _allRows = CreateSeedRows();
         Filter = new InspectFilterDto();
         Rows = new ObservableCollection<ConnectionRowDto>(_allRows);
+        ActiveFilterChips = new ObservableCollection<string>();
         Summary = BuildSummary(Rows);
         ActiveFilterSummary = "No active filters";
+        ProjectionStateLabel = "Seed dataset";
     }
 
     public ObservableCollection<ConnectionRowDto> Rows { get; }
+
+    public ObservableCollection<string> ActiveFilterChips { get; }
 
     [ObservableProperty]
     private InspectFilterDto filter;
@@ -47,6 +51,9 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     [ObservableProperty]
     private string activeFilterSummary;
+
+    [ObservableProperty]
+    private string projectionStateLabel;
 
     [ObservableProperty]
     private string sourceAddressInput = string.Empty;
@@ -68,6 +75,15 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     public string ResultCountLabel => $"{Summary.VisibleRows} visible / {Summary.TotalRows} total";
 
+    public string TotalBytesLabel => FormatBytes(Summary.TotalBytes);
+
+    public string TotalPacketsLabel => $"{Summary.TotalPackets} packets";
+
+    public string SortLabel =>
+        $"{Summary.SortBy} · {Summary.SortDirection}";
+
+    public bool HasActiveFilters => ActiveFilterChips.Count > 0;
+
     public async Task LoadAsync()
     {
         if (_projectionClient is null || _isDesignTime)
@@ -82,7 +98,15 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         ActiveFilterSummary = string.Equals(result.State, "ready", StringComparison.OrdinalIgnoreCase)
             ? "Backend projection ready"
             : $"Projection state: {result.State}";
+        ProjectionStateLabel = string.Equals(result.State, "ready", StringComparison.OrdinalIgnoreCase)
+            ? "Projection ready"
+            : $"Projection {result.State}";
+        ReplaceActiveFilterChips(BuildFilterChips(Filter));
         OnPropertyChanged(nameof(ResultCountLabel));
+        OnPropertyChanged(nameof(TotalBytesLabel));
+        OnPropertyChanged(nameof(TotalPacketsLabel));
+        OnPropertyChanged(nameof(SortLabel));
+        OnPropertyChanged(nameof(HasActiveFilters));
     }
 
     [RelayCommand]
@@ -105,7 +129,15 @@ public sealed partial class InspectPageViewModel : ViewModelBase
             ReplaceRows(_allRows);
             Summary = result.Summary;
             ActiveFilterSummary = BuildFilterSummary();
+            ProjectionStateLabel = string.Equals(result.State, "ready", StringComparison.OrdinalIgnoreCase)
+                ? "Projection ready"
+                : $"Projection {result.State}";
+            ReplaceActiveFilterChips(BuildFilterChips(Filter));
             OnPropertyChanged(nameof(ResultCountLabel));
+            OnPropertyChanged(nameof(TotalBytesLabel));
+            OnPropertyChanged(nameof(TotalPacketsLabel));
+            OnPropertyChanged(nameof(SortLabel));
+            OnPropertyChanged(nameof(HasActiveFilters));
             return;
         }
 
@@ -113,7 +145,13 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         ReplaceRows(filtered);
         Summary = BuildSummary(filtered);
         ActiveFilterSummary = BuildFilterSummary();
+        ProjectionStateLabel = "Seed dataset";
+        ReplaceActiveFilterChips(BuildFilterChips(Filter));
         OnPropertyChanged(nameof(ResultCountLabel));
+        OnPropertyChanged(nameof(TotalBytesLabel));
+        OnPropertyChanged(nameof(TotalPacketsLabel));
+        OnPropertyChanged(nameof(SortLabel));
+        OnPropertyChanged(nameof(HasActiveFilters));
     }
 
     [RelayCommand]
@@ -129,7 +167,13 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         ReplaceRows(_allRows);
         Summary = BuildSummary(_allRows);
         ActiveFilterSummary = "No active filters";
+        ProjectionStateLabel = _projectionClient is null || _isDesignTime ? "Seed dataset" : "Projection ready";
+        ReplaceActiveFilterChips([]);
         OnPropertyChanged(nameof(ResultCountLabel));
+        OnPropertyChanged(nameof(TotalBytesLabel));
+        OnPropertyChanged(nameof(TotalPacketsLabel));
+        OnPropertyChanged(nameof(SortLabel));
+        OnPropertyChanged(nameof(HasActiveFilters));
     }
 
     private void ReplaceRows(IEnumerable<ConnectionRowDto> rows)
@@ -172,6 +216,29 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         }
     }
 
+    private static IReadOnlyList<string> BuildFilterChips(InspectFilterDto filter)
+    {
+        var chips = new List<string>();
+
+        AppendFilter(chips, "src", filter.SourceAddress);
+        AppendFilter(chips, "dst", filter.DestinationAddress);
+        AppendFilter(chips, "service", filter.ServiceName);
+        AppendFilter(chips, "protocol", filter.Protocol);
+        AppendFilter(chips, "direction", filter.Direction);
+        AppendFilter(chips, "bpf", filter.Bpf);
+
+        return chips;
+    }
+
+    private void ReplaceActiveFilterChips(IEnumerable<string> chips)
+    {
+        ActiveFilterChips.Clear();
+        foreach (var chip in chips)
+        {
+            ActiveFilterChips.Add(chip);
+        }
+    }
+
     private static bool MatchesText(string? filter, string value)
     {
         return string.IsNullOrWhiteSpace(filter)
@@ -181,6 +248,21 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     private static string? NullIfEmpty(string value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static string FormatBytes(ulong bytes)
+    {
+        if (bytes >= 1_048_576)
+        {
+            return $"{bytes / 1_048_576.0:0.##} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024.0:0.##} KB";
+        }
+
+        return $"{bytes} B";
     }
 
     private static InspectResultSummaryDto BuildSummary(IEnumerable<ConnectionRowDto> rows)

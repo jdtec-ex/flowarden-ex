@@ -10,7 +10,10 @@
         <TextBlock Classes="muted-text" Text="{Binding ActiveFilterSummary}" TextWrapping="Wrap" />
       </StackPanel>
       <Border Grid.Column="1" Classes="status-pill">
-        <TextBlock Text="{Binding ResultCountLabel}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="{Binding ResultCountLabel}" />
+          <TextBlock Classes="muted-text" Text="{Binding ProjectionStateLabel}" />
+        </StackPanel>
       </Border>
       <Button Grid.Column="2"
               Classes="tools-button"

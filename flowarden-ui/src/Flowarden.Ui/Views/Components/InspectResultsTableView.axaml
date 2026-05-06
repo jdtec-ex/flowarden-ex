@@ -5,37 +5,41 @@
              x:DataType="vm:InspectPageViewModel">
   <Border Classes="glass-panel">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <Grid ColumnDefinitions="2*,Auto,2*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8">
-        <TextBlock Classes="muted-text" Text="Src Addr" />
-        <TextBlock Grid.Column="1" Classes="muted-text" Text="Src Port" />
-        <TextBlock Grid.Column="2" Classes="muted-text" Text="Dst Addr" />
-        <TextBlock Grid.Column="3" Classes="muted-text" Text="Dst Port" />
-        <TextBlock Grid.Column="4" Classes="muted-text" Text="Protocol" />
-        <TextBlock Grid.Column="5" Classes="muted-text" Text="Service" />
-        <TextBlock Grid.Column="6" Classes="muted-text" Text="Direction" />
-        <TextBlock Grid.Column="7" Classes="muted-text" Text="Bytes" />
-        <TextBlock Grid.Column="8" Classes="muted-text" Text="Packets" />
+      <Grid ColumnDefinitions="2.3*,Auto,2.3*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+        <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Source" />
+        <TextBlock Grid.Column="1" Classes="muted-text" FontWeight="SemiBold" Text="Port" />
+        <TextBlock Grid.Column="2" Classes="muted-text" FontWeight="SemiBold" Text="Destination" />
+        <TextBlock Grid.Column="3" Classes="muted-text" FontWeight="SemiBold" Text="Port" />
+        <TextBlock Grid.Column="4" Classes="muted-text" FontWeight="SemiBold" Text="Proto" />
+        <TextBlock Grid.Column="5" Classes="muted-text" FontWeight="SemiBold" Text="Service" />
+        <TextBlock Grid.Column="6" Classes="muted-text" FontWeight="SemiBold" Text="Direction" />
+        <TextBlock Grid.Column="7" Classes="muted-text" FontWeight="SemiBold" Text="Bytes" />
+        <TextBlock Grid.Column="8" Classes="muted-text" FontWeight="SemiBold" Text="Packets" />
       </Grid>
 
-      <ItemsControl Grid.Row="1" ItemsSource="{Binding Rows}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Border Classes="status-pill" Margin="0,0,0,8">
-              <Grid ColumnDefinitions="2*,Auto,2*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8">
-                <TextBlock Text="{Binding SourceAddress}" />
-                <TextBlock Grid.Column="1" Text="{Binding SourcePort}" />
-                <TextBlock Grid.Column="2" Text="{Binding DestinationAddress}" />
-                <TextBlock Grid.Column="3" Text="{Binding DestinationPort}" />
-                <TextBlock Grid.Column="4" Text="{Binding Protocol}" />
-                <TextBlock Grid.Column="5" Text="{Binding ServiceName}" />
-                <TextBlock Grid.Column="6" Text="{Binding Direction}" />
-                <TextBlock Grid.Column="7" Text="{Binding Bytes}" />
-                <TextBlock Grid.Column="8" Text="{Binding Packets}" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+      <ScrollViewer Grid.Row="1"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding Rows}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="status-pill" Margin="0,0,0,8">
+                <Grid ColumnDefinitions="2.3*,Auto,2.3*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+                  <TextBlock Text="{Binding SourceAddress}" />
+                  <TextBlock Grid.Column="1" Text="{Binding SourcePort}" />
+                  <TextBlock Grid.Column="2" Text="{Binding DestinationAddress}" />
+                  <TextBlock Grid.Column="3" Text="{Binding DestinationPort}" />
+                  <TextBlock Grid.Column="4" Text="{Binding Protocol}" />
+                  <TextBlock Grid.Column="5" Text="{Binding ServiceName}" />
+                  <TextBlock Grid.Column="6" Text="{Binding Direction}" />
+                  <TextBlock Grid.Column="7" Text="{Binding Bytes}" />
+                  <TextBlock Grid.Column="8" Text="{Binding Packets}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
     </Grid>
   </Border>
 </UserControl>

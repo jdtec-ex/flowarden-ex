@@ -6,16 +6,28 @@
   <Border Classes="glass-panel">
     <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12">
       <Border Classes="status-pill">
-        <TextBlock Text="{Binding Summary.VisibleRows}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Visible" FontWeight="SemiBold" />
+          <TextBlock Classes="muted-text" Text="{Binding Summary.VisibleRows}" />
+        </StackPanel>
       </Border>
       <Border Grid.Column="1" Classes="status-pill">
-        <TextBlock Text="{Binding Summary.TotalBytes}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Bytes" FontWeight="SemiBold" />
+          <TextBlock Classes="muted-text" Text="{Binding TotalBytesLabel}" />
+        </StackPanel>
       </Border>
       <Border Grid.Column="2" Classes="status-pill">
-        <TextBlock Text="{Binding Summary.TotalPackets}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Packets" FontWeight="SemiBold" />
+          <TextBlock Classes="muted-text" Text="{Binding TotalPacketsLabel}" />
+        </StackPanel>
       </Border>
       <Border Grid.Column="3" Classes="status-pill">
-        <TextBlock Text="{Binding Summary.SortBy}" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Sort" FontWeight="SemiBold" />
+          <TextBlock Classes="muted-text" Text="{Binding SortLabel}" />
+        </StackPanel>
       </Border>
     </Grid>
   </Border>
