@@ -38,10 +38,10 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _coreHealthService = coreHealthService;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
-                new AppNavigationItemViewModel { Id = "source", Label = "Source" },
-                new AppNavigationItemViewModel { Id = "overview", Label = "Overview" },
-                new AppNavigationItemViewModel { Id = "inspect", Label = "Inspect" },
-                new AppNavigationItemViewModel { Id = "settings", Label = "Settings" },
+                new AppNavigationItemViewModel { Id = "source", Label = "Source", CompactLabel = "Src" },
+                new AppNavigationItemViewModel { Id = "overview", Label = "Overview", CompactLabel = "Ovr" },
+                new AppNavigationItemViewModel { Id = "inspect", Label = "Inspect", CompactLabel = "Insp" },
+                new AppNavigationItemViewModel { Id = "settings", Label = "Settings", CompactLabel = "Set" },
             ]
         );
 
@@ -102,7 +102,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public string Title { get; } = "Flowarden";
 
-    public string Subtitle { get; } = "Cosmos Network System";
+    public string Subtitle { get; } = "Traffic Flow Warden";
 
     public IReadOnlyList<AppNavigationItemViewModel> NavigationItems { get; }
 
@@ -135,6 +135,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [ObservableProperty]
     private CoreErrorDto? latestCoreError;
 
+    [ObservableProperty]
+    private bool isMenuCollapsed;
+
     public string HeaderSupportingText =>
         LatestCoreError?.Message
         ?? (CoreStatus.Value == "Connected" ? CurrentPage.Description : ConnectionMessage);
@@ -148,6 +151,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public bool IsSettingsPageActive => CurrentPageId == "settings";
 
     public bool HasLatestCoreError => LatestCoreError is not null;
+
+    public string MenuToggleLabel => IsMenuCollapsed ? "Expand Menu" : "Collapse Menu";
 
     partial void OnCoreStatusChanged(StatusIndicatorViewModel value)
     {
@@ -168,6 +173,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(HeaderSupportingText));
         OnPropertyChanged(nameof(HasLatestCoreError));
+    }
+
+    partial void OnIsMenuCollapsedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(MenuToggleLabel));
     }
 
     [RelayCommand]
@@ -197,6 +207,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private void StartCapture()
     {
         Navigate("source");
+    }
+
+    [RelayCommand]
+    private void ToggleMenu()
+    {
+        IsMenuCollapsed = !IsMenuCollapsed;
     }
 
     [RelayCommand]
