@@ -5,7 +5,7 @@
              x:DataType="vm:InspectPageViewModel">
   <Border Classes="glass-panel">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <Grid ColumnDefinitions="200,68,220,68,76,116,92,104,82,*" ColumnSpacing="6">
+      <Grid ColumnDefinitions="200,136,220,136,76,116,92,104,82,*" ColumnSpacing="6">
         <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Source" />
         <TextBlock Grid.Column="1"
                    Classes="muted-text"
@@ -38,7 +38,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border Classes="status-pill" Margin="0,0,0,8">
-                <Grid ColumnDefinitions="200,68,220,68,76,116,92,104,82,*" ColumnSpacing="6">
+                <Grid ColumnDefinitions="200,136,220,136,76,116,92,104,82,*" ColumnSpacing="6">
                   <TextBlock Text="{Binding SourceAddress}" />
                   <TextBlock Grid.Column="1" Text="{Binding SourcePort}" />
                   <TextBlock Grid.Column="2" Text="{Binding DestinationAddress}" />
