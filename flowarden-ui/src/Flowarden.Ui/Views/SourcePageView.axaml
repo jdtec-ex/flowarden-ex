@@ -6,24 +6,16 @@
              x:DataType="vm:SourcePageViewModel">
   <Grid RowDefinitions="Auto,*,Auto" RowSpacing="16">
     <Border Classes="glass-panel">
-      <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="12">
+      <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
         <Button Grid.Column="0"
                 Classes="mode-button"
                 Command="{Binding RefreshPreviewCommand}"
-                Content="Refresh Preview" />
+                Content="Refresh Device" />
         <Button Grid.Column="1"
                 Classes="tools-button"
                 Command="{Binding ImportOfflineCommand}"
                 Content="Import Offline" />
-        <StackPanel Grid.Column="2"
-                    VerticalAlignment="Center"
-                    Spacing="2">
-          <SelectableTextBlock FontWeight="SemiBold"
-                               Text="{Binding PreviewStatusLabel}" />
-          <SelectableTextBlock Classes="muted-text"
-                               Text="{Binding PreviewStatusDetail}" />
-        </StackPanel>
-        <SelectableTextBlock Grid.Column="3"
+        <SelectableTextBlock Grid.Column="2"
                              HorizontalAlignment="Right"
                              VerticalAlignment="Center"
                              Classes="muted-text"
