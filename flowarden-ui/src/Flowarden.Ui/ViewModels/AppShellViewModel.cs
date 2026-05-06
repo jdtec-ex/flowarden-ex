@@ -161,8 +161,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public double RailWidth => IsRailCollapsed ? 96 : 180;
 
-    public string StartCaptureLabel => IsRailCollapsed ? "Start" : "Start Capture";
-
     partial void OnCoreStatusChanged(StatusIndicatorViewModel value)
     {
         OnPropertyChanged(nameof(HeaderSupportingText));
@@ -188,7 +186,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(RailToggleLabel));
         OnPropertyChanged(nameof(RailWidth));
-        OnPropertyChanged(nameof(StartCaptureLabel));
     }
 
     [RelayCommand]
@@ -212,12 +209,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
     {
         ActiveMode = ActiveMode == "Live" ? "Replay" : "Live";
         OverviewPage.SetMode(ActiveMode);
-    }
-
-    [RelayCommand]
-    private void StartCapture()
-    {
-        Navigate("source");
     }
 
     [RelayCommand]

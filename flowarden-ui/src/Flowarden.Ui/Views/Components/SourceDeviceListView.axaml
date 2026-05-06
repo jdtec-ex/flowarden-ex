@@ -7,50 +7,52 @@
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
       <TextBlock Classes="section-title" Text="Device List" />
 
-      <ItemsControl Grid.Row="1" ItemsSource="{Binding DeviceItems}">
-        <ItemsControl.ItemTemplate>
+      <ListBox Grid.Row="1"
+               ItemsSource="{Binding DeviceItems}"
+               SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+               Background="Transparent"
+               BorderThickness="0">
+        <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:SourceDeviceItemViewModel">
-            <Button Classes="source-device-item"
+            <Border Classes="source-device-item"
                     Background="{Binding CardBackground}"
                     BorderBrush="{Binding CardBorderBrush}"
-                    BorderThickness="{Binding CardBorderThickness}"
-                    Command="{Binding $parent[vm:SourcePageViewModel].SelectDeviceCommand}"
-                    CommandParameter="{Binding}">
+                    BorderThickness="{Binding CardBorderThickness}">
               <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                   <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                    <TextBlock Classes="muted-text" Text="{Binding Description}" />
+                    <SelectableTextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                    <SelectableTextBlock Classes="muted-text" Text="{Binding Description}" />
                   </StackPanel>
                   <Border Grid.Column="1"
                           Background="{Binding StatusBackground}"
                           CornerRadius="999"
                           Padding="10,6">
-                    <TextBlock FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="{Binding StatusForeground}"
-                               Text="{Binding PreviewStatusLabel}" />
+                    <SelectableTextBlock FontSize="12"
+                                         FontWeight="SemiBold"
+                                         Foreground="{Binding StatusForeground}"
+                                         Text="{Binding PreviewStatusLabel}" />
                   </Border>
                 </Grid>
 
-                <TextBlock Grid.Row="1"
-                           Classes="muted-text"
-                           Text="{Binding PreviewSummary}" />
+                <SelectableTextBlock Grid.Row="1"
+                                     Classes="muted-text"
+                                     Text="{Binding PreviewSummary}" />
 
                 <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                  <TextBlock FontSize="12"
-                             FontWeight="SemiBold"
-                             Foreground="{Binding StatusForeground}"
-                             Text="{Binding SelectionLabel}" />
-                  <TextBlock Grid.Column="1"
-                             Classes="muted-text"
-                             Text="{Binding ReadinessLabel}" />
+                  <SelectableTextBlock FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding StatusForeground}"
+                                       Text="{Binding SelectionLabel}" />
+                  <SelectableTextBlock Grid.Column="1"
+                                       Classes="muted-text"
+                                       Text="{Binding ReadinessLabel}" />
                 </Grid>
               </Grid>
-            </Button>
+            </Border>
           </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+        </ListBox.ItemTemplate>
+      </ListBox>
     </Grid>
   </Border>
 </UserControl>

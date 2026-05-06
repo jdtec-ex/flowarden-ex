@@ -133,21 +133,7 @@
         </StackPanel>
       </StackPanel>
 
-      <StackPanel DockPanel.Dock="Bottom" Spacing="12">
-        <Button Classes="primary-cta"
-                Command="{Binding StartCaptureCommand}"
-                Content="{Binding StartCaptureLabel}"
-                IsVisible="{Binding !IsRailCollapsed}" />
-        <Button Classes="primary-cta"
-                Command="{Binding StartCaptureCommand}"
-                IsVisible="{Binding IsRailCollapsed}"
-                ToolTip.Tip="Start Capture">
-          <Viewbox Width="18" Height="18">
-            <shapes:Path Fill="#17131F"
-                         Data="M 6 4 L 18 12 L 6 20 Z" />
-          </Viewbox>
-        </Button>
-      </StackPanel>
+      <Grid></Grid>
     </DockPanel>
   </Border>
 </UserControl>

@@ -142,6 +142,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         StatusMessage = "Loading source inventory...";
         try
         {
+            var previousSelection = SelectedDevice?.Device.Name;
             var devices = await _discoveryClient.GetDevicesAsync();
             var previews = await _discoveryClient.GetDevicePreviewsAsync(PreviewWindowSeconds);
             var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
@@ -169,7 +170,9 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                 DeviceItems.Add(item);
             }
 
-            SelectedDevice = DeviceItems.FirstOrDefault();
+            SelectedDevice = DeviceItems.FirstOrDefault(item =>
+                string.Equals(item.Device.Name, previousSelection, StringComparison.OrdinalIgnoreCase)
+            ) ?? DeviceItems.FirstOrDefault();
             SelectedSourceMode = "Live source";
             LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
             StatusMessage = "Review one source, then continue into formal capture.";

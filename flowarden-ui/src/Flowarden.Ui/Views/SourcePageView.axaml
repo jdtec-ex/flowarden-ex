@@ -8,7 +8,7 @@
     <Border Classes="glass-panel">
       <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="12">
         <Border Classes="status-pill">
-          <TextBlock Text="{Binding SelectedSourceMode}" />
+          <SelectableTextBlock Text="{Binding SelectedSourceMode}" />
         </Border>
         <Button Grid.Column="1"
                 Classes="mode-button"
@@ -21,16 +21,16 @@
         <StackPanel Grid.Column="3"
                     VerticalAlignment="Center"
                     Spacing="2">
-          <TextBlock FontWeight="SemiBold"
-                     Text="{Binding PreviewStatusLabel}" />
-          <TextBlock Classes="muted-text"
-                     Text="{Binding PreviewStatusDetail}" />
+          <SelectableTextBlock FontWeight="SemiBold"
+                               Text="{Binding PreviewStatusLabel}" />
+          <SelectableTextBlock Classes="muted-text"
+                               Text="{Binding PreviewStatusDetail}" />
         </StackPanel>
-        <TextBlock Grid.Column="4"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Center"
-                   Classes="muted-text"
-                   Text="{Binding LastPreviewLabel}" />
+        <SelectableTextBlock Grid.Column="4"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             Classes="muted-text"
+                             Text="{Binding LastPreviewLabel}" />
       </Grid>
     </Border>
 
@@ -43,19 +43,19 @@
       <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="12">
         <StackPanel>
           <TextBlock Classes="section-title" Text="Formal Capture Boundary" />
-          <TextBlock Classes="muted-text" Text="{Binding FormalCaptureSummary}" />
+          <SelectableTextBlock Classes="muted-text" Text="{Binding FormalCaptureSummary}" />
           <Border Classes="status-pill"
                   HorizontalAlignment="Left"
                   Margin="0,8,0,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBlock FontWeight="SemiBold" Text="State" />
-              <TextBlock Classes="muted-text" Text="{Binding CaptureStateLabel}" />
+              <SelectableTextBlock Classes="muted-text" Text="{Binding CaptureStateLabel}" />
             </StackPanel>
           </Border>
-          <TextBlock Margin="0,8,0,0"
-                     Classes="muted-text"
-                     Text="{Binding StatusMessage}" />
-          <TextBlock Classes="muted-text" Text="{Binding OfflineImportSummary}" />
+          <SelectableTextBlock Margin="0,8,0,0"
+                               Classes="muted-text"
+                               Text="{Binding StatusMessage}" />
+          <SelectableTextBlock Classes="muted-text" Text="{Binding OfflineImportSummary}" />
         </StackPanel>
 
         <Button Grid.Column="1"

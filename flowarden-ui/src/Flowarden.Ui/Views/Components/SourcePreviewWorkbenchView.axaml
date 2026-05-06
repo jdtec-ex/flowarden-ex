@@ -8,8 +8,8 @@
       <TextBlock Classes="section-title" Text="Preview Workbench" />
 
       <StackPanel Grid.Row="1" Spacing="4">
-        <TextBlock Text="{Binding SelectedDevice.DisplayName}" FontWeight="SemiBold" />
-        <TextBlock Classes="muted-text" Text="Preview only. Formal capture still requires one explicit source selection." />
+        <SelectableTextBlock Text="{Binding SelectedDevice.DisplayName}" FontWeight="SemiBold" />
+        <SelectableTextBlock Classes="muted-text" Text="Preview only. Formal capture still requires one explicit source selection." />
       </StackPanel>
 
       <Border Grid.Row="2"
@@ -20,14 +20,14 @@
           <Border Background="{Binding SelectedDevice.StatusBackground}"
                   CornerRadius="999"
                   Padding="10,6">
-            <TextBlock FontSize="12"
-                       FontWeight="SemiBold"
-                       Foreground="{Binding SelectedDevice.StatusForeground}"
-                       Text="{Binding PreviewStatusLabel}" />
+            <SelectableTextBlock FontSize="12"
+                                 FontWeight="SemiBold"
+                                 Foreground="{Binding SelectedDevice.StatusForeground}"
+                                 Text="{Binding PreviewStatusLabel}" />
           </Border>
           <StackPanel Grid.Column="1" Spacing="4">
-            <TextBlock FontWeight="SemiBold" Text="{Binding PreviewStatusLabel}" />
-            <TextBlock Classes="muted-text" Text="{Binding PreviewStatusDetail}" />
+            <SelectableTextBlock FontWeight="SemiBold" Text="{Binding PreviewStatusLabel}" />
+            <SelectableTextBlock Classes="muted-text" Text="{Binding PreviewStatusDetail}" />
           </StackPanel>
         </Grid>
       </Border>
@@ -35,26 +35,26 @@
       <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
         <Border Classes="status-pill">
           <StackPanel Spacing="4">
-            <TextBlock Text="Packets Seen" />
-            <TextBlock Text="{Binding SelectedDevice.Preview.PacketsSeen}" FontSize="20" FontWeight="SemiBold" />
+            <SelectableTextBlock Text="Packets Seen" />
+            <SelectableTextBlock Text="{Binding SelectedDevice.Preview.PacketsSeen}" FontSize="20" FontWeight="SemiBold" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="status-pill">
           <StackPanel Spacing="4">
-            <TextBlock Text="Bytes Seen" />
-            <TextBlock Text="{Binding SelectedDevice.Preview.BytesSeen}" FontSize="20" FontWeight="SemiBold" />
+            <SelectableTextBlock Text="Bytes Seen" />
+            <SelectableTextBlock Text="{Binding SelectedDevice.Preview.BytesSeen}" FontSize="20" FontWeight="SemiBold" />
           </StackPanel>
         </Border>
       </Grid>
 
       <StackPanel Grid.Row="4" Spacing="8">
         <TextBlock Classes="section-title" Text="Selected Device Details" />
-        <TextBlock Classes="muted-text" Text="{Binding SelectedDevice.ReadinessLabel}" />
+        <SelectableTextBlock Classes="muted-text" Text="{Binding SelectedDevice.ReadinessLabel}" />
         <ItemsControl ItemsSource="{Binding SelectedDevice.Device.Addresses}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border Classes="status-pill">
-                <TextBlock Text="{Binding Address}" />
+                <SelectableTextBlock Text="{Binding Address}" />
               </Border>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
@@ -63,9 +63,9 @@
 
       <Border Grid.Row="5" Classes="status-pill">
         <StackPanel Spacing="4">
-          <TextBlock FontWeight="SemiBold" Text="Formal capture boundary" />
-          <TextBlock Classes="muted-text"
-                     Text="Preview traffic is multi-device sampling. Formal capture remains single-source by design." />
+          <SelectableTextBlock FontWeight="SemiBold" Text="Formal capture boundary" />
+          <SelectableTextBlock Classes="muted-text"
+                               Text="Preview traffic is multi-device sampling. Formal capture remains single-source by design." />
         </StackPanel>
       </Border>
     </Grid>
