@@ -6,13 +6,8 @@
              x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="{Binding RailWidth}" />
-      <ColumnDefinition Width="*" />
-    </Grid.ColumnDefinitions>
-
-    <components:AppRailView />
+  <Grid ColumnDefinitions="Auto,*">
+    <components:AppRailView Width="{Binding RailWidth}" />
 
     <Border Grid.Column="1"
             Background="{StaticResource CosmosBackgroundBrush}"
