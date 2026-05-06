@@ -294,10 +294,6 @@ public sealed partial class InspectPageViewModel : ViewModelBase
                 Direction = "outbound",
                 Packets = 144,
                 Bytes = 212_540,
-                TcpState = "ESTABLISHED",
-                SynCount = 2,
-                FinCount = 0,
-                RstCount = 0,
             },
             new ConnectionRowDto
             {
@@ -310,10 +306,6 @@ public sealed partial class InspectPageViewModel : ViewModelBase
                 Direction = "outbound",
                 Packets = 74,
                 Bytes = 22_800,
-                TcpState = string.Empty,
-                SynCount = 0,
-                FinCount = 0,
-                RstCount = 0,
             },
             new ConnectionRowDto
             {
@@ -326,10 +318,6 @@ public sealed partial class InspectPageViewModel : ViewModelBase
                 Direction = "loopback",
                 Packets = 88,
                 Bytes = 10_928,
-                TcpState = "ESTABLISHED",
-                SynCount = 2,
-                FinCount = 0,
-                RstCount = 0,
             },
         ];
     }

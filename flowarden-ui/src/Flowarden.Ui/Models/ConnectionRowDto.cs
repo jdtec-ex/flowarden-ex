@@ -19,12 +19,4 @@ public sealed class ConnectionRowDto
     public ulong Packets { get; init; }
 
     public ulong Bytes { get; init; }
-
-    public string TcpState { get; init; } = string.Empty;
-
-    public ulong SynCount { get; init; }
-
-    public ulong FinCount { get; init; }
-
-    public ulong RstCount { get; init; }
 }

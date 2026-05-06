@@ -66,10 +66,6 @@ public sealed class ProjectionClient
                     Direction = connection.Direction,
                     Packets = connection.Packets,
                     Bytes = connection.Bytes,
-                    TcpState = connection.TcpState,
-                    SynCount = connection.SynCount,
-                    FinCount = connection.FinCount,
-                    RstCount = connection.RstCount,
                 })
                 .ToArray(),
             TopHosts = response.TopHosts
@@ -162,10 +158,6 @@ public sealed class ProjectionClient
                     Direction = row.Direction,
                     Packets = row.Packets,
                     Bytes = row.Bytes,
-                    TcpState = row.TcpState,
-                    SynCount = row.SynCount,
-                    FinCount = row.FinCount,
-                    RstCount = row.RstCount,
                 })
                 .ToArray(),
             Summary = new InspectResultSummaryDto
