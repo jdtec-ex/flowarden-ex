@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
@@ -18,6 +19,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private const ulong PreviewWindowSeconds = 2;
 
     public event Action<CaptureSessionStateDto?, string?>? SessionStateChanged;
+    public event Func<Task<string?>>? OfflineFileRequested;
 
     public SourcePageViewModel()
         : this(discoveryClient: null, controlClient: null, isDesignTime: true)
@@ -96,6 +98,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     public bool CanStartFormalCapture =>
         HasSelectedDevice
         && !IsControlBusy
+        && string.Equals(CurrentSession.Mode, "live", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "starting", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "stopping", StringComparison.OrdinalIgnoreCase);
@@ -250,23 +253,42 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ImportOffline()
+    private async Task ImportOffline()
     {
+        var offlinePath = _isDesignTime
+            ? "/tmp/sample.pcap"
+            : OfflineFileRequested is null
+                ? null
+                : await OfflineFileRequested.Invoke();
+
+        if (string.IsNullOrWhiteSpace(offlinePath))
+        {
+            StatusMessage = "Offline import cancelled.";
+            SetPreviewState(
+                "Offline import cancelled",
+                "No pcap file was selected.",
+                isWarning: true,
+                isError: false
+            );
+            return;
+        }
+
         SelectedSourceMode = "Offline file";
         SetPreviewState(
             "Offline import selected",
-            "Preview sampling applies only to live devices. Offline capture remains a single file source.",
+            "Preview sampling applies only to live devices. Offline capture remains a single file source and will be wired to replay control in a later step.",
             isWarning: false,
             isError: false
         );
         CurrentSession = new CaptureSessionStateDto
         {
             SourceKind = "offline",
-            SourceDisplayName = "offline sample",
+            SourceDisplayName = offlinePath,
             CaptureStatus = "idle",
             Mode = "offline",
             Bpf = null,
         };
+        StatusMessage = $"Offline file selected: {offlinePath}";
         OnPropertyChanged(nameof(FormalCaptureSummary));
     }
 
@@ -387,24 +409,6 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             };
             StatusMessage = startResult.Message;
         }
-        catch (Exception)
-        {
-            CurrentSession = new CaptureSessionStateDto
-            {
-                SourceKind = "live",
-                SourceDisplayName = SelectedDevice.DisplayName,
-                CaptureStatus = "idle",
-                Mode = "live",
-                Bpf = CurrentSession.Bpf,
-            };
-            StatusMessage = "Resident core rejected the control-plane action or became unavailable.";
-            SetPreviewState(
-                "Capture failed",
-                "Resident core rejected the control-plane action or became unavailable.",
-                isWarning: false,
-                isError: true
-            );
-        }
         finally
         {
             IsControlBusy = false;
@@ -455,24 +459,6 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                 Bpf = CurrentSession.Bpf,
             };
             StatusMessage = stopResult.Message;
-        }
-        catch (Exception)
-        {
-            CurrentSession = new CaptureSessionStateDto
-            {
-                SourceKind = CurrentSession.SourceKind,
-                SourceDisplayName = CurrentSession.SourceDisplayName,
-                CaptureStatus = "running",
-                Mode = CurrentSession.Mode,
-                Bpf = CurrentSession.Bpf,
-            };
-            StatusMessage = "Resident core did not accept the stop request.";
-            SetPreviewState(
-                "Stop failed",
-                "Resident core did not accept the stop request.",
-                isWarning: false,
-                isError: true
-            );
         }
         finally
         {

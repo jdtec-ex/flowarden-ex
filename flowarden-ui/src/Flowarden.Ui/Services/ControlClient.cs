@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Flowarden.Control.V1;
+using Grpc.Core;
 using Grpc.Net.Client;
 
 namespace Flowarden.Ui.Services;
@@ -26,12 +28,13 @@ public sealed class ControlClient
         CancellationToken cancellationToken = default
     )
     {
-        var response = await _client.SetSourceAsync(
-            new SetSourceRequest { Source = source },
-            cancellationToken: cancellationToken
+        return await ExecuteAsync(
+            async () =>
+                await _client.SetSourceAsync(
+                    new SetSourceRequest { Source = source },
+                    cancellationToken: cancellationToken
+                )
         );
-
-        return MapResponse(response);
     }
 
     public async Task<ControlActionResult> ApplyFilterAsync(
@@ -39,36 +42,39 @@ public sealed class ControlClient
         CancellationToken cancellationToken = default
     )
     {
-        var response = await _client.ApplyFilterAsync(
-            new ApplyFilterRequest { Bpf = bpf },
-            cancellationToken: cancellationToken
+        return await ExecuteAsync(
+            async () =>
+                await _client.ApplyFilterAsync(
+                    new ApplyFilterRequest { Bpf = bpf },
+                    cancellationToken: cancellationToken
+                )
         );
-
-        return MapResponse(response);
     }
 
     public async Task<ControlActionResult> StartCaptureAsync(
         CancellationToken cancellationToken = default
     )
     {
-        var response = await _client.StartCaptureAsync(
-            new StartCaptureRequest(),
-            cancellationToken: cancellationToken
+        return await ExecuteAsync(
+            async () =>
+                await _client.StartCaptureAsync(
+                    new StartCaptureRequest(),
+                    cancellationToken: cancellationToken
+                )
         );
-
-        return MapResponse(response);
     }
 
     public async Task<ControlActionResult> StopCaptureAsync(
         CancellationToken cancellationToken = default
     )
     {
-        var response = await _client.StopCaptureAsync(
-            new StopCaptureRequest(),
-            cancellationToken: cancellationToken
+        return await ExecuteAsync(
+            async () =>
+                await _client.StopCaptureAsync(
+                    new StopCaptureRequest(),
+                    cancellationToken: cancellationToken
+                )
         );
-
-        return MapResponse(response);
     }
 
     private static ControlActionResult MapResponse(ControlResponse response)
@@ -77,6 +83,41 @@ public sealed class ControlClient
         {
             Accepted = response.Accepted,
             Message = response.Message,
+        };
+    }
+
+    private static async Task<ControlActionResult> ExecuteAsync(
+        Func<Task<ControlResponse>> action
+    )
+    {
+        try
+        {
+            return MapResponse(await action());
+        }
+        catch (RpcException ex)
+        {
+            return new ControlActionResult
+            {
+                Accepted = false,
+                Message = MapRpcException(ex),
+            };
+        }
+    }
+
+    private static string MapRpcException(RpcException exception)
+    {
+        return exception.StatusCode switch
+        {
+            StatusCode.Unimplemented =>
+                "The running flowarden core does not support this control action yet. Restart the resident core after upgrading.",
+            StatusCode.Unavailable => "The resident flowarden core is unavailable.",
+            StatusCode.InvalidArgument => exception.Status.Detail,
+            StatusCode.FailedPrecondition => exception.Status.Detail,
+            StatusCode.PermissionDenied => exception.Status.Detail,
+            StatusCode.Internal => exception.Status.Detail,
+            _ => string.IsNullOrWhiteSpace(exception.Status.Detail)
+                ? $"Resident core RPC failed: {exception.StatusCode}"
+                : exception.Status.Detail,
         };
     }
 }

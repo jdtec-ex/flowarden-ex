@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Platform.Storage;
 using System;
 using System.IO;
 using System.Linq;
@@ -49,10 +50,31 @@ public partial class App : Application
                 coreHealthService,
                 CoreBindAddress
             );
-            desktop.MainWindow = new MainWindow
+            var mainWindow = new MainWindow
             {
                 DataContext = shellViewModel,
             };
+            shellViewModel.SourcePage.OfflineFileRequested += async () =>
+            {
+                var files = await mainWindow.StorageProvider.OpenFilePickerAsync(
+                    new FilePickerOpenOptions
+                    {
+                        Title = "Select offline pcap",
+                        AllowMultiple = false,
+                        FileTypeFilter =
+                        [
+                            new FilePickerFileType("Packet capture")
+                            {
+                                Patterns = ["*.pcap", "*.pcapng"],
+                                MimeTypes = ["application/vnd.tcpdump.pcap"],
+                            },
+                        ],
+                    }
+                );
+
+                return files.Count == 0 ? null : files[0].TryGetLocalPath();
+            };
+            desktop.MainWindow = mainWindow;
             _ = InitializeCoreConnectionAsync(shellViewModel);
         }
 
