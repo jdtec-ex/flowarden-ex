@@ -6,7 +6,12 @@
              x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid ColumnDefinitions="260,*">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="{Binding RailWidth}" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+
     <components:AppRailView />
 
     <Border Grid.Column="1"

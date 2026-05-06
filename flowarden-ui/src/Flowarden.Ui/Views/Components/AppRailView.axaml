@@ -6,74 +6,75 @@
   <Border Classes="app-rail">
     <DockPanel LastChildFill="True">
       <StackPanel DockPanel.Dock="Top" Spacing="24">
-        <StackPanel Spacing="4">
+        <StackPanel Spacing="4"
+                    IsVisible="{Binding !IsRailCollapsed}">
           <TextBlock Classes="page-title" Text="{Binding Title}" />
           <TextBlock Classes="muted-text" Text="{Binding Subtitle}" />
         </StackPanel>
 
         <StackPanel Spacing="10">
           <Button Classes="nav-button"
-                  Command="{Binding ToggleMenuCommand}"
-                  Content="{Binding MenuToggleLabel}" />
+                  Command="{Binding ToggleRailCommand}"
+                  Content="{Binding RailToggleLabel}" />
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSourcePageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="source"
                   Content="{Binding NavigationItems[0].Label}"
-                  IsVisible="{Binding !IsMenuCollapsed}" />
+                  IsVisible="{Binding !IsRailCollapsed}" />
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSourcePageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="source"
                   Content="{Binding NavigationItems[0].CompactLabel}"
-                  IsVisible="{Binding IsMenuCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}" />
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsOverviewPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="overview"
                   Content="{Binding NavigationItems[1].Label}"
-                  IsVisible="{Binding !IsMenuCollapsed}" />
+                  IsVisible="{Binding !IsRailCollapsed}" />
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsOverviewPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="overview"
                   Content="{Binding NavigationItems[1].CompactLabel}"
-                  IsVisible="{Binding IsMenuCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}" />
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsInspectPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="inspect"
                   Content="{Binding NavigationItems[2].Label}"
-                  IsVisible="{Binding !IsMenuCollapsed}" />
+                  IsVisible="{Binding !IsRailCollapsed}" />
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsInspectPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="inspect"
                   Content="{Binding NavigationItems[2].CompactLabel}"
-                  IsVisible="{Binding IsMenuCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}" />
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSettingsPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="settings"
                   Content="{Binding NavigationItems[3].Label}"
-                  IsVisible="{Binding !IsMenuCollapsed}" />
+                  IsVisible="{Binding !IsRailCollapsed}" />
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSettingsPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="settings"
                   Content="{Binding NavigationItems[3].CompactLabel}"
-                  IsVisible="{Binding IsMenuCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}" />
         </StackPanel>
       </StackPanel>
 
       <StackPanel DockPanel.Dock="Bottom" Spacing="12">
         <Button Classes="primary-cta"
                 Command="{Binding StartCaptureCommand}"
-                Content="Start Capture" />
+                Content="{Binding StartCaptureLabel}" />
       </StackPanel>
     </DockPanel>
   </Border>

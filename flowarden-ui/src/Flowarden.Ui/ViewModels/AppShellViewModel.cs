@@ -136,7 +136,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private CoreErrorDto? latestCoreError;
 
     [ObservableProperty]
-    private bool isMenuCollapsed;
+    private bool isRailCollapsed;
 
     public string HeaderSupportingText =>
         LatestCoreError?.Message
@@ -152,7 +152,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public bool HasLatestCoreError => LatestCoreError is not null;
 
-    public string MenuToggleLabel => IsMenuCollapsed ? "Expand Menu" : "Collapse Menu";
+    public string RailToggleLabel => IsRailCollapsed ? "Expand" : "Collapse";
+
+    public double RailWidth => IsRailCollapsed ? 96 : 260;
+
+    public string StartCaptureLabel => IsRailCollapsed ? "Start" : "Start Capture";
 
     partial void OnCoreStatusChanged(StatusIndicatorViewModel value)
     {
@@ -175,9 +179,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasLatestCoreError));
     }
 
-    partial void OnIsMenuCollapsedChanged(bool value)
+    partial void OnIsRailCollapsedChanged(bool value)
     {
-        OnPropertyChanged(nameof(MenuToggleLabel));
+        OnPropertyChanged(nameof(RailToggleLabel));
+        OnPropertyChanged(nameof(RailWidth));
+        OnPropertyChanged(nameof(StartCaptureLabel));
     }
 
     [RelayCommand]
@@ -210,9 +216,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ToggleMenu()
+    private void ToggleRail()
     {
-        IsMenuCollapsed = !IsMenuCollapsed;
+        IsRailCollapsed = !IsRailCollapsed;
     }
 
     [RelayCommand]
