@@ -88,7 +88,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
             LatestCoreError
         );
 
-        ActiveMode = "Live";
         CoreStatus = new StatusIndicatorViewModel
         {
             Label = "Core",
@@ -110,9 +109,6 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public string Subtitle { get; } = "Traffic Flow Warden";
 
     public IReadOnlyList<AppNavigationItemViewModel> NavigationItems { get; }
-
-    [ObservableProperty]
-    private string activeMode;
 
     [ObservableProperty]
     private StatusIndicatorViewModel coreStatus;
@@ -205,22 +201,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ToggleMode()
-    {
-        ActiveMode = ActiveMode == "Live" ? "Replay" : "Live";
-        OverviewPage.SetMode(ActiveMode);
-    }
-
-    [RelayCommand]
     private void ToggleRail()
     {
         IsRailCollapsed = !IsRailCollapsed;
-    }
-
-    [RelayCommand]
-    private void OpenTools()
-    {
-        // Tools entry is reserved for later wiring.
     }
 
     public async Task InitializeCoreConnectionAsync(

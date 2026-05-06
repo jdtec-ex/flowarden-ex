@@ -23,9 +23,6 @@
             <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding DestinationPlaceholderTitle}" />
             <TextBlock Classes="muted-text" Text="{Binding DestinationPlaceholderMessage}" TextWrapping="Wrap" />
             <TextBlock Classes="muted-text" Text="{Binding DestinationPlaceholderHint}" TextWrapping="Wrap" />
-            <Border Classes="status-pill">
-              <TextBlock Text="{Binding DestinationFutureStateLabel}" TextWrapping="Wrap" />
-            </Border>
           </StackPanel>
         </Border>
       </StackPanel>

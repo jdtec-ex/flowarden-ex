@@ -6,9 +6,6 @@
   <Border Classes="glass-panel">
     <StackPanel Spacing="12">
       <TextBlock Classes="section-title" Text="Diagnostics" />
-      <Border Classes="status-pill">
-        <TextBlock Text="{Binding ErrorLogEntry}" />
-      </Border>
       <ItemsControl ItemsSource="{Binding Diagnostics}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>

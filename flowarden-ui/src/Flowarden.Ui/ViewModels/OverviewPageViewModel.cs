@@ -101,8 +101,6 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     public string DestinationPlaceholderHint =>
         "This area is reserved for future geographic or destination-distribution visualization driven by destination projection data.";
 
-    public string DestinationFutureStateLabel => "Future state: destination density, region hot spots, organization overlays";
-
     private ulong MaxTimelineValue =>
         Snapshot.TimelinePoints.Count == 0
             ? 0

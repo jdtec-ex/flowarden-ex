@@ -50,7 +50,6 @@ public sealed class SettingsPageViewModel : ViewModelBase
         UiVersion = "0.1.0-phase2";
         TickInterval = "1s";
         TopN = "20";
-        ErrorLogEntry = "Settings diagnostics list";
         RuntimeState = CreateSeedRuntimeState();
         CoreHealth = CreateSeedCoreHealth();
         Diagnostics = new ReadOnlyCollection<CoreErrorDto>(CreateDiagnostics(latestCoreError));
@@ -75,8 +74,6 @@ public sealed class SettingsPageViewModel : ViewModelBase
     public string TickInterval { get; }
 
     public string TopN { get; }
-
-    public string ErrorLogEntry { get; }
 
     public string StartedAtLabel => DateTimeOffset.FromUnixTimeSeconds((long)CoreHealth.StartedAtUnixSeconds)
         .ToLocalTime()
