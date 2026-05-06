@@ -57,7 +57,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string HeroLegendSecondary => "Inbound";
 
-    public bool HasTimeline => Snapshot.TimelinePoints.Count >= 2;
+    public bool HasTimeline => Snapshot.TimelinePoints.Count >= 1;
 
     public bool HasNoTimeline => !HasTimeline;
 
@@ -184,7 +184,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     private string BuildTimelinePath(bool selectOutbound)
     {
-        if (Snapshot.TimelinePoints.Count < 2)
+        if (Snapshot.TimelinePoints.Count == 0)
         {
             return string.Empty;
         }
@@ -192,7 +192,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         const double width = 640;
         const double height = 84;
         var maxValue = (double)Math.Max(MaxTimelineValue, 1);
-        var step = width / (Snapshot.TimelinePoints.Count - 1);
+        var step = Snapshot.TimelinePoints.Count == 1 ? 0 : width / (Snapshot.TimelinePoints.Count - 1);
         var coordinates = new List<(double X, double Y)>(Snapshot.TimelinePoints.Count);
 
         for (var i = 0; i < Snapshot.TimelinePoints.Count; i++)
