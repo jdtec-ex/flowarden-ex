@@ -5,7 +5,7 @@
              x:DataType="vm:InspectPageViewModel">
   <Border Classes="glass-panel">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <Grid ColumnDefinitions="200,136,220,136,76,116,92,104,82,*" ColumnSpacing="6">
+      <Grid ColumnDefinitions="170,140,180,140,72,104,96,110,64,64,64,92,*" ColumnSpacing="6">
         <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Source" />
         <TextBlock Grid.Column="1"
                    Classes="muted-text"
@@ -22,9 +22,29 @@
         <TextBlock Grid.Column="7"
                    Classes="muted-text"
                    FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   Text="TCP State" />
+        <TextBlock Grid.Column="8"
+                   Classes="muted-text"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Right"
+                   Text="SYN" />
+        <TextBlock Grid.Column="9"
+                   Classes="muted-text"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Right"
+                   Text="FIN" />
+        <TextBlock Grid.Column="10"
+                   Classes="muted-text"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Right"
+                   Text="RST" />
+        <TextBlock Grid.Column="11"
+                   Classes="muted-text"
+                   FontWeight="SemiBold"
                    HorizontalAlignment="Right"
                    Text="Bytes" />
-        <TextBlock Grid.Column="8"
+        <TextBlock Grid.Column="12"
                    Classes="muted-text"
                    FontWeight="SemiBold"
                    HorizontalAlignment="Right"
@@ -38,7 +58,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border Classes="status-pill" Margin="0,0,0,8">
-                <Grid ColumnDefinitions="200,136,220,136,76,116,92,104,82,*" ColumnSpacing="6">
+                <Grid ColumnDefinitions="170,140,180,140,72,104,96,110,64,64,64,92,*" ColumnSpacing="6">
                   <TextBlock Text="{Binding SourceAddress}" />
                   <TextBlock Grid.Column="1" Text="{Binding SourcePort}" />
                   <TextBlock Grid.Column="2" Text="{Binding DestinationAddress}" />
@@ -47,9 +67,21 @@
                   <TextBlock Grid.Column="5" Text="{Binding ServiceName}" />
                   <TextBlock Grid.Column="6" Text="{Binding Direction}" />
                   <TextBlock Grid.Column="7"
+                             HorizontalAlignment="Center"
+                             Text="{Binding TcpState}" />
+                  <TextBlock Grid.Column="8"
+                             HorizontalAlignment="Right"
+                             Text="{Binding SynCount}" />
+                  <TextBlock Grid.Column="9"
+                             HorizontalAlignment="Right"
+                             Text="{Binding FinCount}" />
+                  <TextBlock Grid.Column="10"
+                             HorizontalAlignment="Right"
+                             Text="{Binding RstCount}" />
+                  <TextBlock Grid.Column="11"
                              HorizontalAlignment="Right"
                              Text="{Binding Bytes}" />
-                  <TextBlock Grid.Column="8"
+                  <TextBlock Grid.Column="12"
                              HorizontalAlignment="Right"
                              Text="{Binding Packets}" />
                 </Grid>
