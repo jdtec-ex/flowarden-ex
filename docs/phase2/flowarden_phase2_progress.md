@@ -53,7 +53,7 @@
 | `M2-007` | 已完成 | Inspect 页面已接入真实 `ProjectionService.GetInspectPage`，过滤条件可下发到 core。 |
 | `M2-008` | 已完成 | Settings 页面已接入真实 health/discovery/error 状态组合，展示最小运行态与诊断信息。 |
 | `M2-009` | 已完成 | phase2 运行说明、验收模板和质量门禁已按当前真实状态更新并可重复执行。 |
-| `M2-101` | 未重新验收 | 现有 destination workbench 增强只保留为代码基线，不计当前完成。 |
+| `M2-101` | 已完成 | Destination workbench 的 reserved shell、future-state 文案与 `Top Destinations` 成对结构已稳定落地。 |
 
 ---
 
@@ -266,7 +266,7 @@
 
 ### M2-101 Destination Workbench 增强预留
 
-- 状态：未重新验收
+- 状态：已完成
 - 完成内容：
   - 更明确的 destination placeholder model
   - 地图区域空态 / reserved state / future state 文案
@@ -275,8 +275,8 @@
   - 本任务只评价 destination workbench 的 UI reserved shell
   - 它不代表 phase2 主线已经形成真实运行闭环
 - 当前口径：
-  - 现有实现仅作为存量代码基线
-  - 必须在主线恢复推进后再单独按 backlog 重新验收
+  - destination workbench 的 reserved shell 已按 backlog 重新验收通过
+  - 真实地图能力仍明确后置，不属于 `M2-101` 完成定义
 - 提交：
   - outer repo `fda2e27` `Complete M2-101 destination workbench reserve enhancement`
 
