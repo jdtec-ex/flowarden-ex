@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.AppRailView"
              x:DataType="vm:AppShellViewModel">
@@ -15,7 +16,19 @@
         <StackPanel Spacing="10">
           <Button Classes="nav-button"
                   Command="{Binding ToggleRailCommand}"
-                  Content="{Binding RailToggleLabel}" />
+                  Content="{Binding RailToggleLabel}"
+                  IsVisible="{Binding !IsRailCollapsed}" />
+          <Button Classes="nav-button"
+                  Command="{Binding ToggleRailCommand}"
+                  IsVisible="{Binding IsRailCollapsed}"
+                  ToolTip.Tip="Expand rail">
+            <Viewbox Width="16" Height="16">
+              <shapes:Path Stroke="{StaticResource CosmosTextBrush}"
+                           StrokeThickness="1.8"
+                           StrokeLineCap="Round"
+                           Data="M 7 4 L 13 8 L 7 12 M 3 4 L 9 8 L 3 12" />
+            </Viewbox>
+          </Button>
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSourcePageActive}"
@@ -27,8 +40,19 @@
                   IsEnabled="{Binding !IsSourcePageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="source"
-                  Content="{Binding NavigationItems[0].CompactLabel}"
-                  IsVisible="{Binding IsRailCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}"
+                  ToolTip.Tip="Source">
+            <Viewbox Width="18" Height="18">
+              <Canvas Width="24" Height="24">
+                <shapes:Line StartPoint="6,17" EndPoint="12,8" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" />
+                <shapes:Line StartPoint="18,17" EndPoint="12,8" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" />
+                <shapes:Line StartPoint="6,17" EndPoint="18,17" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="4" Canvas.Top="15" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="10" Canvas.Top="6" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="16" Canvas.Top="15" />
+              </Canvas>
+            </Viewbox>
+          </Button>
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsOverviewPageActive}"
@@ -40,8 +64,20 @@
                   IsEnabled="{Binding !IsOverviewPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="overview"
-                  Content="{Binding NavigationItems[1].CompactLabel}"
-                  IsVisible="{Binding IsRailCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}"
+                  ToolTip.Tip="Overview">
+            <Viewbox Width="18" Height="18">
+              <Canvas Width="24" Height="24">
+                <shapes:Line StartPoint="4,18" EndPoint="10,11" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.8" StrokeLineCap="Round" />
+                <shapes:Line StartPoint="10,11" EndPoint="14,14" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.8" StrokeLineCap="Round" />
+                <shapes:Line StartPoint="14,14" EndPoint="20,7" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.8" StrokeLineCap="Round" />
+                <shapes:Ellipse Width="3.2" Height="3.2" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="2.4" Canvas.Top="16.4" />
+                <shapes:Ellipse Width="3.2" Height="3.2" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="8.4" Canvas.Top="9.4" />
+                <shapes:Ellipse Width="3.2" Height="3.2" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="12.4" Canvas.Top="12.4" />
+                <shapes:Ellipse Width="3.2" Height="3.2" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="18.4" Canvas.Top="5.4" />
+              </Canvas>
+            </Viewbox>
+          </Button>
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsInspectPageActive}"
@@ -53,8 +89,23 @@
                   IsEnabled="{Binding !IsInspectPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="inspect"
-                  Content="{Binding NavigationItems[2].CompactLabel}"
-                  IsVisible="{Binding IsRailCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}"
+                  ToolTip.Tip="Inspect">
+            <Viewbox Width="18" Height="18">
+              <Canvas Width="24" Height="24">
+                <shapes:Ellipse Width="10" Height="10"
+                                Stroke="{StaticResource CosmosTextBrush}"
+                                StrokeThickness="1.8"
+                                Canvas.Left="5"
+                                Canvas.Top="5" />
+                <shapes:Line StartPoint="13.5,13.5"
+                             EndPoint="19,19"
+                             Stroke="{StaticResource CosmosTextBrush}"
+                             StrokeThickness="1.8"
+                             StrokeLineCap="Round" />
+              </Canvas>
+            </Viewbox>
+          </Button>
 
           <Button Classes="nav-button"
                   IsEnabled="{Binding !IsSettingsPageActive}"
@@ -66,15 +117,36 @@
                   IsEnabled="{Binding !IsSettingsPageActive}"
                   Command="{Binding NavigateCommand}"
                   CommandParameter="settings"
-                  Content="{Binding NavigationItems[3].CompactLabel}"
-                  IsVisible="{Binding IsRailCollapsed}" />
+                  IsVisible="{Binding IsRailCollapsed}"
+                  ToolTip.Tip="Settings">
+            <Viewbox Width="18" Height="18">
+              <Canvas Width="24" Height="24">
+                <shapes:Line StartPoint="5,7" EndPoint="19,7" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" StrokeLineCap="Round" />
+                <shapes:Line StartPoint="5,12" EndPoint="19,12" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" StrokeLineCap="Round" />
+                <shapes:Line StartPoint="5,17" EndPoint="19,17" Stroke="{StaticResource CosmosTextBrush}" StrokeThickness="1.6" StrokeLineCap="Round" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="8" Canvas.Top="5" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="14" Canvas.Top="10" />
+                <shapes:Ellipse Width="4" Height="4" Fill="{StaticResource CosmosTextBrush}" Canvas.Left="10" Canvas.Top="15" />
+              </Canvas>
+            </Viewbox>
+          </Button>
         </StackPanel>
       </StackPanel>
 
       <StackPanel DockPanel.Dock="Bottom" Spacing="12">
         <Button Classes="primary-cta"
                 Command="{Binding StartCaptureCommand}"
-                Content="{Binding StartCaptureLabel}" />
+                Content="{Binding StartCaptureLabel}"
+                IsVisible="{Binding !IsRailCollapsed}" />
+        <Button Classes="primary-cta"
+                Command="{Binding StartCaptureCommand}"
+                IsVisible="{Binding IsRailCollapsed}"
+                ToolTip.Tip="Start Capture">
+          <Viewbox Width="18" Height="18">
+            <shapes:Path Fill="#17131F"
+                         Data="M 6 4 L 18 12 L 6 20 Z" />
+          </Viewbox>
+        </Button>
       </StackPanel>
     </DockPanel>
   </Border>
