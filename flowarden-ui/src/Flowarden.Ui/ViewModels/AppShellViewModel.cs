@@ -16,6 +16,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
     private readonly DiscoveryClient? _discoveryClient;
     private readonly ProjectionClient? _projectionClient;
+    private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
 
     public AppShellViewModel()
@@ -27,6 +28,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         CoreConnectionCoordinator? coreConnectionCoordinator,
         DiscoveryClient? discoveryClient = null,
         ProjectionClient? projectionClient = null,
+        ControlClient? controlClient = null,
         CoreHealthService? coreHealthService = null,
         string bindAddress = "127.0.0.1:39091"
     )
@@ -35,6 +37,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _coreConnectionCoordinator = coreConnectionCoordinator;
         _discoveryClient = discoveryClient;
         _projectionClient = projectionClient;
+        _controlClient = controlClient;
         _coreHealthService = coreHealthService;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
@@ -73,7 +76,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
             },
         };
 
-        SourcePage = new SourcePageViewModel(_discoveryClient);
+        SourcePage = new SourcePageViewModel(_discoveryClient, _controlClient);
+        SourcePage.SessionStateChanged += OnSourceSessionStateChanged;
         OverviewPage = new OverviewPageViewModel(_projectionClient);
         InspectPage = new InspectPageViewModel(_projectionClient);
         SettingsPage = new SettingsPageViewModel(
@@ -154,7 +158,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public string RailToggleLabel => IsRailCollapsed ? "Expand" : "Collapse";
 
-    public double RailWidth => IsRailCollapsed ? 96 : 260;
+    public double RailWidth => IsRailCollapsed ? 96 : 180;
 
     public string StartCaptureLabel => IsRailCollapsed ? "Start" : "Start Capture";
 
@@ -290,6 +294,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         await SourcePage.LoadAsync();
+        OnSourceSessionStateChanged(SourcePage.CurrentSession, SourcePage.StatusMessage);
     }
 
     private async Task LoadOverviewPageAsync()
@@ -320,5 +325,30 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         await SettingsPage.LoadAsync(LatestCoreError);
+    }
+
+    private void OnSourceSessionStateChanged(CaptureSessionStateDto? session, string? statusMessage)
+    {
+        var status = session?.CaptureStatus?.ToLowerInvariant() ?? "idle";
+        var (value, tone) = status switch
+        {
+            "starting" => ("Starting", "warning"),
+            "running" => ("Running", "good"),
+            "stopping" => ("Stopping", "warning"),
+            "armed" => ("Armed", "warning"),
+            _ => ("Idle", "neutral"),
+        };
+
+        CaptureStatus = new StatusIndicatorViewModel
+        {
+            Label = "Capture",
+            Value = value,
+            Tone = tone,
+        };
+
+        if (!string.IsNullOrWhiteSpace(statusMessage) && CoreStatus.Value == "Connected")
+        {
+            ConnectionMessage = statusMessage;
+        }
     }
 }

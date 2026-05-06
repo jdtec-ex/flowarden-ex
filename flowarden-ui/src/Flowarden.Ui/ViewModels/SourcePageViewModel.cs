@@ -13,22 +13,30 @@ namespace Flowarden.Ui.ViewModels;
 public sealed partial class SourcePageViewModel : ViewModelBase
 {
     private readonly DiscoveryClient? _discoveryClient;
+    private readonly ControlClient? _controlClient;
     private readonly bool _isDesignTime;
     private const ulong PreviewWindowSeconds = 2;
 
+    public event Action<CaptureSessionStateDto?, string?>? SessionStateChanged;
+
     public SourcePageViewModel()
-        : this(discoveryClient: null, isDesignTime: true)
+        : this(discoveryClient: null, controlClient: null, isDesignTime: true)
     {
     }
 
-    public SourcePageViewModel(DiscoveryClient? discoveryClient)
-        : this(discoveryClient, isDesignTime: false)
+    public SourcePageViewModel(DiscoveryClient? discoveryClient, ControlClient? controlClient = null)
+        : this(discoveryClient, controlClient, isDesignTime: false)
     {
     }
 
-    private SourcePageViewModel(DiscoveryClient? discoveryClient, bool isDesignTime)
+    private SourcePageViewModel(
+        DiscoveryClient? discoveryClient,
+        ControlClient? controlClient,
+        bool isDesignTime
+    )
     {
         _discoveryClient = discoveryClient;
+        _controlClient = controlClient;
         _isDesignTime = isDesignTime;
         DeviceItems = new ObservableCollection<SourceDeviceItemViewModel>();
 
@@ -80,12 +88,43 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     [ObservableProperty]
     private bool previewStateIsError;
 
+    [ObservableProperty]
+    private bool isControlBusy;
+
     public bool HasSelectedDevice => SelectedDevice is not null;
+
+    public bool CanStartFormalCapture =>
+        HasSelectedDevice
+        && !IsControlBusy
+        && !string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(CurrentSession.CaptureStatus, "starting", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(CurrentSession.CaptureStatus, "stopping", StringComparison.OrdinalIgnoreCase);
+
+    public bool CanStopFormalCapture =>
+        string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
+        && !IsControlBusy;
 
     public string FormalCaptureSummary =>
         SelectedDevice is null
             ? "Formal capture requires selecting exactly one source."
-            : $"Formal capture target: {SelectedDevice.DisplayName}";
+            : CurrentSession.CaptureStatus.ToLowerInvariant() switch
+            {
+                "starting" => $"Starting resident capture for {SelectedDevice.DisplayName}.",
+                "running" => $"Resident capture is running on {CurrentSession.SourceDisplayName}.",
+                "stopping" => $"Resident capture is stopping on {CurrentSession.SourceDisplayName}.",
+                "armed" => $"Formal capture is armed for {SelectedDevice.DisplayName}.",
+                _ => $"Formal capture target: {SelectedDevice.DisplayName}",
+            };
+
+    public string CaptureStateLabel =>
+        CurrentSession.CaptureStatus.ToLowerInvariant() switch
+        {
+            "starting" => "Starting",
+            "running" => "Running",
+            "stopping" => "Stopping",
+            "armed" => "Armed",
+            _ => "Idle",
+        };
 
     public string OfflineImportSummary => "Offline import remains a single file source, separate from live device preview.";
 
@@ -158,6 +197,27 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         UpdatePreviewStateFromSelectedDevice();
         OnPropertyChanged(nameof(HasSelectedDevice));
         OnPropertyChanged(nameof(FormalCaptureSummary));
+        OnPropertyChanged(nameof(CanStartFormalCapture));
+    }
+
+    partial void OnCurrentSessionChanged(CaptureSessionStateDto value)
+    {
+        OnPropertyChanged(nameof(FormalCaptureSummary));
+        OnPropertyChanged(nameof(CaptureStateLabel));
+        OnPropertyChanged(nameof(CanStartFormalCapture));
+        OnPropertyChanged(nameof(CanStopFormalCapture));
+        SessionStateChanged?.Invoke(value, StatusMessage);
+    }
+
+    partial void OnIsControlBusyChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanStartFormalCapture));
+        OnPropertyChanged(nameof(CanStopFormalCapture));
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        SessionStateChanged?.Invoke(CurrentSession, value);
     }
 
     [RelayCommand]
@@ -211,7 +271,217 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void StartFormalCapture()
+    private async Task StartFormalCapture()
+    {
+        if (SelectedDevice is null)
+        {
+            SetPreviewState(
+                "Capture requires source",
+                "Formal capture requires selecting exactly one source.",
+                isWarning: true,
+                isError: false
+            );
+            return;
+        }
+
+        if (_controlClient is null || _isDesignTime)
+        {
+            SetPreviewState(
+                "Capture armed",
+                $"Formal capture is armed for {SelectedDevice.DisplayName}. Actual start remains a separate control-plane action.",
+                isWarning: false,
+                isError: false
+            );
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = "armed",
+                Mode = CurrentSession.Mode,
+                Bpf = CurrentSession.Bpf,
+            };
+            return;
+        }
+
+        IsControlBusy = true;
+        try
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "live",
+                SourceDisplayName = SelectedDevice.DisplayName,
+                CaptureStatus = "starting",
+                Mode = "live",
+                Bpf = CurrentSession.Bpf,
+            };
+            StatusMessage = "Sending resident core start request...";
+            SetPreviewState(
+                "Starting capture",
+                "Submitting source, filter and start commands to the resident core.",
+                isWarning: false,
+                isError: false
+            );
+
+            var sourceResult = await _controlClient.SetSourceAsync(SelectedDevice.Device.Name);
+            if (!sourceResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "live",
+                    SourceDisplayName = SelectedDevice.DisplayName,
+                    CaptureStatus = "idle",
+                    Mode = "live",
+                    Bpf = CurrentSession.Bpf,
+                };
+                StatusMessage = sourceResult.Message;
+                SetPreviewState("Source rejected", sourceResult.Message, isWarning: false, isError: true);
+                return;
+            }
+
+            var bpf = CurrentSession.Bpf ?? string.Empty;
+            var filterResult = await _controlClient.ApplyFilterAsync(bpf);
+            if (!filterResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "live",
+                    SourceDisplayName = SelectedDevice.DisplayName,
+                    CaptureStatus = "idle",
+                    Mode = "live",
+                    Bpf = CurrentSession.Bpf,
+                };
+                StatusMessage = filterResult.Message;
+                SetPreviewState("Filter rejected", filterResult.Message, isWarning: false, isError: true);
+                return;
+            }
+
+            var startResult = await _controlClient.StartCaptureAsync();
+            if (!startResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "live",
+                    SourceDisplayName = SelectedDevice.DisplayName,
+                    CaptureStatus = "idle",
+                    Mode = "live",
+                    Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+                };
+                StatusMessage = startResult.Message;
+                SetPreviewState("Capture rejected", startResult.Message, isWarning: false, isError: true);
+                return;
+            }
+
+            SetPreviewState(
+                "Capture running",
+                startResult.Message,
+                isWarning: false,
+                isError: false
+            );
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "live",
+                SourceDisplayName = SelectedDevice.DisplayName,
+                CaptureStatus = "running",
+                Mode = "live",
+                Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+            };
+            StatusMessage = startResult.Message;
+        }
+        catch (Exception)
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "live",
+                SourceDisplayName = SelectedDevice.DisplayName,
+                CaptureStatus = "idle",
+                Mode = "live",
+                Bpf = CurrentSession.Bpf,
+            };
+            StatusMessage = "Resident core rejected the control-plane action or became unavailable.";
+            SetPreviewState(
+                "Capture failed",
+                "Resident core rejected the control-plane action or became unavailable.",
+                isWarning: false,
+                isError: true
+            );
+        }
+        finally
+        {
+            IsControlBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task StopFormalCapture()
+    {
+        if (_controlClient is null || _isDesignTime)
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = "idle",
+                Mode = CurrentSession.Mode,
+                Bpf = CurrentSession.Bpf,
+            };
+            return;
+        }
+
+        IsControlBusy = true;
+        try
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = "stopping",
+                Mode = CurrentSession.Mode,
+                Bpf = CurrentSession.Bpf,
+            };
+            StatusMessage = "Sending resident core stop request...";
+            var stopResult = await _controlClient.StopCaptureAsync();
+            SetPreviewState(
+                "Capture stop requested",
+                stopResult.Message,
+                isWarning: false,
+                isError: false
+            );
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = "idle",
+                Mode = CurrentSession.Mode,
+                Bpf = CurrentSession.Bpf,
+            };
+            StatusMessage = stopResult.Message;
+        }
+        catch (Exception)
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = "running",
+                Mode = CurrentSession.Mode,
+                Bpf = CurrentSession.Bpf,
+            };
+            StatusMessage = "Resident core did not accept the stop request.";
+            SetPreviewState(
+                "Stop failed",
+                "Resident core did not accept the stop request.",
+                isWarning: false,
+                isError: true
+            );
+        }
+        finally
+        {
+            IsControlBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ArmFormalCapture()
     {
         SetPreviewState(
             "Capture armed",
@@ -239,7 +509,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             SourceDisplayName = SelectedDevice?.DisplayName ?? "none",
             CaptureStatus = "idle",
             Mode = "live",
-            Bpf = null,
+            Bpf = CurrentSession?.Bpf,
         };
     }
 

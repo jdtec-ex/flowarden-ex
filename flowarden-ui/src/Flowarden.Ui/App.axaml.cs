@@ -36,6 +36,7 @@ public partial class App : Application
             var coreLauncherService = new CoreLauncherService();
             var discoveryClient = new DiscoveryClient(_coreChannel);
             var projectionClient = new ProjectionClient(_coreChannel);
+            var controlClient = new ControlClient(_coreChannel);
             var coreConnectionCoordinator = new CoreConnectionCoordinator(
                 coreHealthService,
                 coreLauncherService
@@ -44,6 +45,7 @@ public partial class App : Application
                 coreConnectionCoordinator,
                 discoveryClient,
                 projectionClient,
+                controlClient,
                 coreHealthService,
                 CoreBindAddress
             );
