@@ -55,7 +55,6 @@
           <SelectableTextBlock Margin="0,8,0,0"
                                Classes="muted-text"
                                Text="{Binding StatusMessage}" />
-          <SelectableTextBlock Classes="muted-text" Text="{Binding OfflineImportSummary}" />
         </StackPanel>
 
         <Button Grid.Column="1"
