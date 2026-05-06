@@ -18,6 +18,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly ProjectionClient? _projectionClient;
     private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
+    private bool _isRefreshingAfterStop;
 
     public AppShellViewModel()
         : this(null)
@@ -349,6 +350,34 @@ public sealed partial class AppShellViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(statusMessage) && CoreStatus.Value == "Connected")
         {
             ConnectionMessage = statusMessage;
+        }
+
+        if (
+            status == "idle"
+            && !_isRefreshingAfterStop
+            && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            _ = RefreshProjectionAfterStopAsync();
+        }
+    }
+
+    private async Task RefreshProjectionAfterStopAsync()
+    {
+        if (_projectionClient is null)
+        {
+            return;
+        }
+
+        _isRefreshingAfterStop = true;
+        try
+        {
+            await LoadOverviewPageAsync();
+            await LoadInspectPageAsync();
+        }
+        finally
+        {
+            _isRefreshingAfterStop = false;
         }
     }
 }
