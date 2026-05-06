@@ -12,19 +12,35 @@
 
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
         <Border Classes="status-pill status-pill-good">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Ellipse Width="10" Height="10" Fill="{StaticResource CosmosGoodBrush}" />
-            <TextBlock Text="{Binding CoreStatus.Label}" />
-            <TextBlock Classes="muted-text" Text="{Binding CoreStatus.Value}" />
-          </StackPanel>
+          <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+            <Ellipse Width="10"
+                     Height="10"
+                     Fill="{StaticResource CosmosGoodBrush}"
+                     VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding CoreStatus.Label}"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2"
+                       Classes="muted-text"
+                       Text="{Binding CoreStatus.Value}"
+                       VerticalAlignment="Center" />
+          </Grid>
         </Border>
 
         <Border Classes="status-pill">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Ellipse Width="10" Height="10" Fill="{StaticResource CosmosSecondaryBrush}" />
-            <TextBlock Text="{Binding CaptureStatus.Label}" />
-            <TextBlock Classes="muted-text" Text="{Binding CaptureStatus.Value}" />
-          </StackPanel>
+          <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+            <Ellipse Width="10"
+                     Height="10"
+                     Fill="{StaticResource CosmosSecondaryBrush}"
+                     VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding CaptureStatus.Label}"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2"
+                       Classes="muted-text"
+                       Text="{Binding CaptureStatus.Value}"
+                       VerticalAlignment="Center" />
+          </Grid>
         </Border>
       </StackPanel>
     </Grid>
