@@ -1,3 +1,5 @@
+using System;
+
 namespace Flowarden.Ui.Models;
 
 public sealed class TcpConnectionRowDto
@@ -27,4 +29,25 @@ public sealed class TcpConnectionRowDto
     public PacketTimestampDto LastSeen { get; init; } = new();
 
     public string ConnectionLabel => $"{EndpointAAddress}:{EndpointAPort} ↔ {EndpointBAddress}:{EndpointBPort}";
+
+    public string FirstSeenLabel => FormatTimestamp(FirstSeen);
+
+    public string LastSeenLabel => FormatTimestamp(LastSeen);
+
+    private static string FormatTimestamp(PacketTimestampDto timestamp)
+    {
+        if (timestamp.Seconds <= 0)
+        {
+            return "-";
+        }
+
+        var dateTime = DateTimeOffset
+            .FromUnixTimeSeconds(timestamp.Seconds)
+            .ToLocalTime()
+            .DateTime;
+
+        return timestamp.Microseconds == 0
+            ? dateTime.ToString("HH:mm:ss")
+            : $"{dateTime:HH:mm:ss}.{timestamp.Microseconds / 1000:000}";
+    }
 }

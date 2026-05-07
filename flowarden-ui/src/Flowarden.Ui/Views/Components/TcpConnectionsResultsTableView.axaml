@@ -32,8 +32,8 @@
                   <TextBlock Grid.Column="4" HorizontalAlignment="Right" Text="{Binding RstCount}" />
                   <TextBlock Grid.Column="5" HorizontalAlignment="Right" Text="{Binding Bytes}" />
                   <TextBlock Grid.Column="6" HorizontalAlignment="Right" Text="{Binding Packets}" />
-                  <TextBlock Grid.Column="7" Text="{Binding FirstSeen.Seconds}" />
-                  <TextBlock Grid.Column="8" Text="{Binding LastSeen.Seconds}" />
+                  <TextBlock Grid.Column="7" Text="{Binding FirstSeenLabel}" />
+                  <TextBlock Grid.Column="8" Text="{Binding LastSeenLabel}" />
                 </Grid>
               </Border>
             </DataTemplate>
