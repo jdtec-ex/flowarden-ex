@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
@@ -14,6 +15,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     private readonly ProjectionClient? _projectionClient;
     private readonly bool _isDesignTime;
     private string? _modeOverride;
+    private CancellationTokenSource? _liveOverviewCts;
 
     public OverviewPageViewModel()
         : this(projectionClient: null, isDesignTime: true)
@@ -143,6 +145,24 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(OutboundAreaPathData));
     }
 
+    public void BeginLiveStreaming()
+    {
+        if (_projectionClient is null || _isDesignTime || _liveOverviewCts is not null)
+        {
+            return;
+        }
+
+        _liveOverviewCts = new CancellationTokenSource();
+        _ = ConsumeLiveOverviewAsync(_liveOverviewCts.Token);
+    }
+
+    public void StopLiveStreaming()
+    {
+        _liveOverviewCts?.Cancel();
+        _liveOverviewCts?.Dispose();
+        _liveOverviewCts = null;
+    }
+
     public void SetMode(string mode)
     {
         _modeOverride = mode;
@@ -233,6 +253,52 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         }
 
         return $"{bytes} B/s";
+    }
+
+    private async Task ConsumeLiveOverviewAsync(CancellationToken cancellationToken)
+    {
+        if (_projectionClient is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await foreach (var snapshot in _projectionClient.StreamOverviewAsync(cancellationToken))
+            {
+                Snapshot = snapshot;
+                StatusCards = BuildStatusCards(snapshot, ModeLabel);
+                OnPropertyChanged(nameof(Snapshot));
+                OnPropertyChanged(nameof(StatusCards));
+                OnPropertyChanged(nameof(ModeLabel));
+                OnPropertyChanged(nameof(HeroSummary));
+                OnPropertyChanged(nameof(DestinationPlaceholderMessage));
+                OnPropertyChanged(nameof(DestinationPlaceholderState));
+                OnPropertyChanged(nameof(HasTimeline));
+                OnPropertyChanged(nameof(HasNoTimeline));
+                OnPropertyChanged(nameof(TimelineEmptyTitle));
+                OnPropertyChanged(nameof(TimelineEmptyMessage));
+                OnPropertyChanged(nameof(AxisLabelStart));
+                OnPropertyChanged(nameof(AxisLabelMidLeft));
+                OnPropertyChanged(nameof(AxisLabelCenter));
+                OnPropertyChanged(nameof(AxisLabelMidRight));
+                OnPropertyChanged(nameof(AxisLabelEnd));
+                OnPropertyChanged(nameof(YAxisTopLabel));
+                OnPropertyChanged(nameof(YAxisUpperMidLabel));
+                OnPropertyChanged(nameof(YAxisMidLabel));
+                OnPropertyChanged(nameof(YAxisLowerMidLabel));
+                OnPropertyChanged(nameof(YAxisZeroLabel));
+                OnPropertyChanged(nameof(OutboundPathData));
+                OnPropertyChanged(nameof(InboundPathData));
+                OnPropertyChanged(nameof(OutboundAreaPathData));
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            _liveOverviewCts?.Dispose();
+            _liveOverviewCts = null;
+        }
     }
 
     private static string BuildSmoothPath(IReadOnlyList<(double X, double Y)> coordinates)

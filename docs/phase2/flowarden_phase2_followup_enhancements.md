@@ -63,19 +63,27 @@
 
 #### 当前状态
 
-当前 `Overview` 已有真实 snapshot 接线，但仍不是实时流：
+当前该项已完成第一步：
 
 1. `ProjectionService.GetLatestOverview` 已成立
-2. `Overview` 已能显示真实 timeline / snapshot
-3. 但当前没有 `StreamOverview`
-4. UI 还不是订阅式刷新
+2. `ProjectionService.StreamOverview` 已成立
+3. UI `Overview` 已在 live capture 运行中订阅 resident core 的动态 tick 投影
+4. `Stop` 后仍会回到最终 snapshot 收尾
+
+#### 当前仍后置
+
+以下内容仍未纳入本轮：
+
+1. `Inspect` 实时 projection stream
+2. `TCP Connections` 实时 projection stream
+3. stream 中断后的自动重连策略
+4. 更细粒度的 backpressure / subscriber fan-out 策略
 
 #### 后续项
 
-1. `ProjectionService.StreamOverview`
-2. UI 侧 overview subscription / refresh coordinator
-3. stream 中断与重连语义
-4. live / replay 模式下的刷新策略
+1. `Inspect` / `TCP Connections` 是否也要进入实时流
+2. stream 中断与重连语义
+3. live / replay 模式下的刷新策略细化
 
 ---
 

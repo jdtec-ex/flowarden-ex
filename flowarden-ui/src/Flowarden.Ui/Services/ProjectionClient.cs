@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Flowarden.Projection.V1;
 using Flowarden.Ui.Models;
+using Grpc.Core;
 using Grpc.Net.Client;
 
 namespace Flowarden.Ui.Services;
@@ -125,6 +127,124 @@ public sealed class ProjectionClient
                 })
                 .ToArray(),
         };
+    }
+
+    public async IAsyncEnumerable<OverviewSnapshotDto> StreamOverviewAsync(
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
+    {
+        using var call = _client.StreamOverview(
+            new StreamOverviewRequest(),
+            cancellationToken: cancellationToken
+        );
+
+        await foreach (
+            var response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false)
+        )
+        {
+            yield return new OverviewSnapshotDto
+            {
+                CaptureId = response.CaptureId,
+                Sequence = response.Sequence,
+                Timestamp = response.Timestamp is null
+                    ? new PacketTimestampDto()
+                    : new PacketTimestampDto
+                    {
+                        Seconds = response.Timestamp.Seconds,
+                        Microseconds = response.Timestamp.Microseconds,
+                    },
+                Totals = response.Totals is null
+                    ? new AggregateTotalsDto()
+                    : new AggregateTotalsDto
+                    {
+                        Packets = response.Totals.Packets,
+                        Bytes = response.Totals.Bytes,
+                        BytesIn = response.Totals.BytesIn,
+                        BytesOut = response.Totals.BytesOut,
+                    },
+                DroppedPackets = response.DroppedPackets,
+                LastPacketTimestamp = response.LastPacketTimestamp is null
+                    ? null
+                    : new PacketTimestampDto
+                    {
+                        Seconds = response.LastPacketTimestamp.Seconds,
+                        Microseconds = response.LastPacketTimestamp.Microseconds,
+                    },
+                TopConnections = response.TopConnections
+                    .Select(connection => new ConnectionRowDto
+                    {
+                        SourceAddress = connection.SourceAddress,
+                        SourcePort = connection.SourcePort == 0 ? null : (ushort?)connection.SourcePort,
+                        DestinationAddress = connection.DestinationAddress,
+                        DestinationPort = connection.DestinationPort == 0
+                            ? null
+                            : (ushort?)connection.DestinationPort,
+                        Protocol = connection.Protocol,
+                        ServiceName = connection.ServiceName,
+                        Direction = connection.Direction,
+                        Packets = connection.Packets,
+                        Bytes = connection.Bytes,
+                    })
+                    .ToArray(),
+                TopHosts = response.TopHosts
+                    .Select(host => new HostRowDto
+                    {
+                        Host = host.Host,
+                        CountryLabel = host.CountryLabel,
+                        Packets = host.Packets,
+                        Bytes = host.Bytes,
+                    })
+                    .ToArray(),
+                TopServices = response.TopServices
+                    .Select(service => new ServiceRowDto
+                    {
+                        Name = service.Name,
+                        Transport = service.Transport,
+                        Packets = service.Packets,
+                        Bytes = service.Bytes,
+                    })
+                    .ToArray(),
+                DestinationMap = new DestinationMapPlaceholderDto
+                {
+                    State = response.DestinationMap?.State ?? "reserved",
+                    Message = response.DestinationMap?.Message
+                        ?? "Destination map is reserved for a future phase 2 enhancement.",
+                },
+                TopDestinations = response.TopDestinations
+                    .Select(destination => new DestinationSummaryDto
+                    {
+                        Label = destination.Label,
+                        CountryLabel = destination.CountryLabel,
+                        Bytes = destination.Bytes,
+                        Ratio = destination.Ratio,
+                    })
+                    .ToArray(),
+                SourceLabel = string.IsNullOrWhiteSpace(response.SourceLabel)
+                    ? "Live source · unknown"
+                    : response.SourceLabel,
+                FilterLabel = string.IsNullOrWhiteSpace(response.FilterLabel)
+                    ? "Filter · none"
+                    : response.FilterLabel,
+                MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
+                    ? "bytes"
+                    : response.MetricMode,
+                TimelinePoints = response.TimelinePoints
+                    .Select(point => new TimelinePointDto
+                    {
+                        Timestamp = point.Timestamp is null
+                            ? new PacketTimestampDto()
+                            : new PacketTimestampDto
+                            {
+                                Seconds = point.Timestamp.Seconds,
+                                Microseconds = point.Timestamp.Microseconds,
+                            },
+                        InboundBytes = point.InboundBytes,
+                        OutboundBytes = point.OutboundBytes,
+                    })
+                    .ToArray(),
+            };
+        }
     }
 
     public async Task<InspectResultDto> GetInspectPageAsync(

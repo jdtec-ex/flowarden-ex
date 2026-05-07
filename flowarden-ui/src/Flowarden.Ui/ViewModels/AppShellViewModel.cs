@@ -381,7 +381,21 @@ public sealed partial class AppShellViewModel : ViewModelBase
             && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
         )
         {
+            OverviewPage?.StopLiveStreaming();
             _ = RefreshProjectionAfterStopAsync();
+        }
+
+        if (
+            status == "running"
+            && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            OverviewPage?.BeginLiveStreaming();
+        }
+
+        if (status == "starting" || status == "stopping")
+        {
+            OverviewPage?.StopLiveStreaming();
         }
     }
 
