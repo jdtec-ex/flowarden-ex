@@ -6,24 +6,30 @@
   <Border Classes="glass-panel">
     <StackPanel Spacing="12">
       <TextBlock Classes="section-title" Text="Core" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
         <TextBlock Text="Endpoint" />
-        <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpoint}" />
+        <SelectableTextBlock Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpoint}" />
 
         <TextBlock Grid.Row="1" Text="Process state" />
-        <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
+        <SelectableTextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
 
         <TextBlock Grid.Row="2" Text="Health" />
-        <TextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
+        <SelectableTextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
 
         <TextBlock Grid.Row="3" Text="Core version" />
-        <TextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
+        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
 
         <TextBlock Grid.Row="4" Text="UI version" />
-        <TextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
+        <SelectableTextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
+
+        <TextBlock Grid.Row="5" Text="Shutdown on UI close" />
+        <ToggleSwitch Grid.Row="5"
+                      Grid.Column="1"
+                      HorizontalAlignment="Left"
+                      IsChecked="{Binding ShutdownCoreWhenUiCloses}" />
       </Grid>
       <Border Classes="status-pill">
-        <TextBlock Classes="muted-text" Text="{Binding StartedAtLabel}" />
+        <SelectableTextBlock Classes="muted-text" Text="{Binding StartedAtLabel}" />
       </Border>
     </StackPanel>
   </Border>

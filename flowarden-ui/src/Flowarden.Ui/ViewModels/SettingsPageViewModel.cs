@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.ViewModels;
 
-public sealed class SettingsPageViewModel : ViewModelBase
+public sealed partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly CoreHealthService? _coreHealthService;
     private readonly DiscoveryClient? _discoveryClient;
@@ -55,6 +56,7 @@ public sealed class SettingsPageViewModel : ViewModelBase
         Diagnostics = new ReadOnlyCollection<CoreErrorDto>(CreateDiagnostics(latestCoreError));
         ProcessState = CoreHealth.Status == "ok" ? "Running" : "Offline";
         CoreVersion = "unknown";
+        ShutdownCoreWhenUiCloses = false;
     }
 
     public CaptureSessionStateDto RuntimeState { get; private set; }
@@ -74,6 +76,9 @@ public sealed class SettingsPageViewModel : ViewModelBase
     public string TickInterval { get; }
 
     public string TopN { get; }
+
+    [ObservableProperty]
+    private bool shutdownCoreWhenUiCloses;
 
     public string StartedAtLabel => DateTimeOffset.FromUnixTimeSeconds((long)CoreHealth.StartedAtUnixSeconds)
         .ToLocalTime()

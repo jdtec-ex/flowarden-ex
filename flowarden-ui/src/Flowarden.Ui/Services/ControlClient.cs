@@ -77,6 +77,19 @@ public sealed class ControlClient
         );
     }
 
+    public async Task<ControlActionResult> ShutdownCoreAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await ExecuteAsync(
+            async () =>
+                await _client.ShutdownCoreAsync(
+                    new ShutdownCoreRequest(),
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
     private static ControlActionResult MapResponse(ControlResponse response)
     {
         return new ControlActionResult

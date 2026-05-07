@@ -19,6 +19,7 @@ public partial class App : Application
 {
     private static GrpcChannel? _coreChannel;
     private const string CoreBindAddress = "127.0.0.1:39091";
+    private bool _allowShutdown;
 
     public override void Initialize()
     {
@@ -74,6 +75,16 @@ public partial class App : Application
 
                 return files.Count == 0 ? null : files[0].TryGetLocalPath();
             };
+            desktop.ShutdownRequested += (_, eventArgs) =>
+            {
+                if (_allowShutdown)
+                {
+                    return;
+                }
+
+                eventArgs.Cancel = true;
+                _ = HandleDesktopShutdownAsync(desktop, shellViewModel);
+            };
             desktop.MainWindow = mainWindow;
             _ = InitializeCoreConnectionAsync(shellViewModel);
         }
@@ -96,6 +107,28 @@ public partial class App : Application
             binaryPath,
             CoreBindAddress
         );
+    }
+
+    private static async Task HandleDesktopShutdownAsync(
+        IClassicDesktopStyleApplicationLifetime desktop,
+        AppShellViewModel shellViewModel
+    )
+    {
+        if (Current is not App app)
+        {
+            desktop.Shutdown();
+            return;
+        }
+
+        try
+        {
+            await shellViewModel.HandleUiExitAsync();
+        }
+        finally
+        {
+            app._allowShutdown = true;
+            desktop.Shutdown();
+        }
     }
 
     private static string LocateCoreBinaryPath()

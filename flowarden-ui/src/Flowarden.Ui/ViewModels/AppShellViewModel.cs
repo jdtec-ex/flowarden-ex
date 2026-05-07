@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,6 +20,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
     private bool _isRefreshingAfterStop;
+    private System.Diagnostics.Process? _launchedCoreProcess;
+    private bool _launchedCoreByUi;
 
     public AppShellViewModel()
         : this(null)
@@ -233,6 +236,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
         if (result.Connected && result.Health is not null)
         {
+            _launchedCoreProcess = result.LaunchedProcess;
+            _launchedCoreByUi = result.LaunchedByUi;
             LatestCoreError = null;
             CoreStatus = new StatusIndicatorViewModel
             {
@@ -259,6 +264,50 @@ public sealed partial class AppShellViewModel : ViewModelBase
             Tone = "warning",
         };
         ConnectionMessage = result.Error?.Message ?? "Failed to connect to flowarden core.";
+    }
+
+    public async Task HandleUiExitAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_launchedCoreByUi || _launchedCoreProcess is null || SettingsPage is null)
+        {
+            return;
+        }
+
+        if (!SettingsPage.ShutdownCoreWhenUiCloses)
+        {
+            return;
+        }
+
+        if (_controlClient is not null)
+        {
+            try
+            {
+                using var shutdownTimeout = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken
+                );
+                shutdownTimeout.CancelAfter(5_000);
+                var result = await _controlClient.ShutdownCoreAsync(shutdownTimeout.Token);
+                if (result.Accepted)
+                {
+                    await WaitForLaunchedCoreExitAsync(_launchedCoreProcess, shutdownTimeout.Token);
+                    if (_launchedCoreProcess.HasExited)
+                    {
+                        return;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        try
+        {
+            if (!_launchedCoreProcess.HasExited)
+            {
+                _launchedCoreProcess.Kill(entireProcessTree: true);
+                await _launchedCoreProcess.WaitForExitAsync(cancellationToken);
+            }
+        }
+        catch { }
     }
 
     private async Task LoadSourcePageAsync()
@@ -353,5 +402,20 @@ public sealed partial class AppShellViewModel : ViewModelBase
         {
             _isRefreshingAfterStop = false;
         }
+    }
+
+    private static async Task WaitForLaunchedCoreExitAsync(
+        System.Diagnostics.Process process,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                await process.WaitForExitAsync(cancellationToken);
+            }
+        }
+        catch { }
     }
 }
