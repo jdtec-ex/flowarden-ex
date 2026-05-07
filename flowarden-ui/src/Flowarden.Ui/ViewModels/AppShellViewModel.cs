@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
+using Flowarden.Ui.State;
 
 namespace Flowarden.Ui.ViewModels;
 
@@ -19,9 +21,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly ProjectionClient? _projectionClient;
     private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
+    private readonly LiveProjectionState _liveProjectionState;
     private bool _isRefreshingAfterStop;
     private System.Diagnostics.Process? _launchedCoreProcess;
     private bool _launchedCoreByUi;
+    private CancellationTokenSource? _liveOverviewCts;
 
     public AppShellViewModel()
         : this(null)
@@ -43,6 +47,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _projectionClient = projectionClient;
         _controlClient = controlClient;
         _coreHealthService = coreHealthService;
+        _liveProjectionState = new LiveProjectionState();
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source", CompactLabel = "Src" },
@@ -82,8 +87,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
         SourcePage = new SourcePageViewModel(_discoveryClient, _controlClient);
         SourcePage.SessionStateChanged += OnSourceSessionStateChanged;
-        OverviewPage = new OverviewPageViewModel(_projectionClient);
-        InspectPage = new InspectPageViewModel(_projectionClient);
+        OverviewPage = new OverviewPageViewModel(_projectionClient, _liveProjectionState);
+        InspectPage = new InspectPageViewModel(_projectionClient, _liveProjectionState);
         SettingsPage = new SettingsPageViewModel(
             _coreHealthService,
             _discoveryClient,
@@ -381,7 +386,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
         )
         {
-            OverviewPage?.StopLiveStreaming();
+            StopOverviewStreaming();
             _ = RefreshProjectionAfterStopAsync();
         }
 
@@ -390,12 +395,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
             && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
         )
         {
-            OverviewPage?.BeginLiveStreaming();
+            BeginOverviewStreaming();
         }
 
         if (status == "starting" || status == "stopping")
         {
-            OverviewPage?.StopLiveStreaming();
+            StopOverviewStreaming();
         }
     }
 
@@ -431,5 +436,59 @@ public sealed partial class AppShellViewModel : ViewModelBase
             }
         }
         catch { }
+    }
+
+    private void BeginOverviewStreaming()
+    {
+        if (_projectionClient is null || _liveOverviewCts is not null)
+        {
+            return;
+        }
+
+        _liveProjectionState.ResetOverview(
+            new OverviewSnapshotDto
+            {
+                CaptureId = "live:running",
+                SourceLabel = SourcePage.CurrentSession.SourceDisplayName == "none"
+                    ? "Live source · not started"
+                    : $"Live source · {SourcePage.CurrentSession.SourceDisplayName}",
+                FilterLabel = string.IsNullOrWhiteSpace(SourcePage.CurrentSession.Bpf)
+                    ? "Filter · none"
+                    : $"Filter · {SourcePage.CurrentSession.Bpf}",
+                MetricMode = "bytes",
+            }
+        );
+
+        _liveOverviewCts = new CancellationTokenSource();
+        _ = ConsumeOverviewStreamAsync(_liveOverviewCts.Token);
+    }
+
+    private void StopOverviewStreaming()
+    {
+        _liveOverviewCts?.Cancel();
+        _liveOverviewCts?.Dispose();
+        _liveOverviewCts = null;
+    }
+
+    private async Task ConsumeOverviewStreamAsync(CancellationToken cancellationToken)
+    {
+        if (_projectionClient is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await foreach (var snapshot in _projectionClient.StreamOverviewAsync(cancellationToken))
+            {
+                _liveProjectionState.UpdateOverview(snapshot);
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            _liveOverviewCts?.Dispose();
+            _liveOverviewCts = null;
+        }
     }
 }

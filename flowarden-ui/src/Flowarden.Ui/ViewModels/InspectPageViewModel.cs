@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
+using Flowarden.Ui.State;
 
 namespace Flowarden.Ui.ViewModels;
 
@@ -19,23 +20,32 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     }
 
     private readonly ProjectionClient? _projectionClient;
+    private readonly LiveProjectionState? _liveProjectionState;
     private readonly bool _isDesignTime;
     private IReadOnlyList<ConnectionRowDto> _allRows;
     private IReadOnlyList<TcpConnectionRowDto> _allTcpRows;
 
     public InspectPageViewModel()
-        : this(projectionClient: null, isDesignTime: true)
+        : this(projectionClient: null, liveProjectionState: null, isDesignTime: true)
     {
     }
 
-    public InspectPageViewModel(ProjectionClient? projectionClient)
-        : this(projectionClient, isDesignTime: false)
+    public InspectPageViewModel(
+        ProjectionClient? projectionClient,
+        LiveProjectionState? liveProjectionState = null
+    )
+        : this(projectionClient, liveProjectionState, isDesignTime: false)
     {
     }
 
-    private InspectPageViewModel(ProjectionClient? projectionClient, bool isDesignTime)
+    private InspectPageViewModel(
+        ProjectionClient? projectionClient,
+        LiveProjectionState? liveProjectionState,
+        bool isDesignTime
+    )
     {
         _projectionClient = projectionClient;
+        _liveProjectionState = liveProjectionState;
         _isDesignTime = isDesignTime;
         _allRows = CreateSeedRows();
         _allTcpRows = CreateSeedTcpRows();
@@ -46,6 +56,10 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         Summary = BuildSummary(Rows);
         ActiveFilterSummary = "No active filters";
         ProjectionStateLabel = "Seed dataset";
+        if (!isDesignTime && _liveProjectionState is not null)
+        {
+            _liveProjectionState.OverviewUpdated += ApplyLiveOverviewToFlows;
+        }
     }
 
     public ObservableCollection<ConnectionRowDto> Rows { get; }
@@ -303,6 +317,27 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     private static string? NullIfEmpty(string value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private void ApplyLiveOverviewToFlows(OverviewSnapshotDto snapshot)
+    {
+        if (CurrentMode != InspectMode.Flows)
+        {
+            return;
+        }
+
+        _allRows = snapshot.TopConnections.ToArray();
+        var filteredRows = _allRows.Where(MatchesFilter).ToArray();
+        ReplaceRows(filteredRows);
+        Summary = BuildSummary(filteredRows);
+        ProjectionStateLabel = "Live projection";
+        ActiveFilterSummary = BuildFilterSummary();
+        ReplaceActiveFilterChips(BuildFilterChips(Filter));
+        OnPropertyChanged(nameof(ResultCountLabel));
+        OnPropertyChanged(nameof(TotalBytesLabel));
+        OnPropertyChanged(nameof(TotalPacketsLabel));
+        OnPropertyChanged(nameof(SortLabel));
+        OnPropertyChanged(nameof(HasActiveFilters));
     }
 
     private static string FormatBytes(ulong bytes)

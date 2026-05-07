@@ -74,14 +74,21 @@
 
 以下内容仍未纳入本轮：
 
-1. `Inspect` 实时 projection stream
-2. `TCP Connections` 实时 projection stream
-3. stream 中断后的自动重连策略
-4. 更细粒度的 backpressure / subscriber fan-out 策略
+1. `TCP Connections` 实时 projection stream
+2. stream 中断后的自动重连策略
+3. 更细粒度的 backpressure / subscriber fan-out 策略
+
+#### 补充状态
+
+当前 `Inspect` 已完成第一步动态刷新收敛：
+
+1. `Overview` 和 `Inspect Flows` 已共用 UI 侧 `LiveProjectionState`
+2. resident core 运行中的 `StreamOverview` 会驱动 `Overview` 和 `Inspect Flows` 同步刷新
+3. `Inspect` 的 TCP 连接模式仍保持独立查询路径，尚未进入动态刷新
 
 #### 后续项
 
-1. `Inspect` / `TCP Connections` 是否也要进入实时流
+1. `TCP Connections` 是否也要进入实时流
 2. stream 中断与重连语义
 3. live / replay 模式下的刷新策略细化
 
