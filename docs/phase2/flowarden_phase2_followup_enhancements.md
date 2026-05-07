@@ -95,6 +95,8 @@
 补充提案见：
 
 - `flowarden_phase2_inspect_live_refresh_proposal.md`
+- `flowarden_phase2_live_timeline_window_proposal.md`
+- `flowarden_phase2_resident_snapshot_retention_proposal.md`
 
 ---
 
