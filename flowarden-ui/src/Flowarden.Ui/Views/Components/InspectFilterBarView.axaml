@@ -4,28 +4,44 @@
              x:Class="Flowarden.Ui.Views.Components.InspectFilterBarView"
              x:DataType="vm:InspectPageViewModel">
   <Border Classes="glass-panel">
-    <Grid ColumnDefinitions="*,*,*,*,*,*,Auto" ColumnSpacing="10">
-      <TextBox Watermark="Source"
-               Text="{Binding SourceAddressInput}" />
-      <TextBox Grid.Column="1"
-               Watermark="Destination"
-               Text="{Binding DestinationAddressInput}" />
-      <TextBox Grid.Column="2"
-               Watermark="Service"
-               Text="{Binding ServiceInput}" />
-      <TextBox Grid.Column="3"
-               Watermark="Protocol"
-               Text="{Binding ProtocolInput}" />
-      <TextBox Grid.Column="4"
-               Watermark="Direction"
-               Text="{Binding DirectionInput}" />
-      <TextBox Grid.Column="5"
-               Watermark="BPF"
-               Text="{Binding BpfInput}" />
-      <Button Grid.Column="6"
-              Classes="mode-button"
-              Command="{Binding ApplyFiltersCommand}"
-              Content="Apply" />
+    <Grid>
+      <Grid ColumnDefinitions="*,*,*,*,*,*,Auto" ColumnSpacing="10" IsVisible="{Binding IsFlowsMode}">
+        <TextBox Watermark="Source"
+                 Text="{Binding SourceAddressInput}" />
+        <TextBox Grid.Column="1"
+                 Watermark="Destination"
+                 Text="{Binding DestinationAddressInput}" />
+        <TextBox Grid.Column="2"
+                 Watermark="Service"
+                 Text="{Binding ServiceInput}" />
+        <TextBox Grid.Column="3"
+                 Watermark="Protocol"
+                 Text="{Binding ProtocolInput}" />
+        <TextBox Grid.Column="4"
+                 Watermark="Direction"
+                 Text="{Binding DirectionInput}" />
+        <TextBox Grid.Column="5"
+                 Watermark="BPF"
+                 Text="{Binding BpfInput}" />
+        <Button Grid.Column="6"
+                Classes="mode-button"
+                Command="{Binding ApplyFiltersCommand}"
+                Content="Apply" />
+      </Grid>
+      <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="10" IsVisible="{Binding IsTcpConnectionsMode}">
+        <TextBox Watermark="Address"
+                 Text="{Binding AddressInput}" />
+        <TextBox Grid.Column="1"
+                 Watermark="Port"
+                 Text="{Binding PortInput}" />
+        <TextBox Grid.Column="2"
+                 Watermark="State"
+                 Text="{Binding StateInput}" />
+        <Button Grid.Column="3"
+                Classes="mode-button"
+                Command="{Binding ApplyFiltersCommand}"
+                Content="Apply" />
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

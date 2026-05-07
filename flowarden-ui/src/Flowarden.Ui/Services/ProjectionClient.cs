@@ -171,4 +171,63 @@ public sealed class ProjectionClient
             },
         };
     }
+
+    public async Task<InspectResultDto> GetTcpConnectionsPageAsync(
+        InspectFilterDto filter,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var response = await _client.GetTcpConnectionsPageAsync(
+            new GetTcpConnectionsPageRequest
+            {
+                Address = filter.Address ?? string.Empty,
+                Port = filter.Port ?? string.Empty,
+                State = filter.State ?? string.Empty,
+            },
+            cancellationToken: cancellationToken
+        );
+
+        return new InspectResultDto
+        {
+            State = response.State,
+            TcpRows = response.Rows
+                .Select(row => new TcpConnectionRowDto
+                {
+                    EndpointAAddress = row.EndpointAAddress,
+                    EndpointAPort = (ushort)row.EndpointAPort,
+                    EndpointBAddress = row.EndpointBAddress,
+                    EndpointBPort = (ushort)row.EndpointBPort,
+                    State = row.State,
+                    SynCount = row.SynCount,
+                    FinCount = row.FinCount,
+                    RstCount = row.RstCount,
+                    Packets = row.Packets,
+                    Bytes = row.Bytes,
+                    FirstSeen = row.FirstSeen is null
+                        ? new PacketTimestampDto()
+                        : new PacketTimestampDto
+                        {
+                            Seconds = row.FirstSeen.Seconds,
+                            Microseconds = row.FirstSeen.Microseconds,
+                        },
+                    LastSeen = row.LastSeen is null
+                        ? new PacketTimestampDto()
+                        : new PacketTimestampDto
+                        {
+                            Seconds = row.LastSeen.Seconds,
+                            Microseconds = row.LastSeen.Microseconds,
+                        },
+                })
+                .ToArray(),
+            Summary = new InspectResultSummaryDto
+            {
+                TotalRows = (ulong)response.Rows.Count,
+                VisibleRows = (ulong)response.Rows.Count,
+                TotalPackets = response.Rows.Aggregate(0UL, (acc, row) => acc + row.Packets),
+                TotalBytes = response.Rows.Aggregate(0UL, (acc, row) => acc + row.Bytes),
+                SortBy = "bytes",
+                SortDirection = "desc",
+            },
+        };
+    }
 }

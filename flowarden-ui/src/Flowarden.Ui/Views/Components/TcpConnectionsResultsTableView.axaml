@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.TcpConnectionsResultsTableView"
+             x:DataType="vm:InspectPageViewModel">
+  <Border Classes="glass-panel">
+    <Grid RowDefinitions="Auto,*" RowSpacing="12">
+      <Grid ColumnDefinitions="300,116,64,64,64,92,82,108,108,*" ColumnSpacing="6">
+        <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Connection" />
+        <TextBlock Grid.Column="1" Classes="muted-text" FontWeight="SemiBold" Text="State" />
+        <TextBlock Grid.Column="2" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="SYN" />
+        <TextBlock Grid.Column="3" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="FIN" />
+        <TextBlock Grid.Column="4" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="RST" />
+        <TextBlock Grid.Column="5" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="Bytes" />
+        <TextBlock Grid.Column="6" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="Packets" />
+        <TextBlock Grid.Column="7" Classes="muted-text" FontWeight="SemiBold" Text="First Seen" />
+        <TextBlock Grid.Column="8" Classes="muted-text" FontWeight="SemiBold" Text="Last Seen" />
+      </Grid>
+
+      <ScrollViewer Grid.Row="1"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding TcpRows}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Classes="status-pill" Margin="0,0,0,8">
+                <Grid ColumnDefinitions="300,116,64,64,64,92,82,108,108,*" ColumnSpacing="6">
+                  <TextBlock Text="{Binding ConnectionLabel}" />
+                  <TextBlock Grid.Column="1" Text="{Binding State}" />
+                  <TextBlock Grid.Column="2" HorizontalAlignment="Right" Text="{Binding SynCount}" />
+                  <TextBlock Grid.Column="3" HorizontalAlignment="Right" Text="{Binding FinCount}" />
+                  <TextBlock Grid.Column="4" HorizontalAlignment="Right" Text="{Binding RstCount}" />
+                  <TextBlock Grid.Column="5" HorizontalAlignment="Right" Text="{Binding Bytes}" />
+                  <TextBlock Grid.Column="6" HorizontalAlignment="Right" Text="{Binding Packets}" />
+                  <TextBlock Grid.Column="7" Text="{Binding FirstSeen.Seconds}" />
+                  <TextBlock Grid.Column="8" Text="{Binding LastSeen.Seconds}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl>

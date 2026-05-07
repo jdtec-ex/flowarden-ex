@@ -26,7 +26,8 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
     </Border>
-    <components:InspectResultsTableView Grid.Row="3" DataContext="{Binding}" />
+    <components:InspectResultsTableView Grid.Row="3" DataContext="{Binding}" IsVisible="{Binding IsFlowsMode}" />
+    <components:TcpConnectionsResultsTableView Grid.Row="3" DataContext="{Binding}" IsVisible="{Binding IsTcpConnectionsMode}" />
     <components:InspectFooterSummaryView Grid.Row="4" DataContext="{Binding}" />
   </Grid>
 </UserControl>

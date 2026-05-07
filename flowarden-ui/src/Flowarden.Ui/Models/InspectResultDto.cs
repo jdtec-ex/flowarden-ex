@@ -7,6 +7,8 @@ public sealed class InspectResultDto
 {
     public IReadOnlyList<ConnectionRowDto> Rows { get; init; } = Array.Empty<ConnectionRowDto>();
 
+    public IReadOnlyList<TcpConnectionRowDto> TcpRows { get; init; } = Array.Empty<TcpConnectionRowDto>();
+
     public InspectResultSummaryDto Summary { get; init; } = new();
 
     public string State { get; init; } = "seed";
