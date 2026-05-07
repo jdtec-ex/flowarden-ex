@@ -29,7 +29,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     {
         _projectionClient = projectionClient;
         _isDesignTime = isDesignTime;
-        Snapshot = CreateSeedSnapshot();
+        Snapshot = isDesignTime ? CreateSeedSnapshot() : CreateInitialRuntimeSnapshot();
         StatusCards = BuildStatusCards(Snapshot, ModeLabel);
     }
 
@@ -461,6 +461,28 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
                     OutboundBytes = 16_384,
                 },
             ],
+        };
+    }
+
+    private static OverviewSnapshotDto CreateInitialRuntimeSnapshot()
+    {
+        return new OverviewSnapshotDto
+        {
+            CaptureId = "live:inactive",
+            Sequence = 0,
+            SourceLabel = "Live source · not started",
+            FilterLabel = "Filter · none",
+            MetricMode = "bytes",
+            Timestamp = new PacketTimestampDto(),
+            Totals = new AggregateTotalsDto(),
+            DroppedPackets = 0,
+            LastPacketTimestamp = null,
+            TopConnections = Array.Empty<ConnectionRowDto>(),
+            TopHosts = Array.Empty<HostRowDto>(),
+            TopServices = Array.Empty<ServiceRowDto>(),
+            DestinationMap = DestinationMapPlaceholderDto.CreateReserved(),
+            TopDestinations = Array.Empty<DestinationSummaryDto>(),
+            TimelinePoints = Array.Empty<TimelinePointDto>(),
         };
     }
 }
