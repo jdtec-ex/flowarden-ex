@@ -85,6 +85,10 @@
 2. stream 中断与重连语义
 3. live / replay 模式下的刷新策略细化
 
+补充提案见：
+
+- `flowarden_phase2_inspect_live_refresh_proposal.md`
+
 ---
 
 ### 3.3 Core Failure Recovery
