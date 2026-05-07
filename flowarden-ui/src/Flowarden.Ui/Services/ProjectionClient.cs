@@ -72,6 +72,7 @@ public sealed class ProjectionClient
                 .Select(host => new HostRowDto
                 {
                     Host = host.Host,
+                    CountryLabel = host.CountryLabel,
                     Packets = host.Packets,
                     Bytes = host.Bytes,
                 })
@@ -95,6 +96,7 @@ public sealed class ProjectionClient
                 .Select(destination => new DestinationSummaryDto
                 {
                     Label = destination.Label,
+                    CountryLabel = destination.CountryLabel,
                     Bytes = destination.Bytes,
                     Ratio = destination.Ratio,
                 })

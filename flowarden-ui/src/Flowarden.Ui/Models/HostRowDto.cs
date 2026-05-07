@@ -4,6 +4,8 @@ public sealed class HostRowDto
 {
     public string Host { get; init; } = string.Empty;
 
+    public string CountryLabel { get; init; } = string.Empty;
+
     public ulong Packets { get; init; }
 
     public ulong Bytes { get; init; }

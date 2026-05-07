@@ -79,6 +79,8 @@ public sealed class DestinationSummaryDto
 {
     public string Label { get; init; } = string.Empty;
 
+    public string CountryLabel { get; init; } = string.Empty;
+
     public ulong Bytes { get; init; }
 
     public double Ratio { get; init; }

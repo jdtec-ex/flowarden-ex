@@ -385,12 +385,14 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
                 new HostRowDto
                 {
                     Host = "142.250.72.14",
+                    CountryLabel = "US · United States",
                     Packets = 144,
                     Bytes = 212_540,
                 },
                 new HostRowDto
                 {
                     Host = "1.1.1.1",
+                    CountryLabel = "AU · Australia",
                     Packets = 91,
                     Bytes = 145_000,
                 },
@@ -417,12 +419,14 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
                 new DestinationSummaryDto
                 {
                     Label = "US / Google",
+                    CountryLabel = "US · United States",
                     Bytes = 212_540,
                     Ratio = 0.39,
                 },
                 new DestinationSummaryDto
                 {
                     Label = "AU / Cloudflare",
+                    CountryLabel = "AU · Australia",
                     Bytes = 145_000,
                     Ratio = 0.27,
                 },
