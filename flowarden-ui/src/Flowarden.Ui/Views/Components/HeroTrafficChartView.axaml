@@ -143,16 +143,7 @@
         </Grid>
       </Border>
 
-      <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="10">
-        <Border Classes="status-pill">
-          <TextBlock Text="Live/Offline Supported" />
-        </Border>
-        <Border Grid.Column="1" Classes="status-pill">
-          <TextBlock Text="Phase1 snapshot aligned" />
-        </Border>
-        <Border Grid.Column="2" Classes="status-pill">
-          <TextBlock Text="Real timeline" />
-        </Border>
+      <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="10">
         <StackPanel Grid.Column="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right"

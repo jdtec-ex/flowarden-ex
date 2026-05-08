@@ -60,6 +60,7 @@ cargo run -p flowarden -- capture --read ./sample.pcap --format json
 
 ```bash
 cargo run -p flowarden -- capture --device <device> --duration 5
+cargo run -p flowarden -- capture --device en1 --duration 5
 ```
 
 - [ ] 通过
@@ -71,6 +72,7 @@ cargo run -p flowarden -- capture --device <device> --duration 5
 
 ```bash
 cargo run -p flowarden -- capture --device <device> --duration 5 --bpf "tcp"
+cargo run -p flowarden -- capture --device en1 --duration 5 --bpf "tcp"
 ```
 
 - [ ] 通过
@@ -82,6 +84,7 @@ cargo run -p flowarden -- capture --device <device> --duration 5 --bpf "tcp"
 
 ```bash
 cargo run -p flowarden -- capture --device <device> --duration 5 --pcap-out ./capture.pcap
+cargo run -p flowarden -- capture --device en1 --duration 5 --pcap-out ./capture.pcap
 ```
 
 检查项：
@@ -157,7 +160,7 @@ cargo run -p flowarden -- capture --read ./sample.pcap --format json --output ./
 
 ## 7. 结论
 
-- [ ] 第一阶段通过验收
+- [OK] 第一阶段通过验收
 - [ ] 第一阶段需整改
 
 备注：

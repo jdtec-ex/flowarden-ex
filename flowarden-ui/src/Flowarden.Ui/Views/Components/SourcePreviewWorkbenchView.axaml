@@ -4,7 +4,7 @@
              x:Class="Flowarden.Ui.Views.Components.SourcePreviewWorkbenchView"
              x:DataType="vm:SourcePageViewModel">
   <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="12">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12">
       <TextBlock Classes="section-title" Text="Preview Workbench" />
 
       <StackPanel Grid.Row="1" Spacing="4">
@@ -60,14 +60,7 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </StackPanel>
-
-      <Border Grid.Row="5" Classes="status-pill">
-        <StackPanel Spacing="4">
-          <SelectableTextBlock FontWeight="SemiBold" Text="Formal capture boundary" />
-          <SelectableTextBlock Classes="muted-text"
-                               Text="Preview traffic is multi-device sampling. Formal capture remains single-source by design." />
-        </StackPanel>
-      </Border>
+      
     </Grid>
   </Border>
 </UserControl>
