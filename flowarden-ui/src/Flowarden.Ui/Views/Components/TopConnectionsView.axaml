@@ -12,8 +12,8 @@
             <Border Classes="status-pill" Margin="0,0,0,8" Padding="14,12">
               <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" ColumnSpacing="8">
                 <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding SourceAddress}" />
-                  <TextBlock Classes="muted-text" Text="{Binding DestinationAddress}" />
+                  <TextBlock Text="{Binding PeerAddress}" />
+                  <TextBlock Classes="muted-text" Text="{Binding PeerPort, StringFormat=port {0}}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
                   <TextBlock Text="{Binding Bytes}" HorizontalAlignment="Right" />

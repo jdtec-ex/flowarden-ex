@@ -1,3 +1,5 @@
+using System;
+
 namespace Flowarden.Ui.Models;
 
 public sealed class ConnectionRowDto
@@ -9,6 +11,16 @@ public sealed class ConnectionRowDto
     public string DestinationAddress { get; init; } = string.Empty;
 
     public ushort? DestinationPort { get; init; }
+
+    public string PeerAddress =>
+        string.Equals(Direction, "inbound", StringComparison.OrdinalIgnoreCase)
+            ? SourceAddress
+            : DestinationAddress;
+
+    public ushort? PeerPort =>
+        string.Equals(Direction, "inbound", StringComparison.OrdinalIgnoreCase)
+            ? SourcePort
+            : DestinationPort;
 
     public string Protocol { get; init; } = string.Empty;
 
