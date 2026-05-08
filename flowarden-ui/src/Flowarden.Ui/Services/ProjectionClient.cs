@@ -20,11 +20,12 @@ public sealed class ProjectionClient
     }
 
     public async Task<OverviewSnapshotDto> GetLatestOverviewAsync(
+        uint topN,
         CancellationToken cancellationToken = default
     )
     {
         var response = await _client.GetLatestOverviewAsync(
-            new GetLatestOverviewRequest(),
+            new GetLatestOverviewRequest { TopN = topN },
             cancellationToken: cancellationToken
         );
 
@@ -130,12 +131,13 @@ public sealed class ProjectionClient
     }
 
     public async IAsyncEnumerable<OverviewSnapshotDto> StreamOverviewAsync(
+        uint topN,
         [System.Runtime.CompilerServices.EnumeratorCancellation]
             CancellationToken cancellationToken = default
     )
     {
         using var call = _client.StreamOverview(
-            new StreamOverviewRequest(),
+            new StreamOverviewRequest { TopN = topN },
             cancellationToken: cancellationToken
         );
 
@@ -249,6 +251,7 @@ public sealed class ProjectionClient
 
     public async Task<InspectResultDto> GetInspectPageAsync(
         InspectFilterDto filter,
+        uint topN,
         CancellationToken cancellationToken = default
     )
     {
@@ -261,6 +264,7 @@ public sealed class ProjectionClient
                 Protocol = filter.Protocol ?? string.Empty,
                 Direction = filter.Direction ?? string.Empty,
                 Bpf = filter.Bpf ?? string.Empty,
+                TopN = topN,
             },
             cancellationToken: cancellationToken
         );
@@ -296,6 +300,7 @@ public sealed class ProjectionClient
 
     public async Task<InspectResultDto> GetTcpConnectionsPageAsync(
         InspectFilterDto filter,
+        uint topN,
         CancellationToken cancellationToken = default
     )
     {
@@ -305,6 +310,7 @@ public sealed class ProjectionClient
                 Address = filter.Address ?? string.Empty,
                 Port = filter.Port ?? string.Empty,
                 State = filter.State ?? string.Empty,
+                TopN = topN,
             },
             cancellationToken: cancellationToken
         );

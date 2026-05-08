@@ -14,30 +14,39 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 {
     private readonly ProjectionClient? _projectionClient;
     private readonly LiveProjectionState? _liveProjectionState;
+    private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
     private string? _modeOverride;
 
     public OverviewPageViewModel()
-        : this(projectionClient: null, liveProjectionState: null, isDesignTime: true)
+        : this(
+            projectionClient: null,
+            liveProjectionState: null,
+            projectionSettings: new ProjectionSettingsState(),
+            isDesignTime: true
+        )
     {
     }
 
     public OverviewPageViewModel(
         ProjectionClient? projectionClient,
-        LiveProjectionState? liveProjectionState = null
+        LiveProjectionState? liveProjectionState,
+        ProjectionSettingsState projectionSettings
     )
-        : this(projectionClient, liveProjectionState, isDesignTime: false)
+        : this(projectionClient, liveProjectionState, projectionSettings, isDesignTime: false)
     {
     }
 
     private OverviewPageViewModel(
         ProjectionClient? projectionClient,
         LiveProjectionState? liveProjectionState,
+        ProjectionSettingsState projectionSettings,
         bool isDesignTime
     )
     {
         _projectionClient = projectionClient;
         _liveProjectionState = liveProjectionState;
+        _projectionSettings = projectionSettings;
         _isDesignTime = isDesignTime;
         Snapshot = isDesignTime ? CreateSeedSnapshot() : CreateInitialRuntimeSnapshot();
         StatusCards = BuildStatusCards(Snapshot, ModeLabel);
@@ -129,7 +138,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             return;
         }
 
-        ApplySnapshot(await _projectionClient.GetLatestOverviewAsync());
+        ApplySnapshot(await _projectionClient.GetLatestOverviewAsync(_projectionSettings.TopN));
     }
 
     public void SetMode(string mode)

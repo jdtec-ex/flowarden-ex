@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
+using Flowarden.Ui.State;
 
 namespace Flowarden.Ui.ViewModels;
 
@@ -13,12 +15,14 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly CoreHealthService? _coreHealthService;
     private readonly DiscoveryClient? _discoveryClient;
+    private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
 
     public SettingsPageViewModel()
         : this(
             coreHealthService: null,
             discoveryClient: null,
+            projectionSettings: new ProjectionSettingsState(),
             bindAddress: "not configured",
             bindAddressSource: "design-time",
             latestCoreError: null,
@@ -30,6 +34,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     public SettingsPageViewModel(
         CoreHealthService? coreHealthService,
         DiscoveryClient? discoveryClient,
+        ProjectionSettingsState projectionSettings,
         string bindAddress,
         string bindAddressSource,
         CoreErrorDto? latestCoreError
@@ -37,6 +42,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         : this(
             coreHealthService,
             discoveryClient,
+            projectionSettings,
             bindAddress,
             bindAddressSource,
             latestCoreError,
@@ -48,6 +54,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     private SettingsPageViewModel(
         CoreHealthService? coreHealthService,
         DiscoveryClient? discoveryClient,
+        ProjectionSettingsState projectionSettings,
         string bindAddress,
         string bindAddressSource,
         CoreErrorDto? latestCoreError,
@@ -56,12 +63,14 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     {
         _coreHealthService = coreHealthService;
         _discoveryClient = discoveryClient;
+        _projectionSettings = projectionSettings;
         _isDesignTime = isDesignTime;
         CoreEndpoint = bindAddress;
         CoreEndpointSource = bindAddressSource;
         UiVersion = "0.1.0-phase2";
         TickInterval = "1s";
-        TopN = "20";
+        TopNInput = _projectionSettings.TopN.ToString();
+        TopNStatus = $"Applied Top N: {_projectionSettings.TopN}";
         RuntimeState = CreateSeedRuntimeState();
         CoreHealth = CreateSeedCoreHealth();
         Diagnostics = new ReadOnlyCollection<CoreErrorDto>(CreateDiagnostics(latestCoreError));
@@ -88,10 +97,35 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
 
     public string TickInterval { get; }
 
-    public string TopN { get; }
+    public uint TopN => _projectionSettings.TopN;
+
+    [ObservableProperty]
+    private string topNInput;
+
+    [ObservableProperty]
+    private string topNStatus;
 
     [ObservableProperty]
     private bool shutdownCoreWhenUiCloses;
+
+    [RelayCommand]
+    private void ApplyTopN()
+    {
+        if (!uint.TryParse(TopNInput.Trim(), out var parsed))
+        {
+            TopNInput = _projectionSettings.TopN.ToString();
+            TopNStatus = "Top N must be a number from 1 to 100.";
+            return;
+        }
+
+        var normalized = ProjectionSettingsState.NormalizeTopN(parsed);
+        _projectionSettings.SetTopN(normalized);
+        TopNInput = normalized.ToString();
+        TopNStatus = normalized == parsed
+            ? $"Applied Top N: {normalized}"
+            : $"Applied Top N: {normalized} (allowed range is 1 to 100)";
+        OnPropertyChanged(nameof(TopN));
+    }
 
     public string StartedAtLabel => DateTimeOffset.FromUnixTimeSeconds((long)CoreHealth.StartedAtUnixSeconds)
         .ToLocalTime()

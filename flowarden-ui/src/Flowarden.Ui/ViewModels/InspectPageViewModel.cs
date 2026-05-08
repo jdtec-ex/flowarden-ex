@@ -21,31 +21,40 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     private readonly ProjectionClient? _projectionClient;
     private readonly LiveProjectionState? _liveProjectionState;
+    private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
     private IReadOnlyList<ConnectionRowDto> _allRows;
     private IReadOnlyList<TcpConnectionRowDto> _allTcpRows;
 
     public InspectPageViewModel()
-        : this(projectionClient: null, liveProjectionState: null, isDesignTime: true)
+        : this(
+            projectionClient: null,
+            liveProjectionState: null,
+            projectionSettings: new ProjectionSettingsState(),
+            isDesignTime: true
+        )
     {
     }
 
     public InspectPageViewModel(
         ProjectionClient? projectionClient,
-        LiveProjectionState? liveProjectionState = null
+        LiveProjectionState? liveProjectionState,
+        ProjectionSettingsState projectionSettings
     )
-        : this(projectionClient, liveProjectionState, isDesignTime: false)
+        : this(projectionClient, liveProjectionState, projectionSettings, isDesignTime: false)
     {
     }
 
     private InspectPageViewModel(
         ProjectionClient? projectionClient,
         LiveProjectionState? liveProjectionState,
+        ProjectionSettingsState projectionSettings,
         bool isDesignTime
     )
     {
         _projectionClient = projectionClient;
         _liveProjectionState = liveProjectionState;
+        _projectionSettings = projectionSettings;
         _isDesignTime = isDesignTime;
         _allRows = CreateSeedRows();
         _allTcpRows = CreateSeedTcpRows();
@@ -389,7 +398,10 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         {
             if (CurrentMode == InspectMode.Flows)
             {
-                var result = await _projectionClient.GetInspectPageAsync(Filter);
+                var result = await _projectionClient.GetInspectPageAsync(
+                    Filter,
+                    _projectionSettings.TopN
+                );
                 _allRows = result.Rows;
                 ReplaceRows(_allRows);
                 Summary = result.Summary;
@@ -400,7 +412,10 @@ public sealed partial class InspectPageViewModel : ViewModelBase
             }
             else
             {
-                var result = await _projectionClient.GetTcpConnectionsPageAsync(Filter);
+                var result = await _projectionClient.GetTcpConnectionsPageAsync(
+                    Filter,
+                    _projectionSettings.TopN
+                );
                 _allTcpRows = result.TcpRows;
                 ReplaceTcpRows(_allTcpRows);
                 Summary = result.Summary;

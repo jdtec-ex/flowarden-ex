@@ -6,7 +6,7 @@
   <Border Classes="glass-panel">
     <StackPanel Spacing="12">
       <TextBlock Classes="section-title" Text="Runtime" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
         <TextBlock Text="Current source" />
         <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.SourceDisplayName}" />
 
@@ -20,7 +20,21 @@
         <TextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding TickInterval}" />
 
         <TextBlock Grid.Row="4" Text="Top N" />
-        <TextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding TopN}" />
+        <StackPanel Grid.Row="4"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="8">
+          <TextBox Width="88"
+                   Text="{Binding TopNInput}" />
+          <Button Classes="tools-button"
+                  Content="Apply"
+                  Command="{Binding ApplyTopNCommand}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="5"
+                   Grid.Column="1"
+                   Classes="muted-text"
+                   Text="{Binding TopNStatus}" />
       </Grid>
     </StackPanel>
   </Border>

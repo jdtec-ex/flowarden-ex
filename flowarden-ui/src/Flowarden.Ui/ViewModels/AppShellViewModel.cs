@@ -23,6 +23,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
     private readonly LiveProjectionState _liveProjectionState;
+    private readonly ProjectionSettingsState _projectionSettings;
     private bool _isRefreshingAfterStop;
     private System.Diagnostics.Process? _launchedCoreProcess;
     private bool _launchedCoreByUi;
@@ -51,6 +52,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _controlClient = controlClient;
         _coreHealthService = coreHealthService;
         _liveProjectionState = new LiveProjectionState();
+        _projectionSettings = new ProjectionSettingsState();
+        _projectionSettings.TopNChanged += OnProjectionTopNChanged;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source", CompactLabel = "Src" },
@@ -90,11 +93,20 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
         SourcePage = new SourcePageViewModel(_discoveryClient, _controlClient);
         SourcePage.SessionStateChanged += OnSourceSessionStateChanged;
-        OverviewPage = new OverviewPageViewModel(_projectionClient, _liveProjectionState);
-        InspectPage = new InspectPageViewModel(_projectionClient, _liveProjectionState);
+        OverviewPage = new OverviewPageViewModel(
+            _projectionClient,
+            _liveProjectionState,
+            _projectionSettings
+        );
+        InspectPage = new InspectPageViewModel(
+            _projectionClient,
+            _liveProjectionState,
+            _projectionSettings
+        );
         SettingsPage = new SettingsPageViewModel(
             _coreHealthService,
             _discoveryClient,
+            _projectionSettings,
             _bindAddress,
             _bindAddressSource,
             LatestCoreError
@@ -463,27 +475,33 @@ public sealed partial class AppShellViewModel : ViewModelBase
             }
         );
 
-        _liveOverviewCts = new CancellationTokenSource();
-        _ = ConsumeOverviewStreamAsync(_liveOverviewCts.Token);
+        var streamCts = new CancellationTokenSource();
+        _liveOverviewCts = streamCts;
+        _ = ConsumeOverviewStreamAsync(streamCts);
     }
 
     private void StopOverviewStreaming()
     {
         _liveOverviewCts?.Cancel();
-        _liveOverviewCts?.Dispose();
         _liveOverviewCts = null;
     }
 
-    private async Task ConsumeOverviewStreamAsync(CancellationToken cancellationToken)
+    private async Task ConsumeOverviewStreamAsync(CancellationTokenSource streamCts)
     {
         if (_projectionClient is null)
         {
             return;
         }
 
+        var cancellationToken = streamCts.Token;
         try
         {
-            await foreach (var snapshot in _projectionClient.StreamOverviewAsync(cancellationToken))
+            await foreach (
+                var snapshot in _projectionClient.StreamOverviewAsync(
+                    _projectionSettings.TopN,
+                    cancellationToken
+                )
+            )
             {
                 _liveProjectionState.UpdateOverview(snapshot);
             }
@@ -491,8 +509,30 @@ public sealed partial class AppShellViewModel : ViewModelBase
         catch (OperationCanceledException) { }
         finally
         {
-            _liveOverviewCts?.Dispose();
-            _liveOverviewCts = null;
+            if (ReferenceEquals(_liveOverviewCts, streamCts))
+            {
+                _liveOverviewCts = null;
+            }
+
+            streamCts.Dispose();
         }
+    }
+
+    private void OnProjectionTopNChanged(uint topN)
+    {
+        if (_liveOverviewCts is not null)
+        {
+            StopOverviewStreaming();
+            BeginOverviewStreaming();
+            return;
+        }
+
+        _ = RefreshProjectionAfterTopNChangeAsync();
+    }
+
+    private async Task RefreshProjectionAfterTopNChangeAsync()
+    {
+        await LoadOverviewPageAsync();
+        await LoadInspectPageAsync();
     }
 }
