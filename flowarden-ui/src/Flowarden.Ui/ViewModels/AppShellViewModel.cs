@@ -15,6 +15,7 @@ namespace Flowarden.Ui.ViewModels;
 public sealed partial class AppShellViewModel : ViewModelBase
 {
     private readonly string _bindAddress;
+    private readonly string _bindAddressSource;
     private readonly IReadOnlyDictionary<string, AppShellPageViewModel> _pages;
     private readonly CoreConnectionCoordinator? _coreConnectionCoordinator;
     private readonly DiscoveryClient? _discoveryClient;
@@ -38,10 +39,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
         ProjectionClient? projectionClient = null,
         ControlClient? controlClient = null,
         CoreHealthService? coreHealthService = null,
-        string bindAddress = "127.0.0.1:39091"
+        string bindAddress = "not configured",
+        string bindAddressSource = "design-time"
     )
     {
         _bindAddress = bindAddress;
+        _bindAddressSource = bindAddressSource;
         _coreConnectionCoordinator = coreConnectionCoordinator;
         _discoveryClient = discoveryClient;
         _projectionClient = projectionClient;
@@ -93,6 +96,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             _coreHealthService,
             _discoveryClient,
             _bindAddress,
+            _bindAddressSource,
             LatestCoreError
         );
 

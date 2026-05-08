@@ -11,6 +11,7 @@ using Avalonia.Markup.Xaml;
 using Flowarden.Ui.Views;
 using Flowarden.Ui.ViewModels;
 using Flowarden.Ui.Services;
+using Flowarden.Ui.Configuration;
 using Grpc.Net.Client;
 
 namespace Flowarden.Ui;
@@ -18,7 +19,7 @@ namespace Flowarden.Ui;
 public partial class App : Application
 {
     private static GrpcChannel? _coreChannel;
-    private const string CoreBindAddress = "127.0.0.1:39091";
+    private static CoreEndpointOptions? _coreEndpoint;
     private bool _allowShutdown;
 
     public override void Initialize()
@@ -33,7 +34,8 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            _coreChannel = CreateCoreChannel($"http://{CoreBindAddress}");
+            _coreEndpoint = CoreEndpointResolver.Resolve(Program.StartupArgs);
+            _coreChannel = CreateCoreChannel(_coreEndpoint.GrpcAddress);
             var coreHealthService = new CoreHealthService(_coreChannel);
             var coreLauncherService = new CoreLauncherService();
             var discoveryClient = new DiscoveryClient(_coreChannel);
@@ -49,7 +51,8 @@ public partial class App : Application
                 projectionClient,
                 controlClient,
                 coreHealthService,
-                CoreBindAddress
+                _coreEndpoint.BindAddress,
+                _coreEndpoint.Source
             );
             var mainWindow = new MainWindow
             {
@@ -99,13 +102,18 @@ public partial class App : Application
 
     private static async Task InitializeCoreConnectionAsync(AppShellViewModel shellViewModel)
     {
+        if (_coreEndpoint is null)
+        {
+            return;
+        }
+
         var workingDirectory = Directory.GetCurrentDirectory();
         var binaryPath = LocateCoreBinaryPath();
 
         await shellViewModel.InitializeCoreConnectionAsync(
             workingDirectory,
             binaryPath,
-            CoreBindAddress
+            _coreEndpoint.BindAddress
         );
     }
 

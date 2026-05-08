@@ -6,24 +6,27 @@
   <Border Classes="glass-panel">
     <StackPanel Spacing="12">
       <TextBlock Classes="section-title" Text="Core" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
         <TextBlock Text="Endpoint" />
         <SelectableTextBlock Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpoint}" />
 
-        <TextBlock Grid.Row="1" Text="Process state" />
-        <SelectableTextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
+        <TextBlock Grid.Row="1" Text="Endpoint source" />
+        <SelectableTextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpointSource}" />
 
-        <TextBlock Grid.Row="2" Text="Health" />
-        <SelectableTextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
+        <TextBlock Grid.Row="2" Text="Process state" />
+        <SelectableTextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
 
-        <TextBlock Grid.Row="3" Text="Core version" />
-        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
+        <TextBlock Grid.Row="3" Text="Health" />
+        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
 
-        <TextBlock Grid.Row="4" Text="UI version" />
-        <SelectableTextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
+        <TextBlock Grid.Row="4" Text="Core version" />
+        <SelectableTextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
 
-        <TextBlock Grid.Row="5" Text="Shutdown on UI close" />
-        <ToggleSwitch Grid.Row="5"
+        <TextBlock Grid.Row="5" Text="UI version" />
+        <SelectableTextBlock Grid.Row="5" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
+
+        <TextBlock Grid.Row="6" Text="Shutdown on UI close" />
+        <ToggleSwitch Grid.Row="6"
                       Grid.Column="1"
                       HorizontalAlignment="Left"
                       IsChecked="{Binding ShutdownCoreWhenUiCloses}" />

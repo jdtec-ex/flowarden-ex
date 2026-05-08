@@ -19,7 +19,8 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         : this(
             coreHealthService: null,
             discoveryClient: null,
-            bindAddress: "127.0.0.1:39091",
+            bindAddress: "not configured",
+            bindAddressSource: "design-time",
             latestCoreError: null,
             isDesignTime: true
         )
@@ -30,9 +31,17 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         CoreHealthService? coreHealthService,
         DiscoveryClient? discoveryClient,
         string bindAddress,
+        string bindAddressSource,
         CoreErrorDto? latestCoreError
     )
-        : this(coreHealthService, discoveryClient, bindAddress, latestCoreError, isDesignTime: false)
+        : this(
+            coreHealthService,
+            discoveryClient,
+            bindAddress,
+            bindAddressSource,
+            latestCoreError,
+            isDesignTime: false
+        )
     {
     }
 
@@ -40,6 +49,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         CoreHealthService? coreHealthService,
         DiscoveryClient? discoveryClient,
         string bindAddress,
+        string bindAddressSource,
         CoreErrorDto? latestCoreError,
         bool isDesignTime
     )
@@ -48,6 +58,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         _discoveryClient = discoveryClient;
         _isDesignTime = isDesignTime;
         CoreEndpoint = bindAddress;
+        CoreEndpointSource = bindAddressSource;
         UiVersion = "0.1.0-phase2";
         TickInterval = "1s";
         TopN = "20";
@@ -66,6 +77,8 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     public IReadOnlyList<CoreErrorDto> Diagnostics { get; private set; }
 
     public string CoreEndpoint { get; }
+
+    public string CoreEndpointSource { get; }
 
     public string ProcessState { get; private set; }
 
