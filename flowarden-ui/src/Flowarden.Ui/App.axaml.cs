@@ -52,7 +52,8 @@ public partial class App : Application
                 controlClient,
                 coreHealthService,
                 _coreEndpoint.BindAddress,
-                _coreEndpoint.Source
+                _coreEndpoint.Source,
+                ReadInitialPageId()
             );
             var mainWindow = new MainWindow
             {
@@ -98,6 +99,11 @@ public partial class App : Application
     private static GrpcChannel CreateCoreChannel(string address)
     {
         return GrpcChannel.ForAddress(address);
+    }
+
+    private static string? ReadInitialPageId()
+    {
+        return Environment.GetEnvironmentVariable("FLOWARDEN_UI_INITIAL_PAGE");
     }
 
     private static async Task InitializeCoreConnectionAsync(AppShellViewModel shellViewModel)

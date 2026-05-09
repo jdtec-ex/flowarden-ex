@@ -76,7 +76,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         Diagnostics = new ReadOnlyCollection<CoreErrorDto>(CreateDiagnostics(latestCoreError));
         ProcessState = CoreHealth.Status == "ok" ? "Running" : "Offline";
         CoreVersion = "unknown";
-        ShutdownCoreWhenUiCloses = false;
+        ShutdownCoreWhenUiCloses = true;
     }
 
     public CaptureSessionStateDto RuntimeState { get; private set; }

@@ -3,32 +3,16 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.InspectFooterSummaryView"
              x:DataType="vm:InspectPageViewModel">
-  <Border Classes="glass-panel">
-    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12">
-      <Border Classes="status-pill">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Text="Visible" FontWeight="SemiBold" />
-          <TextBlock Classes="muted-text" Text="{Binding Summary.VisibleRows}" />
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="1" Classes="status-pill">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Text="Bytes" FontWeight="SemiBold" />
-          <TextBlock Classes="muted-text" Text="{Binding TotalBytesLabel}" />
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="2" Classes="status-pill">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Text="Packets" FontWeight="SemiBold" />
-          <TextBlock Classes="muted-text" Text="{Binding TotalPacketsLabel}" />
-        </StackPanel>
-      </Border>
-      <Border Grid.Column="3" Classes="status-pill">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Text="Sort" FontWeight="SemiBold" />
-          <TextBlock Classes="muted-text" Text="{Binding SortLabel}" />
-        </StackPanel>
-      </Border>
+  <Border Background="{StaticResource TfcRaisedBrush}"
+          BorderBrush="{StaticResource TfcBorderBrush}"
+          BorderThickness="1,0,1,1"
+          CornerRadius="0,0,6,6"
+          Padding="14,0">
+    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="18" Height="32">
+      <TextBlock Classes="muted-text" FontSize="13" VerticalAlignment="Center" Text="{Binding ActiveFilterSummary}" />
+      <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="12" VerticalAlignment="Center" Text="{Binding ResultCountLabel}" />
+      <TextBlock Grid.Column="2" Classes="tfc-data" FontSize="12" VerticalAlignment="Center" Text="{Binding TotalBytesLabel}" />
+      <TextBlock Grid.Column="3" Classes="tfc-data" FontSize="12" VerticalAlignment="Center" Text="{Binding TotalPacketsLabel}" />
     </Grid>
   </Border>
 </UserControl>

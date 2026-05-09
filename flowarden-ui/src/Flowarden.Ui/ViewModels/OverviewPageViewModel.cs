@@ -17,6 +17,14 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
     private string? _modeOverride;
+    private bool _isThroughputHoverVisible;
+    private double _throughputHoverMarkerLeft;
+    private double _throughputHoverPanelLeft;
+    private double _throughputHoverPanelTop;
+    private double _throughputHoverPlotHeight;
+    private string _throughputHoverTimeLabel = "--:--:--";
+    private string _throughputHoverInboundLabel = "0 B/s";
+    private string _throughputHoverOutboundLabel = "0 B/s";
 
     public OverviewPageViewModel()
         : this(
@@ -72,9 +80,76 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string MetricModeSummary => $"Metric · {Snapshot.MetricMode}";
 
+    public string ActiveSourceLabel =>
+        Snapshot.SourceLabel
+            .Replace("Live source · ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Live source", "not started", StringComparison.OrdinalIgnoreCase);
+
+    public string TopHostLabel => Snapshot.TopHosts.FirstOrDefault()?.Host ?? "-";
+
+    public string TopServiceLabel => Snapshot.TopServices.FirstOrDefault()?.Name ?? "-";
+
+    public string TopServiceDisplayLabel => TopServiceLabel.ToUpperInvariant();
+
+    public string PacketsLabel => FormatCount(Snapshot.Totals.Packets);
+
+    public string BytesLabel => FormatBytes(Snapshot.Totals.Bytes);
+
+    public string PacketsHealthLabel => Snapshot.Totals.Packets > 0 ? "LIVE" : "WAITING";
+
+    public string BytesHealthLabel => Snapshot.Totals.Bytes > 0 ? "LIVE" : "WAITING";
+
     public string InboundSummary => FormatByteRate(Snapshot.Totals.BytesIn);
 
     public string OutboundSummary => FormatByteRate(Snapshot.Totals.BytesOut);
+
+    public bool IsThroughputHoverVisible
+    {
+        get => _isThroughputHoverVisible;
+        private set => SetProperty(ref _isThroughputHoverVisible, value);
+    }
+
+    public double ThroughputHoverMarkerLeft
+    {
+        get => _throughputHoverMarkerLeft;
+        private set => SetProperty(ref _throughputHoverMarkerLeft, value);
+    }
+
+    public double ThroughputHoverPanelLeft
+    {
+        get => _throughputHoverPanelLeft;
+        private set => SetProperty(ref _throughputHoverPanelLeft, value);
+    }
+
+    public double ThroughputHoverPanelTop
+    {
+        get => _throughputHoverPanelTop;
+        private set => SetProperty(ref _throughputHoverPanelTop, value);
+    }
+
+    public double ThroughputHoverPlotHeight
+    {
+        get => _throughputHoverPlotHeight;
+        private set => SetProperty(ref _throughputHoverPlotHeight, value);
+    }
+
+    public string ThroughputHoverTimeLabel
+    {
+        get => _throughputHoverTimeLabel;
+        private set => SetProperty(ref _throughputHoverTimeLabel, value);
+    }
+
+    public string ThroughputHoverInboundLabel
+    {
+        get => _throughputHoverInboundLabel;
+        private set => SetProperty(ref _throughputHoverInboundLabel, value);
+    }
+
+    public string ThroughputHoverOutboundLabel
+    {
+        get => _throughputHoverOutboundLabel;
+        private set => SetProperty(ref _throughputHoverOutboundLabel, value);
+    }
 
     public string HeroLegendPrimary => "Outbound";
 
@@ -124,6 +199,30 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     public string DestinationPlaceholderHint =>
         "This area is reserved for future geographic or destination-distribution visualization driven by destination projection data.";
 
+    public IReadOnlyList<OverviewMetricRowViewModel> TopHostRows => BuildTopHostRows(Snapshot.TopHosts);
+
+    public bool HasTopHostRows => TopHostRows.Count > 0;
+
+    public bool HasNoTopHostRows => !HasTopHostRows;
+
+    public IReadOnlyList<OverviewMetricRowViewModel> TopServiceRows => BuildTopServiceRows(Snapshot.TopServices);
+
+    public bool HasTopServiceRows => TopServiceRows.Count > 0;
+
+    public bool HasNoTopServiceRows => !HasTopServiceRows;
+
+    public IReadOnlyList<OverviewRegionRowViewModel> TopRegionRows => BuildTopRegionRows(Snapshot.TopDestinations);
+
+    public bool HasTopRegionRows => TopRegionRows.Count > 0;
+
+    public bool HasNoTopRegionRows => !HasTopRegionRows;
+
+    public IReadOnlyList<OverviewConnectionRowViewModel> TopConnectionRows => BuildTopConnectionRows(Snapshot.TopConnections, Snapshot.TopHosts);
+
+    public bool HasTopConnectionRows => TopConnectionRows.Count > 0;
+
+    public bool HasNoTopConnectionRows => !HasTopConnectionRows;
+
     private ulong MaxTimelineValue =>
         Snapshot.TimelinePoints.Count == 0
             ? 0
@@ -148,6 +247,47 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(ModeLabel));
         OnPropertyChanged(nameof(StatusCards));
         OnPropertyChanged(nameof(HeroSummary));
+    }
+
+    public void UpdateThroughputHover(double x, double y, double plotWidth, double plotHeight)
+    {
+        if (!HasTimeline || Snapshot.TimelinePoints.Count == 0 || plotWidth <= 0 || plotHeight <= 0)
+        {
+            ClearThroughputHover();
+            return;
+        }
+
+        var normalizedX = Math.Clamp(x, 0, plotWidth);
+        var index = Snapshot.TimelinePoints.Count == 1
+            ? 0
+            : (int)Math.Round(normalizedX / plotWidth * (Snapshot.TimelinePoints.Count - 1));
+        index = Math.Clamp(index, 0, Snapshot.TimelinePoints.Count - 1);
+
+        var markerLeft = Snapshot.TimelinePoints.Count == 1
+            ? 0
+            : index / (double)(Snapshot.TimelinePoints.Count - 1) * plotWidth;
+        var tooltipWidth = 172d;
+        var tooltipHeight = 88d;
+        var panelLeft = markerLeft + 12d;
+        if (panelLeft + tooltipWidth > plotWidth)
+        {
+            panelLeft = markerLeft - tooltipWidth - 12d;
+        }
+
+        var point = Snapshot.TimelinePoints[index];
+        ThroughputHoverMarkerLeft = markerLeft;
+        ThroughputHoverPanelLeft = Math.Clamp(panelLeft, 0, Math.Max(0, plotWidth - tooltipWidth));
+        ThroughputHoverPanelTop = Math.Clamp(y + 10d, 0, Math.Max(0, plotHeight - tooltipHeight));
+        ThroughputHoverPlotHeight = plotHeight;
+        ThroughputHoverTimeLabel = FormatPacketTimestamp(point.Timestamp);
+        ThroughputHoverInboundLabel = FormatByteRate(point.InboundBytes);
+        ThroughputHoverOutboundLabel = FormatByteRate(point.OutboundBytes);
+        IsThroughputHoverVisible = true;
+    }
+
+    public void ClearThroughputHover()
+    {
+        IsThroughputHoverVisible = false;
     }
 
     private string FormatAxisTimeAt(int index)
@@ -233,6 +373,147 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         return $"{bytes} B/s";
     }
 
+    private static string FormatBytes(ulong bytes)
+    {
+        if (bytes >= 1_099_511_627_776)
+        {
+            return $"{bytes / 1_099_511_627_776.0:0.##} TB";
+        }
+
+        if (bytes >= 1_073_741_824)
+        {
+            return $"{bytes / 1_073_741_824.0:0.##} GB";
+        }
+
+        if (bytes >= 1_048_576)
+        {
+            return $"{bytes / 1_048_576.0:0.##} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024.0:0.##} KB";
+        }
+
+        return $"{bytes} B";
+    }
+
+    private static IReadOnlyList<OverviewMetricRowViewModel> BuildTopHostRows(IReadOnlyList<HostRowDto> rows)
+    {
+        var maxPackets = rows.Count == 0 ? 0 : rows.Max(row => row.Packets);
+        return rows
+            .Select(row => new OverviewMetricRowViewModel(
+                FormatAddressWithOwner(row.Host, row.CountryLabel),
+                FormatCount(row.Packets),
+                CalculateBarWidth(row.Packets, maxPackets),
+                "#00F0FF"
+            ))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<OverviewMetricRowViewModel> BuildTopServiceRows(IReadOnlyList<ServiceRowDto> rows)
+    {
+        var totalBytes = rows.Aggregate<ServiceRowDto, ulong>(0, (current, row) => current + row.Bytes);
+        var maxBytes = rows.Count == 0 ? 0 : rows.Max(row => row.Bytes);
+        return rows
+            .Select((row, index) => new OverviewMetricRowViewModel(
+                row.Name.ToUpperInvariant(),
+                totalBytes == 0 ? FormatBytes(row.Bytes) : $"{(double)row.Bytes / totalBytes:0%}",
+                CalculateBarWidth(row.Bytes, maxBytes),
+                index == 0 ? "#B026FF" : "#948E9C"
+            ))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<OverviewRegionRowViewModel> BuildTopRegionRows(IReadOnlyList<DestinationSummaryDto> rows)
+    {
+        return rows
+            .Select((row, index) => new OverviewRegionRowViewModel(
+                string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label,
+                row.Ratio.ToString("P0", CultureInfo.InvariantCulture),
+                index == 0 ? "#00F0FF" : index == 1 ? "#B026FF" : "#CBC4D2"
+            ))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<OverviewConnectionRowViewModel> BuildTopConnectionRows(
+        IReadOnlyList<ConnectionRowDto> rows,
+        IReadOnlyList<HostRowDto> hosts
+    )
+    {
+        var countryByHost = hosts
+            .Where(host => !string.IsNullOrWhiteSpace(host.CountryLabel))
+            .GroupBy(host => host.Host, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => ExtractOwnerCode(group.First().CountryLabel),
+                StringComparer.OrdinalIgnoreCase
+            );
+
+        return rows
+            .Select(row => new OverviewConnectionRowViewModel(
+                FormatAddressWithOwner(row.SourceAddress, countryByHost.TryGetValue(row.SourceAddress, out var sourceOwner) ? sourceOwner : string.Empty),
+                FormatAddressWithOwner(row.DestinationAddress, countryByHost.TryGetValue(row.DestinationAddress, out var destinationOwner) ? destinationOwner : string.Empty),
+                FormatBytes(row.Bytes)
+            ))
+            .ToArray();
+    }
+
+    private static double CalculateBarWidth(ulong value, ulong maxValue)
+    {
+        if (value == 0 || maxValue == 0)
+        {
+            return 0;
+        }
+
+        return Math.Max(8, Math.Min(140, value / (double)maxValue * 140));
+    }
+
+    private static string FormatAddressWithOwner(string address, string ownerLabel)
+    {
+        var ownerCode = ExtractOwnerCode(ownerLabel);
+        return string.IsNullOrWhiteSpace(ownerCode) ? address : $"{address}({ownerCode})";
+    }
+
+    private static string ExtractOwnerCode(string ownerLabel)
+    {
+        if (string.IsNullOrWhiteSpace(ownerLabel))
+        {
+            return string.Empty;
+        }
+
+        var normalized = ownerLabel.Trim();
+        var separatorIndex = normalized.IndexOf('·');
+        if (separatorIndex < 0)
+        {
+            separatorIndex = normalized.IndexOf(' ');
+        }
+
+        var code = separatorIndex > 0 ? normalized[..separatorIndex] : normalized;
+        code = code.Trim();
+        return code.Length is >= 2 and <= 6 ? code.ToUpperInvariant() : string.Empty;
+    }
+
+    private static string FormatCount(ulong value)
+    {
+        if (value >= 1_000_000_000)
+        {
+            return $"{value / 1_000_000_000.0:0.##}B";
+        }
+
+        if (value >= 1_000_000)
+        {
+            return $"{value / 1_000_000.0:0.##}M";
+        }
+
+        if (value >= 1_000)
+        {
+            return $"{value / 1_000.0:0.##}K";
+        }
+
+        return value.ToString(CultureInfo.InvariantCulture);
+    }
+
     private void ApplySnapshot(OverviewSnapshotDto snapshot)
     {
         Snapshot = snapshot;
@@ -241,8 +522,28 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(StatusCards));
         OnPropertyChanged(nameof(ModeLabel));
         OnPropertyChanged(nameof(HeroSummary));
+        OnPropertyChanged(nameof(ActiveSourceLabel));
+        OnPropertyChanged(nameof(TopHostLabel));
+        OnPropertyChanged(nameof(TopServiceLabel));
+        OnPropertyChanged(nameof(TopServiceDisplayLabel));
+        OnPropertyChanged(nameof(PacketsLabel));
+        OnPropertyChanged(nameof(BytesLabel));
+        OnPropertyChanged(nameof(PacketsHealthLabel));
+        OnPropertyChanged(nameof(BytesHealthLabel));
         OnPropertyChanged(nameof(DestinationPlaceholderMessage));
         OnPropertyChanged(nameof(DestinationPlaceholderState));
+        OnPropertyChanged(nameof(TopHostRows));
+        OnPropertyChanged(nameof(HasTopHostRows));
+        OnPropertyChanged(nameof(HasNoTopHostRows));
+        OnPropertyChanged(nameof(TopServiceRows));
+        OnPropertyChanged(nameof(HasTopServiceRows));
+        OnPropertyChanged(nameof(HasNoTopServiceRows));
+        OnPropertyChanged(nameof(TopRegionRows));
+        OnPropertyChanged(nameof(HasTopRegionRows));
+        OnPropertyChanged(nameof(HasNoTopRegionRows));
+        OnPropertyChanged(nameof(TopConnectionRows));
+        OnPropertyChanged(nameof(HasTopConnectionRows));
+        OnPropertyChanged(nameof(HasNoTopConnectionRows));
         OnPropertyChanged(nameof(HasTimeline));
         OnPropertyChanged(nameof(HasNoTimeline));
         OnPropertyChanged(nameof(TimelineEmptyTitle));
@@ -260,6 +561,10 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(OutboundPathData));
         OnPropertyChanged(nameof(InboundPathData));
         OnPropertyChanged(nameof(OutboundAreaPathData));
+        if (!HasTimeline)
+        {
+            ClearThroughputHover();
+        }
     }
 
     private static string BuildSmoothPath(IReadOnlyList<(double X, double Y)> coordinates)
@@ -532,4 +837,55 @@ public sealed class OverviewStatusCardViewModel
     public string Value { get; }
 
     public string Hint { get; }
+}
+
+public sealed class OverviewMetricRowViewModel
+{
+    public OverviewMetricRowViewModel(string label, string valueLabel, double barWidth, string accentBrush)
+    {
+        Label = label;
+        ValueLabel = valueLabel;
+        BarWidth = barWidth;
+        AccentBrush = accentBrush;
+    }
+
+    public string Label { get; }
+
+    public string ValueLabel { get; }
+
+    public double BarWidth { get; }
+
+    public string AccentBrush { get; }
+}
+
+public sealed class OverviewRegionRowViewModel
+{
+    public OverviewRegionRowViewModel(string label, string ratioLabel, string accentBrush)
+    {
+        Label = label;
+        RatioLabel = ratioLabel;
+        AccentBrush = accentBrush;
+    }
+
+    public string Label { get; }
+
+    public string RatioLabel { get; }
+
+    public string AccentBrush { get; }
+}
+
+public sealed class OverviewConnectionRowViewModel
+{
+    public OverviewConnectionRowViewModel(string sourceAddress, string destinationAddress, string volumeLabel)
+    {
+        SourceAddress = sourceAddress;
+        DestinationAddress = destinationAddress;
+        VolumeLabel = volumeLabel;
+    }
+
+    public string SourceAddress { get; }
+
+    public string DestinationAddress { get; }
+
+    public string VolumeLabel { get; }
 }

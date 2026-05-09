@@ -1,24 +1,53 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
-    <Color x:Key="CosmosBackgroundColor">#11131E</Color>
-    <Color x:Key="CosmosSurfaceColor">#1D1F2B</Color>
-    <Color x:Key="CosmosSurfaceHighColor">#272935</Color>
-    <Color x:Key="CosmosPrimaryColor">#D7BAFF</Color>
-    <Color x:Key="CosmosSecondaryColor">#75D4E8</Color>
-    <Color x:Key="CosmosGoodColor">#76E3B1</Color>
-    <Color x:Key="CosmosWarningColor">#F8CA6A</Color>
-    <Color x:Key="CosmosTextColor">#E1E1F1</Color>
-    <Color x:Key="CosmosMutedTextColor">#968E9C</Color>
+    <Color x:Key="TfcBackgroundColor">#141218</Color>
+    <Color x:Key="TfcShellColor">#0F0D13</Color>
+    <Color x:Key="TfcPanelColor">#0F0D13</Color>
+    <Color x:Key="TfcPanelLowColor">#141218</Color>
+    <Color x:Key="TfcRaisedColor">#1D1B20</Color>
+    <Color x:Key="TfcRaisedHighColor">#2B292F</Color>
+    <Color x:Key="TfcBorderColor">#494551</Color>
+    <Color x:Key="TfcBorderHighColor">#948E9C</Color>
+    <Color x:Key="TfcTextColor">#E6E0E9</Color>
+    <Color x:Key="TfcMutedTextColor">#CBC4D2</Color>
+    <Color x:Key="TfcDimTextColor">#948E9C</Color>
+    <Color x:Key="TfcPrimaryColor">#CFBCFF</Color>
+    <Color x:Key="TfcPrimaryOnColor">#381E72</Color>
+    <Color x:Key="TfcTrafficCyanColor">#00F0FF</Color>
+    <Color x:Key="TfcTrafficPurpleColor">#B026FF</Color>
+    <Color x:Key="TfcGoodColor">#10B981</Color>
+    <Color x:Key="TfcWarningColor">#F59E0B</Color>
+    <Color x:Key="TfcErrorColor">#EF4444</Color>
 
-    <SolidColorBrush x:Key="CosmosBackgroundBrush" Color="{StaticResource CosmosBackgroundColor}" />
-    <SolidColorBrush x:Key="CosmosSurfaceBrush" Color="{StaticResource CosmosSurfaceColor}" />
-    <SolidColorBrush x:Key="CosmosSurfaceHighBrush" Color="{StaticResource CosmosSurfaceHighColor}" />
-    <SolidColorBrush x:Key="CosmosPrimaryBrush" Color="{StaticResource CosmosPrimaryColor}" />
-    <SolidColorBrush x:Key="CosmosSecondaryBrush" Color="{StaticResource CosmosSecondaryColor}" />
-    <SolidColorBrush x:Key="CosmosGoodBrush" Color="{StaticResource CosmosGoodColor}" />
-    <SolidColorBrush x:Key="CosmosWarningBrush" Color="{StaticResource CosmosWarningColor}" />
-    <SolidColorBrush x:Key="CosmosTextBrush" Color="{StaticResource CosmosTextColor}" />
-    <SolidColorBrush x:Key="CosmosMutedTextBrush" Color="{StaticResource CosmosMutedTextColor}" />
+    <SolidColorBrush x:Key="TfcBackgroundBrush" Color="{StaticResource TfcBackgroundColor}" />
+    <SolidColorBrush x:Key="TfcShellBrush" Color="{StaticResource TfcShellColor}" />
+    <SolidColorBrush x:Key="TfcPanelBrush" Color="{StaticResource TfcPanelColor}" />
+    <SolidColorBrush x:Key="TfcPanelLowBrush" Color="{StaticResource TfcPanelLowColor}" />
+    <SolidColorBrush x:Key="TfcRaisedBrush" Color="{StaticResource TfcRaisedColor}" />
+    <SolidColorBrush x:Key="TfcRaisedHighBrush" Color="{StaticResource TfcRaisedHighColor}" />
+    <SolidColorBrush x:Key="TfcBorderBrush" Color="{StaticResource TfcBorderColor}" />
+    <SolidColorBrush x:Key="TfcBorderHighBrush" Color="{StaticResource TfcBorderHighColor}" />
+    <SolidColorBrush x:Key="TfcTextBrush" Color="{StaticResource TfcTextColor}" />
+    <SolidColorBrush x:Key="TfcMutedTextBrush" Color="{StaticResource TfcMutedTextColor}" />
+    <SolidColorBrush x:Key="TfcDimTextBrush" Color="{StaticResource TfcDimTextColor}" />
+    <SolidColorBrush x:Key="TfcPrimaryBrush" Color="{StaticResource TfcPrimaryColor}" />
+    <SolidColorBrush x:Key="TfcPrimaryOnBrush" Color="{StaticResource TfcPrimaryOnColor}" />
+    <SolidColorBrush x:Key="TfcTrafficCyanBrush" Color="{StaticResource TfcTrafficCyanColor}" />
+    <SolidColorBrush x:Key="TfcTrafficPurpleBrush" Color="{StaticResource TfcTrafficPurpleColor}" />
+    <SolidColorBrush x:Key="TfcGoodBrush" Color="{StaticResource TfcGoodColor}" />
+    <SolidColorBrush x:Key="TfcWarningBrush" Color="{StaticResource TfcWarningColor}" />
+    <SolidColorBrush x:Key="TfcErrorBrush" Color="{StaticResource TfcErrorColor}" />
+
+    <!-- Legacy aliases kept while older components are migrated. -->
+    <SolidColorBrush x:Key="CosmosBackgroundBrush" Color="{StaticResource TfcBackgroundColor}" />
+    <SolidColorBrush x:Key="CosmosSurfaceBrush" Color="{StaticResource TfcPanelColor}" />
+    <SolidColorBrush x:Key="CosmosSurfaceHighBrush" Color="{StaticResource TfcRaisedColor}" />
+    <SolidColorBrush x:Key="CosmosPrimaryBrush" Color="{StaticResource TfcPrimaryColor}" />
+    <SolidColorBrush x:Key="CosmosSecondaryBrush" Color="{StaticResource TfcTrafficCyanColor}" />
+    <SolidColorBrush x:Key="CosmosGoodBrush" Color="{StaticResource TfcGoodColor}" />
+    <SolidColorBrush x:Key="CosmosWarningBrush" Color="{StaticResource TfcWarningColor}" />
+    <SolidColorBrush x:Key="CosmosTextBrush" Color="{StaticResource TfcTextColor}" />
+    <SolidColorBrush x:Key="CosmosMutedTextBrush" Color="{StaticResource TfcDimTextColor}" />
   </Styles.Resources>
 </Styles>

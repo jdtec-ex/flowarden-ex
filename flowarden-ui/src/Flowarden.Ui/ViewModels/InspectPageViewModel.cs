@@ -172,6 +172,13 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task ApplyDirection(string? direction)
+    {
+        DirectionInput = direction ?? string.Empty;
+        await ApplyFilters();
+    }
+
+    [RelayCommand]
     private void ClearFilters()
     {
         SourceAddressInput = string.Empty;

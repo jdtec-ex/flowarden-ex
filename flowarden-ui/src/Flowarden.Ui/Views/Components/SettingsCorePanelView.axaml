@@ -3,37 +3,36 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsCorePanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="glass-panel">
-    <StackPanel Spacing="12">
-      <TextBlock Classes="section-title" Text="Core" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-        <TextBlock Text="Endpoint" />
-        <SelectableTextBlock Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpoint}" />
-
-        <TextBlock Grid.Row="1" Text="Endpoint source" />
-        <SelectableTextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding CoreEndpointSource}" />
-
-        <TextBlock Grid.Row="2" Text="Process state" />
-        <SelectableTextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding ProcessState}" />
-
-        <TextBlock Grid.Row="3" Text="Health" />
-        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding CoreHealth.Status}" />
-
-        <TextBlock Grid.Row="4" Text="Core version" />
-        <SelectableTextBlock Grid.Row="4" Grid.Column="1" Classes="muted-text" Text="{Binding CoreVersion}" />
-
-        <TextBlock Grid.Row="5" Text="UI version" />
-        <SelectableTextBlock Grid.Row="5" Grid.Column="1" Classes="muted-text" Text="{Binding UiVersion}" />
-
-        <TextBlock Grid.Row="6" Text="Shutdown on UI close" />
-        <ToggleSwitch Grid.Row="6"
-                      Grid.Column="1"
-                      HorizontalAlignment="Left"
-                      IsChecked="{Binding ShutdownCoreWhenUiCloses}" />
+  <Border Classes="tfc-panel" Padding="20,18">
+    <Grid RowDefinitions="Auto,Auto,1,Auto,Auto" RowSpacing="14">
+      <TextBlock Classes="section-title" Text="Core Connection" />
+      <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+        <StackPanel>
+          <TextBlock Classes="muted-text" FontSize="13" Text="Core Version" />
+          <TextBlock Classes="tfc-data" Text="{Binding CoreVersion}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+          <TextBlock Classes="muted-text" FontSize="13" HorizontalAlignment="Right" Text="Health" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Border Width="8" Height="8" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
+            <TextBlock Foreground="{StaticResource TfcGoodBrush}" Text="{Binding CoreHealth.Status}" />
+          </StackPanel>
+        </StackPanel>
       </Grid>
-      <Border Classes="status-pill">
-        <SelectableTextBlock Classes="muted-text" Text="{Binding StartedAtLabel}" />
-      </Border>
-    </StackPanel>
+
+      <Border Grid.Row="2" Height="1" Background="{StaticResource TfcBorderBrush}" />
+
+      <StackPanel Grid.Row="3" Spacing="8">
+        <TextBlock Classes="tfc-label" Text="DAEMON ENDPOINT" />
+        <Grid ColumnDefinitions="*,136" ColumnSpacing="10">
+          <Border Classes="tfc-panel-low" Height="32" Padding="10,0">
+            <SelectableTextBlock Classes="tfc-data" Text="{Binding CoreEndpoint}" />
+          </Border>
+          <Button Grid.Column="1" Classes="tools-button" Height="32" Content="Reconnect" />
+        </Grid>
+      </StackPanel>
+
+      <TextBlock Grid.Row="4" Classes="muted-text" FontSize="13" Text="{Binding CoreEndpointSource}" />
+    </Grid>
   </Border>
 </UserControl>

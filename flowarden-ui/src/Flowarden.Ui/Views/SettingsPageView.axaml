@@ -4,9 +4,21 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.SettingsPageView"
              x:DataType="vm:SettingsPageViewModel">
-  <Grid RowDefinitions="*,*" ColumnDefinitions="*,*" RowSpacing="20" ColumnSpacing="20">
-    <components:SettingsRuntimePanelView DataContext="{Binding}" />
-    <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
-    <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.ColumnSpan="2" DataContext="{Binding}" />
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
+    <StackPanel Spacing="4">
+      <TextBlock Classes="page-title" Text="Settings &amp; Diagnostics" />
+      <TextBlock Classes="muted-text" FontSize="13" Text="Configure core connectivity, runtime defaults, and system health." />
+    </StackPanel>
+
+    <Grid Grid.Row="1"
+          RowDefinitions="*,*"
+          ColumnDefinitions="*,*"
+          RowSpacing="16"
+          ColumnSpacing="16">
+      <components:SettingsRuntimePanelView DataContext="{Binding}" />
+      <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
+      <components:SettingsCaptureDefaultsPanelView Grid.Row="1" DataContext="{Binding}" />
+      <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.Column="1" DataContext="{Binding}" />
+    </Grid>
   </Grid>
 </UserControl>

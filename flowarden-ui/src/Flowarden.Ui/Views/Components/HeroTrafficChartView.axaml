@@ -4,164 +4,117 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.HeroTrafficChartView"
              x:DataType="vm:OverviewPageViewModel">
-  <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10" MinHeight="188">
-      <StackPanel Spacing="4">
-        <TextBlock Classes="section-title" Text="{Binding HeroTitle}" />
-        <TextBlock Classes="muted-text" Text="{Binding HeroSummary}" />
-      </StackPanel>
-
-      <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
-        <Border Classes="status-pill">
-          <TextBlock Text="{Binding SourceSummary}" />
-        </Border>
-        <Border Grid.Column="1" Classes="status-pill">
-          <TextBlock Text="{Binding FilterSummary}" />
-        </Border>
-        <Border Grid.Column="2" Classes="status-pill">
-          <TextBlock Text="{Binding MetricModeSummary}" />
-        </Border>
-        <StackPanel Grid.Column="3"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Spacing="8">
-          <Border Classes="status-pill">
+  <Border Classes="tfc-panel" ClipToBounds="True">
+    <Grid RowDefinitions="32,*">
+      <Border Classes="tfc-panel-header" Padding="16,0">
+        <Grid ColumnDefinitions="*,Auto" Height="32">
+          <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Traffic Throughput" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Border Width="10"
-                      Height="10"
-                      CornerRadius="5"
-                      Background="{StaticResource CosmosSecondaryBrush}"
-                      VerticalAlignment="Center" />
-              <TextBlock Text="{Binding HeroLegendPrimary}" />
+              <Border Width="14" Height="2" Background="{StaticResource TfcTrafficCyanBrush}" VerticalAlignment="Center" />
+              <TextBlock Classes="tfc-label" Text="INBOUND" />
             </StackPanel>
-          </Border>
-          <Border Classes="status-pill">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Border Width="10"
-                      Height="10"
-                      CornerRadius="5"
-                      Background="{StaticResource CosmosPrimaryBrush}"
-                      VerticalAlignment="Center" />
-              <TextBlock Text="{Binding HeroLegendSecondary}" />
+              <Border Width="14" Height="2" Background="{StaticResource TfcTrafficPurpleBrush}" VerticalAlignment="Center" />
+              <TextBlock Classes="tfc-label" Text="OUTBOUND" />
             </StackPanel>
-          </Border>
-        </StackPanel>
-      </Grid>
-
-      <Border Grid.Row="2" Background="{StaticResource CosmosSurfaceHighBrush}" CornerRadius="12" Padding="12" ClipToBounds="True">
-        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
-          <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
-            <Border Classes="status-pill">
-              <TextBlock Text="Traffic timeline" />
-            </Border>
-            <Border Grid.Column="1" Classes="status-pill">
-              <TextBlock Text="Real tick history" />
-            </Border>
-          </Grid>
-
-          <Grid Grid.Row="1" ColumnDefinitions="44,*" ColumnSpacing="10">
-            <Grid RowDefinitions="*,*,*,*,*" Margin="0,4,0,18">
-              <TextBlock Grid.Row="0" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisTopLabel}" />
-              <TextBlock Grid.Row="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisUpperMidLabel}" />
-              <TextBlock Grid.Row="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisMidLabel}" />
-              <TextBlock Grid.Row="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisLowerMidLabel}" />
-              <TextBlock Grid.Row="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding YAxisZeroLabel}" />
-            </Grid>
-
-            <Border Grid.Column="1" Background="{StaticResource CosmosSurfaceBrush}" CornerRadius="10" Padding="10" ClipToBounds="True">
-              <Grid>
-                <Grid Width="640" Height="84" Opacity="0.32"
-                      IsVisible="{Binding HasTimeline}">
-                  <Border VerticalAlignment="Top" Margin="0,14,0,0" Height="1" Background="#2A313D" />
-                  <Border VerticalAlignment="Top" Margin="0,32,0,0" Height="1" Background="#2A313D" />
-                  <Border VerticalAlignment="Top" Margin="0,50,0,0" Height="1" Background="#2A313D" />
-                  <Border VerticalAlignment="Top" Margin="0,68,0,0" Height="1" Background="#2A313D" />
-                </Grid>
-
-                <Viewbox Stretch="Fill" IsVisible="{Binding HasTimeline}">
-                  <Canvas Width="640" Height="84" ClipToBounds="True">
-                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.05"
-                                 StrokeThickness="0"
-                                 Fill="{StaticResource CosmosSecondaryBrush}"
-                                 Data="{Binding OutboundAreaPathData}" />
-
-                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.07"
-                                 Stroke="{StaticResource CosmosSecondaryBrush}"
-                                 StrokeThickness="1.3"
-                                 Fill="Transparent"
-                                 Data="{Binding OutboundPathData}" />
-
-                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 Opacity="0.06"
-                                 Stroke="{StaticResource CosmosPrimaryBrush}"
-                                 StrokeThickness="1.15"
-                                 Fill="Transparent"
-                                 Data="{Binding InboundPathData}" />
-
-                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 StrokeThickness="0.68"
-                                 Stroke="{StaticResource CosmosSecondaryBrush}"
-                                 Fill="Transparent"
-                                 Data="{Binding OutboundPathData}" />
-
-                    <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="84"
-                                 StrokeThickness="0.6"
-                                 Stroke="{StaticResource CosmosPrimaryBrush}"
-                                 Fill="Transparent"
-                                 Data="{Binding InboundPathData}" />
-                  </Canvas>
-                </Viewbox>
-
-                <StackPanel IsVisible="{Binding HasNoTimeline}"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            Spacing="6">
-                  <TextBlock FontWeight="SemiBold"
-                             HorizontalAlignment="Center"
-                             Text="{Binding TimelineEmptyTitle}" />
-                  <TextBlock Classes="muted-text"
-                             HorizontalAlignment="Center"
-                             TextAlignment="Center"
-                             TextWrapping="Wrap"
-                             MaxWidth="360"
-                             Text="{Binding TimelineEmptyMessage}" />
-                </StackPanel>
-              </Grid>
-            </Border>
-          </Grid>
-
-          <Grid Grid.Row="2" ColumnDefinitions="44,*,*,*,*,*" ColumnSpacing="8" Margin="0,0,2,0">
-            <TextBlock Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="" />
-            <TextBlock Grid.Column="1" Classes="muted-text" FontSize="11" HorizontalAlignment="Left" Text="{Binding AxisLabelStart}" />
-            <TextBlock Grid.Column="2" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidLeft}" />
-            <TextBlock Grid.Column="3" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelCenter}" />
-            <TextBlock Grid.Column="4" Classes="muted-text" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidRight}" />
-            <TextBlock Grid.Column="5" Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="{Binding AxisLabelEnd}" />
-          </Grid>
+          </StackPanel>
         </Grid>
       </Border>
 
-      <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="10">
-        <StackPanel Grid.Column="4"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Spacing="8">
-          <Border Classes="status-pill">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <TextBlock Text="Out" FontWeight="SemiBold" />
-              <TextBlock Classes="muted-text" Text="{Binding OutboundSummary}" />
-            </StackPanel>
-          </Border>
-          <Border Classes="status-pill">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <TextBlock Text="In" FontWeight="SemiBold" />
-              <TextBlock Classes="muted-text" Text="{Binding InboundSummary}" />
-            </StackPanel>
-          </Border>
-        </StackPanel>
-      </Grid>
+      <Border Grid.Row="1" Background="{StaticResource TfcBackgroundBrush}" Padding="20" ClipToBounds="True">
+        <Grid>
+          <Grid RowDefinitions="*,*,*,*,*" Opacity="0.72">
+            <Border Background="{StaticResource TfcBorderBrush}" Height="1" VerticalAlignment="Top" />
+            <Border Grid.Row="1" Background="{StaticResource TfcBorderBrush}" Height="1" VerticalAlignment="Top" />
+            <Border Grid.Row="2" Background="{StaticResource TfcBorderBrush}" Height="1" VerticalAlignment="Top" />
+            <Border Grid.Row="3" Background="{StaticResource TfcBorderBrush}" Height="1" VerticalAlignment="Top" />
+            <Border Grid.Row="4" Background="{StaticResource TfcBorderBrush}" Height="1" VerticalAlignment="Bottom" />
+          </Grid>
+
+          <Grid ColumnDefinitions="52,*" RowDefinitions="*,28">
+            <Grid RowDefinitions="*,*,*,*,*" Margin="0,0,8,0">
+              <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="10" HorizontalAlignment="Right" Text="{Binding YAxisTopLabel}" />
+              <TextBlock Grid.Row="1" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="10" HorizontalAlignment="Right" Text="{Binding YAxisUpperMidLabel}" />
+              <TextBlock Grid.Row="2" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="10" HorizontalAlignment="Right" Text="{Binding YAxisMidLabel}" />
+              <TextBlock Grid.Row="3" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="10" HorizontalAlignment="Right" Text="{Binding YAxisLowerMidLabel}" />
+              <TextBlock Grid.Row="4" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="10" HorizontalAlignment="Right" Text="{Binding YAxisZeroLabel}" />
+            </Grid>
+
+            <Grid x:Name="ThroughputPlotHost"
+                  Grid.Column="1"
+                  Background="Transparent"
+                  ClipToBounds="True"
+                  PointerMoved="OnPlotPointerMoved"
+                  PointerExited="OnPlotPointerExited">
+              <Viewbox Stretch="Fill" IsHitTestVisible="False">
+                <Canvas Width="640" Height="260" ClipToBounds="True">
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="260"
+                               StrokeThickness="1.6"
+                               Stroke="{StaticResource TfcTrafficCyanBrush}"
+                               Fill="Transparent"
+                               Data="{Binding InboundPathData}"
+                               IsVisible="{Binding HasTimeline}"
+                               Stretch="Fill" />
+                  <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="260"
+                               StrokeThickness="1.6"
+                               Stroke="{StaticResource TfcTrafficPurpleBrush}"
+                               Fill="Transparent"
+                               Data="{Binding OutboundPathData}"
+                               IsVisible="{Binding HasTimeline}"
+                               Stretch="Fill" />
+                </Canvas>
+              </Viewbox>
+
+              <Canvas HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      IsHitTestVisible="False"
+                      IsVisible="{Binding IsThroughputHoverVisible}">
+                <Border Width="1"
+                        Height="{Binding ThroughputHoverPlotHeight}"
+                        Background="{StaticResource TfcBorderHighBrush}"
+                        Opacity="0.82"
+                        Canvas.Left="{Binding ThroughputHoverMarkerLeft}" />
+                <Border Classes="tfc-panel-low"
+                        Width="172"
+                        Padding="12"
+                        Canvas.Left="{Binding ThroughputHoverPanelLeft}"
+                        Canvas.Top="{Binding ThroughputHoverPanelTop}">
+                  <StackPanel Spacing="6">
+                    <TextBlock Classes="tfc-label" Text="CURRENT THROUGHPUT" />
+                    <TextBlock Classes="tfc-data"
+                               FontSize="11"
+                               Foreground="{StaticResource TfcDimTextBrush}"
+                               Text="{Binding ThroughputHoverTimeLabel}" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="18">
+                      <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcTrafficCyanBrush}" Text="IN" />
+                      <TextBlock Grid.Column="1" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding ThroughputHoverInboundLabel}" />
+                      <TextBlock Grid.Row="1" Classes="tfc-data" Foreground="{StaticResource TfcTrafficPurpleBrush}" Text="OUT" />
+                      <TextBlock Grid.Row="1" Grid.Column="1" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding ThroughputHoverOutboundLabel}" />
+                    </Grid>
+                  </StackPanel>
+                </Border>
+              </Canvas>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="8">
+              <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="11" Text="{Binding AxisLabelStart}" />
+              <TextBlock Grid.Column="1" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidLeft}" />
+              <TextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelCenter}" />
+              <TextBlock Grid.Column="3" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="11" HorizontalAlignment="Center" Text="{Binding AxisLabelMidRight}" />
+              <TextBlock Grid.Column="4" Classes="tfc-data" Foreground="{StaticResource TfcDimTextBrush}" FontSize="11" HorizontalAlignment="Right" Text="{Binding AxisLabelEnd}" />
+            </Grid>
+          </Grid>
+
+          <StackPanel IsVisible="{Binding HasNoTimeline}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Spacing="8">
+            <TextBlock FontWeight="SemiBold" Text="{Binding TimelineEmptyTitle}" HorizontalAlignment="Center" />
+            <TextBlock Classes="muted-text" Text="{Binding TimelineEmptyMessage}" TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </Border>
     </Grid>
   </Border>
 </UserControl>

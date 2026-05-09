@@ -4,30 +4,35 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.InspectPageView"
              x:DataType="vm:InspectPageViewModel">
-  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="16">
-    <components:InspectHeaderView DataContext="{Binding}" />
-    <components:InspectFilterBarView Grid.Row="1" DataContext="{Binding}" />
-    <Border Grid.Row="2"
-            Classes="glass-panel"
-            Padding="14,12"
-            IsVisible="{Binding HasActiveFilters}">
-      <ItemsControl ItemsSource="{Binding ActiveFilterChips}">
+  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+    <components:InspectFilterBarView DataContext="{Binding}" />
+
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="10" MinHeight="28">
+      <TextBlock Classes="tfc-label" Text="ACTIVE FILTERS:" VerticalAlignment="Center" />
+      <ItemsControl Grid.Column="1" ItemsSource="{Binding ActiveFilterChips}" IsVisible="{Binding HasActiveFilters}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
-            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" />
+            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="4" />
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Border Classes="status-pill">
-              <TextBlock Text="{Binding}" />
+            <Border Classes="tfc-chip" Padding="8,4">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="13" Text="{Binding}" />
+                <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="13" Text="x" />
+              </StackPanel>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-    </Border>
-    <components:InspectResultsTableView Grid.Row="3" DataContext="{Binding}" IsVisible="{Binding IsFlowsMode}" />
-    <components:TcpConnectionsResultsTableView Grid.Row="3" DataContext="{Binding}" IsVisible="{Binding IsTcpConnectionsMode}" />
-    <components:InspectFooterSummaryView Grid.Row="4" DataContext="{Binding}" />
+      <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13" Text="{Binding ActiveFilterSummary}" VerticalAlignment="Center" IsVisible="{Binding !HasActiveFilters}" />
+    </Grid>
+
+    <Grid Grid.Row="2" RowDefinitions="*,32">
+      <components:InspectResultsTableView DataContext="{Binding}" IsVisible="{Binding IsFlowsMode}" />
+      <components:TcpConnectionsResultsTableView DataContext="{Binding}" IsVisible="{Binding IsTcpConnectionsMode}" />
+      <components:InspectFooterSummaryView Grid.Row="1" DataContext="{Binding}" />
+    </Grid>
   </Grid>
 </UserControl>

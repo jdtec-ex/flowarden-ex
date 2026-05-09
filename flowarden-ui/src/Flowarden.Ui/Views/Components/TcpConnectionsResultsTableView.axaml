@@ -3,19 +3,21 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.TcpConnectionsResultsTableView"
              x:DataType="vm:InspectPageViewModel">
-  <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <Grid ColumnDefinitions="300,116,64,64,64,92,82,108,108,*" ColumnSpacing="6">
-        <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Connection" />
-        <TextBlock Grid.Column="1" Classes="muted-text" FontWeight="SemiBold" Text="State" />
-        <TextBlock Grid.Column="2" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="SYN" />
-        <TextBlock Grid.Column="3" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="FIN" />
-        <TextBlock Grid.Column="4" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="RST" />
-        <TextBlock Grid.Column="5" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="Bytes" />
-        <TextBlock Grid.Column="6" Classes="muted-text" FontWeight="SemiBold" HorizontalAlignment="Right" Text="Packets" />
-        <TextBlock Grid.Column="7" Classes="muted-text" FontWeight="SemiBold" Text="First Seen" />
-        <TextBlock Grid.Column="8" Classes="muted-text" FontWeight="SemiBold" Text="Last Seen" />
-      </Grid>
+  <Border Classes="tfc-panel" ClipToBounds="True" CornerRadius="6,6,0,0">
+    <Grid RowDefinitions="Auto,*">
+      <Border Classes="tfc-table-header" Padding="14,8">
+        <Grid ColumnDefinitions="2*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
+          <TextBlock Classes="tfc-label" Text="Connection" />
+          <TextBlock Grid.Column="1" Classes="tfc-label" Text="State" />
+          <TextBlock Grid.Column="2" Classes="tfc-label" HorizontalAlignment="Right" Text="SYN" />
+          <TextBlock Grid.Column="3" Classes="tfc-label" HorizontalAlignment="Right" Text="FIN" />
+          <TextBlock Grid.Column="4" Classes="tfc-label" HorizontalAlignment="Right" Text="RST" />
+          <TextBlock Grid.Column="5" Classes="tfc-label" HorizontalAlignment="Right" Text="Bytes" />
+          <TextBlock Grid.Column="6" Classes="tfc-label" HorizontalAlignment="Right" Text="Packets" />
+          <TextBlock Grid.Column="7" Classes="tfc-label" Text="First Seen" />
+          <TextBlock Grid.Column="8" Classes="tfc-label" Text="Last Seen" />
+        </Grid>
+      </Border>
 
       <ScrollViewer Grid.Row="1"
                     VerticalScrollBarVisibility="Auto"
@@ -23,17 +25,17 @@
         <ItemsControl ItemsSource="{Binding TcpRows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Border Classes="status-pill" Margin="0,0,0,8">
-                <Grid ColumnDefinitions="300,116,64,64,64,92,82,108,108,*" ColumnSpacing="6">
-                  <TextBlock Text="{Binding ConnectionLabel}" />
-                  <TextBlock Grid.Column="1" Text="{Binding State}" />
-                  <TextBlock Grid.Column="2" HorizontalAlignment="Right" Text="{Binding SynCount}" />
-                  <TextBlock Grid.Column="3" HorizontalAlignment="Right" Text="{Binding FinCount}" />
-                  <TextBlock Grid.Column="4" HorizontalAlignment="Right" Text="{Binding RstCount}" />
-                  <TextBlock Grid.Column="5" HorizontalAlignment="Right" Text="{Binding Bytes}" />
-                  <TextBlock Grid.Column="6" HorizontalAlignment="Right" Text="{Binding Packets}" />
-                  <TextBlock Grid.Column="7" Text="{Binding FirstSeenLabel}" />
-                  <TextBlock Grid.Column="8" Text="{Binding LastSeenLabel}" />
+              <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
+                <Grid ColumnDefinitions="2*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
+                  <TextBlock Classes="tfc-data" Text="{Binding ConnectionLabel}" />
+                  <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13" Text="{Binding State}" />
+                  <TextBlock Grid.Column="2" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding SynCount}" />
+                  <TextBlock Grid.Column="3" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding FinCount}" />
+                  <TextBlock Grid.Column="4" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding RstCount}" />
+                  <TextBlock Grid.Column="5" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
+                  <TextBlock Grid.Column="6" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
+                  <TextBlock Grid.Column="7" Classes="tfc-data" Text="{Binding FirstSeenLabel}" />
+                  <TextBlock Grid.Column="8" Classes="tfc-data" Text="{Binding LastSeenLabel}" />
                 </Grid>
               </Border>
             </DataTemplate>

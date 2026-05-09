@@ -6,32 +6,27 @@
              x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid ColumnDefinitions="Auto,*">
-    <components:AppRailView Width="{Binding RailWidth}" />
+  <Grid ColumnDefinitions="180,*" Background="{StaticResource TfcBackgroundBrush}">
+    <components:AppRailView />
 
-    <Border Grid.Column="1"
-            Background="{StaticResource CosmosBackgroundBrush}"
-            Padding="24">
-      <Grid RowDefinitions="Auto,*" RowSpacing="20">
-        <components:AppHeaderView />
+    <Grid Grid.Column="1" RowDefinitions="48,*">
+      <components:AppHeaderView />
 
-        <Border Grid.Row="1"
-                Classes="glass-panel main-workbench">
-          <Grid>
-            <views:SourcePageView DataContext="{Binding SourcePage}"
-                                  IsVisible="{Binding DataContext.IsSourcePageActive, ElementName=ShellRoot}" />
+      <Border Grid.Row="1" Classes="main-workbench">
+        <Grid>
+          <views:SourcePageView DataContext="{Binding SourcePage}"
+                                IsVisible="{Binding DataContext.IsSourcePageActive, ElementName=ShellRoot}" />
 
-            <views:OverviewPageView DataContext="{Binding OverviewPage}"
-                                    IsVisible="{Binding DataContext.IsOverviewPageActive, ElementName=ShellRoot}" />
+          <views:OverviewPageView DataContext="{Binding OverviewPage}"
+                                  IsVisible="{Binding DataContext.IsOverviewPageActive, ElementName=ShellRoot}" />
 
-            <views:InspectPageView DataContext="{Binding InspectPage}"
-                                   IsVisible="{Binding DataContext.IsInspectPageActive, ElementName=ShellRoot}" />
+          <views:InspectPageView DataContext="{Binding InspectPage}"
+                                 IsVisible="{Binding DataContext.IsInspectPageActive, ElementName=ShellRoot}" />
 
-            <views:SettingsPageView DataContext="{Binding SettingsPage}"
-                                    IsVisible="{Binding DataContext.IsSettingsPageActive, ElementName=ShellRoot}" />
-          </Grid>
-        </Border>
-      </Grid>
-    </Border>
+          <views:SettingsPageView DataContext="{Binding SettingsPage}"
+                                  IsVisible="{Binding DataContext.IsSettingsPageActive, ElementName=ShellRoot}" />
+        </Grid>
+      </Border>
+    </Grid>
   </Grid>
 </UserControl>

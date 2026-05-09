@@ -22,9 +22,13 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly ProjectionClient? _projectionClient;
     private readonly ControlClient? _controlClient;
     private readonly CoreHealthService? _coreHealthService;
+    private readonly string _initialPageId;
+    private readonly bool _shouldApplyInitialPageAfterLoad;
     private readonly LiveProjectionState _liveProjectionState;
     private readonly ProjectionSettingsState _projectionSettings;
     private bool _isRefreshingAfterStop;
+    private bool _autoStartCaptureAttempted;
+    private string _lastCaptureStatus = "idle";
     private System.Diagnostics.Process? _launchedCoreProcess;
     private bool _launchedCoreByUi;
     private CancellationTokenSource? _liveOverviewCts;
@@ -41,7 +45,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         ControlClient? controlClient = null,
         CoreHealthService? coreHealthService = null,
         string bindAddress = "not configured",
-        string bindAddressSource = "design-time"
+        string bindAddressSource = "design-time",
+        string? initialPageId = null
     )
     {
         _bindAddress = bindAddress;
@@ -51,6 +56,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _projectionClient = projectionClient;
         _controlClient = controlClient;
         _coreHealthService = coreHealthService;
+        _initialPageId = NormalizeInitialPageId(initialPageId);
+        _shouldApplyInitialPageAfterLoad = !string.IsNullOrWhiteSpace(initialPageId);
         _liveProjectionState = new LiveProjectionState();
         _projectionSettings = new ProjectionSettingsState();
         _projectionSettings.TopNChanged += OnProjectionTopNChanged;
@@ -68,7 +75,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             ["source"] = new AppShellPageViewModel
             {
                 Id = "source",
-                Title = "Source",
+                Title = "Source Selection",
                 Description = "Choose one formal capture source or review preview data before starting a session.",
             },
             ["overview"] = new AppShellPageViewModel
@@ -124,7 +131,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             Value = "Idle",
             Tone = "neutral",
         };
-        CurrentPageId = "overview";
+        CurrentPageId = _initialPageId;
         CurrentPage = _pages[CurrentPageId];
     }
 
@@ -169,7 +176,11 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public bool IsSourcePageActive => CurrentPageId == "source";
 
+    public bool IsNotSourcePageActive => !IsSourcePageActive;
+
     public bool IsOverviewPageActive => CurrentPageId == "overview";
+
+    public bool IsNotOverviewPageActive => !IsOverviewPageActive;
 
     public bool IsInspectPageActive => CurrentPageId == "inspect";
 
@@ -219,9 +230,32 @@ public sealed partial class AppShellViewModel : ViewModelBase
         CurrentPageId = pageId;
         CurrentPage = page;
         OnPropertyChanged(nameof(IsSourcePageActive));
+        OnPropertyChanged(nameof(IsNotSourcePageActive));
         OnPropertyChanged(nameof(IsOverviewPageActive));
+        OnPropertyChanged(nameof(IsNotOverviewPageActive));
         OnPropertyChanged(nameof(IsInspectPageActive));
         OnPropertyChanged(nameof(IsSettingsPageActive));
+    }
+
+    private void ApplyInitialPageSelection()
+    {
+        if (!_shouldApplyInitialPageAfterLoad)
+        {
+            return;
+        }
+
+        Navigate(_initialPageId);
+    }
+
+    private static string NormalizeInitialPageId(string? pageId)
+    {
+        return pageId?.Trim().ToLowerInvariant() switch
+        {
+            "source" => "source",
+            "inspect" => "inspect",
+            "settings" => "settings",
+            _ => "overview",
+        };
     }
 
     [RelayCommand]
@@ -273,11 +307,14 @@ public sealed partial class AppShellViewModel : ViewModelBase
             await LoadOverviewPageAsync();
             await LoadInspectPageAsync();
             await LoadSettingsPageAsync();
+            await StartCaptureOnLaunchAsync();
+            ApplyInitialPageSelection();
             return;
         }
 
         LatestCoreError = result.Error;
         await LoadSettingsPageAsync();
+        ApplyInitialPageSelection();
         CoreStatus = new StatusIndicatorViewModel
         {
             Label = "Core",
@@ -338,7 +375,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             return;
         }
 
-        await SourcePage.LoadAsync();
+        await SourcePage.LoadAsync(refreshPreview: true);
         OnSourceSessionStateChanged(SourcePage.CurrentSession, SourcePage.StatusMessage);
     }
 
@@ -372,9 +409,31 @@ public sealed partial class AppShellViewModel : ViewModelBase
         await SettingsPage.LoadAsync(LatestCoreError);
     }
 
+    private async Task StartCaptureOnLaunchAsync()
+    {
+        if (_autoStartCaptureAttempted)
+        {
+            return;
+        }
+
+        _autoStartCaptureAttempted = true;
+        if (!SourcePage.CanStartFormalCapture)
+        {
+            ConnectionMessage = SourcePage.HasSelectedDevice
+                ? "Automatic capture start skipped because the selected source is not ready."
+                : "Automatic capture start skipped because no live source was available.";
+            return;
+        }
+
+        ConnectionMessage = $"Starting capture on launch for {SourcePage.SelectedDevice?.DisplayName ?? "selected source"}...";
+        await SourcePage.StartFormalCaptureAsync();
+    }
+
     private void OnSourceSessionStateChanged(CaptureSessionStateDto? session, string? statusMessage)
     {
         var status = session?.CaptureStatus?.ToLowerInvariant() ?? "idle";
+        var previousStatus = _lastCaptureStatus;
+        _lastCaptureStatus = status;
         var (value, tone) = status switch
         {
             "starting" => ("Starting", "warning"),
@@ -398,6 +457,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
         if (
             status == "idle"
+            && (previousStatus == "running" || previousStatus == "stopping")
             && !_isRefreshingAfterStop
             && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
         )

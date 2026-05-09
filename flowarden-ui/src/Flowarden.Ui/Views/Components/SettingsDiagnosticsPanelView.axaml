@@ -3,22 +3,31 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsDiagnosticsPanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="glass-panel">
-    <StackPanel Spacing="12">
-      <TextBlock Classes="section-title" Text="Diagnostics" />
-      <ItemsControl ItemsSource="{Binding Diagnostics}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Border Classes="status-pill" Margin="0,0,0,8">
-              <StackPanel Spacing="4">
-                <TextBlock Text="{Binding Source}" FontWeight="SemiBold" />
-                <TextBlock Classes="muted-text" Text="{Binding Reason}" />
-                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </StackPanel>
+  <Border Classes="tfc-panel" Padding="20,18">
+    <Grid RowDefinitions="Auto,*" RowSpacing="14">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Classes="section-title" Text="Diagnostics" />
+        <Button Grid.Column="1" Classes="mode-button" Height="32" Padding="14,5" Content="Export" />
+      </Grid>
+
+      <Border Grid.Row="1" Classes="tfc-panel-low" Padding="12">
+        <StackPanel Spacing="6">
+          <ItemsControl ItemsSource="{Binding Diagnostics}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="82,*" ColumnSpacing="10" Margin="0,0,0,6">
+                  <TextBlock Classes="tfc-data" FontSize="12" Foreground="{StaticResource TfcWarningBrush}" Text="{Binding Reason, StringFormat=[{0}]}" />
+                  <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="12" Text="{Binding Message}" TextWrapping="Wrap" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Grid ColumnDefinitions="82,*" ColumnSpacing="10">
+            <TextBlock Classes="tfc-data" FontSize="12" Foreground="{StaticResource TfcGoodBrush}" Text="[INFO]" />
+            <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="12" Text="UI diagnostics panel ready." />
+          </Grid>
+        </StackPanel>
+      </Border>
+    </Grid>
   </Border>
 </UserControl>

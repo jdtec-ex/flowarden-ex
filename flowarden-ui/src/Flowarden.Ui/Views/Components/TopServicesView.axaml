@@ -3,27 +3,32 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.TopServicesView"
              x:DataType="vm:OverviewPageViewModel">
-  <Border Classes="glass-panel">
-    <StackPanel Spacing="10">
-      <TextBlock Classes="section-title" Text="Top Services" />
-      <ItemsControl ItemsSource="{Binding Snapshot.TopServices}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Border Classes="status-pill" Margin="0,0,0,8" Padding="14,12">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <StackPanel Spacing="2">
-                  <TextBlock Text="{Binding Name}" />
-                  <TextBlock Classes="muted-text" Text="{Binding Transport}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
-                  <TextBlock Text="{Binding Bytes}" HorizontalAlignment="Right" />
-                  <TextBlock Classes="muted-text" Text="{Binding Packets, StringFormat={}{0} pkts}" HorizontalAlignment="Right" />
-                </StackPanel>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </StackPanel>
+  <Border Classes="tfc-panel" ClipToBounds="True">
+    <Grid RowDefinitions="32,*">
+      <Border Classes="tfc-panel-header" Padding="16,0">
+        <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Top Services Distribution" />
+      </Border>
+      <Grid Grid.Row="1">
+        <TextBlock Classes="muted-text" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Text="No service data yet" IsVisible="{Binding HasNoTopServiceRows}" />
+        <ItemsControl Margin="10,8" ItemsSource="{Binding TopServiceRows}" IsVisible="{Binding HasTopServiceRows}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:OverviewMetricRowViewModel">
+              <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0">
+                <Grid ColumnDefinitions="90,*,48" ColumnSpacing="10">
+                  <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Width="7" Height="7" Background="{Binding AccentBrush}" VerticalAlignment="Center" />
+                    <TextBlock Classes="tfc-data" Text="{Binding Label}" />
+                  </StackPanel>
+                  <Border Grid.Column="1" Height="6" Background="{StaticResource TfcBorderBrush}" VerticalAlignment="Center">
+                    <Border Background="{Binding AccentBrush}" Width="{Binding BarWidth}" HorizontalAlignment="Left" />
+                  </Border>
+                  <TextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding ValueLabel}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Grid>
   </Border>
 </UserControl>

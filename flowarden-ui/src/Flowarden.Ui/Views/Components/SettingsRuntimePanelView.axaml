@@ -3,39 +3,47 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsRuntimePanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="glass-panel">
-    <StackPanel Spacing="12">
-      <TextBlock Classes="section-title" Text="Runtime" />
-      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-        <TextBlock Text="Current source" />
-        <TextBlock Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.SourceDisplayName}" />
+  <Border Classes="tfc-panel" Padding="20,18">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+      <TextBlock Classes="section-title" Text="Runtime Status" />
+      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10">
+        <Border Classes="tfc-chip" Padding="10,5">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Border Width="8" Height="8" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
+            <TextBlock Classes="tfc-label" Text="CORE: ACTIVE" />
+          </StackPanel>
+        </Border>
+        <Border Classes="tfc-chip" Padding="10,5">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Border Width="8" Height="8" Background="{StaticResource TfcWarningBrush}" VerticalAlignment="Center" />
+            <TextBlock Classes="tfc-label" Text="{Binding RuntimeState.CaptureStatus, StringFormat=CAPTURE: {0}}" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
 
-        <TextBlock Grid.Row="1" Text="Source kind" />
-        <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.SourceKind}" />
-
-        <TextBlock Grid.Row="2" Text="BPF" />
-        <TextBlock Grid.Row="2" Grid.Column="1" Classes="muted-text" Text="{Binding RuntimeState.Bpf}" />
-
-        <TextBlock Grid.Row="3" Text="Tick interval" />
-        <TextBlock Grid.Row="3" Grid.Column="1" Classes="muted-text" Text="{Binding TickInterval}" />
-
-        <TextBlock Grid.Row="4" Text="Top N" />
-        <StackPanel Grid.Row="4"
-                    Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="8">
-          <TextBox Width="88"
-                   Text="{Binding TopNInput}" />
-          <Button Classes="tools-button"
-                  Content="Apply"
-                  Command="{Binding ApplyTopNCommand}" />
+      <Grid Grid.Row="2"
+            ColumnDefinitions="*,*"
+            RowDefinitions="Auto,Auto"
+            RowSpacing="14"
+            ColumnSpacing="32"
+            VerticalAlignment="Center">
+        <StackPanel>
+          <TextBlock Classes="muted-text" FontSize="13" Text="Operating Mode" />
+          <TextBlock FontSize="14" Text="{Binding RuntimeState.Mode}" />
         </StackPanel>
-
-        <TextBlock Grid.Row="5"
-                   Grid.Column="1"
-                   Classes="muted-text"
-                   Text="{Binding TopNStatus}" />
+        <StackPanel Grid.Column="1">
+          <TextBlock Classes="muted-text" FontSize="13" Text="Current Source" />
+          <TextBlock Classes="tfc-data" Text="{Binding RuntimeState.SourceDisplayName}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+          <TextBlock Classes="muted-text" FontSize="13" Text="BPF Filter" />
+          <TextBlock Classes="tfc-data" Text="{Binding RuntimeState.Bpf}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1">
+          <TextBlock Classes="muted-text" FontSize="13" Text="Started At" />
+          <TextBlock Classes="tfc-data" Text="{Binding StartedAtLabel}" />
+        </StackPanel>
       </Grid>
-    </StackPanel>
+    </Grid>
   </Border>
 </UserControl>

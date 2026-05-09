@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SettingsCaptureDefaultsPanelView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Border Classes="tfc-panel" Padding="20,18">
+    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+      <TextBlock Classes="section-title" Text="Capture Defaults" />
+
+      <StackPanel Grid.Row="1" Spacing="8">
+        <TextBlock Classes="tfc-label" Text="TOP N RESULTS" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+          <TextBox Height="32" Text="{Binding TopNInput}" />
+          <Button Grid.Column="1" Classes="tools-button" Height="32" Content="Apply" Command="{Binding ApplyTopNCommand}" />
+        </Grid>
+        <TextBlock Classes="muted-text" FontSize="13" Text="{Binding TopNStatus}" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="2" Spacing="8">
+        <TextBlock Classes="tfc-label" Text="RETENTION PERIOD (HOURS)" />
+        <Border Classes="tfc-panel-low" Height="32" Padding="10,0">
+          <TextBlock Classes="tfc-data" Text="72" VerticalAlignment="Center" />
+        </Border>
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

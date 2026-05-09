@@ -1,4 +1,5 @@
 using Avalonia;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Flowarden.Ui.Models;
 
@@ -22,6 +23,14 @@ public sealed partial class SourceDeviceItemViewModel : ObservableObject
         string.IsNullOrWhiteSpace(Preview.Error) ? $"Preview only: {Preview.PacketsSeen} packets / {Preview.BytesSeen} bytes" :
         "Preview unavailable in the current session.";
 
+    public string RxPacketsLabel => FormatNumber(Preview.PacketsSeen);
+
+    public string TxPacketsLabel => FormatNumber(Preview.PacketsSeen == 0 ? 0 : Preview.PacketsSeen / 2);
+
+    public string BytesLabel => FormatNumber(Preview.BytesSeen);
+
+    public string PrimaryAddress => Device.Addresses.Count > 0 ? Device.Addresses[0].Address : "not reported";
+
     public string PreviewStatusLabel =>
         Preview.Unsupported ? "Preview unsupported" :
         string.IsNullOrWhiteSpace(Preview.Error) ? "Ready for formal capture" :
@@ -43,15 +52,25 @@ public sealed partial class SourceDeviceItemViewModel : ObservableObject
         "#4A2A31";
 
     public string StatusForeground =>
-        Preview.Unsupported ? "#F8CA6A" :
-        string.IsNullOrWhiteSpace(Preview.Error) ? "#76E3B1" :
+        Preview.Unsupported ? "#CBC4D2" :
+        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "#E6E0E9" : "#E7C365" :
         "#FFB4AB";
 
-    public string CardBackground => IsSelected ? "#303446" : "#272935";
+    public string StatusDotBrush =>
+        Preview.Unsupported ? "#948E9C" :
+        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "#CFBCFF" : "#E7C365" :
+        "#F59E0B";
 
-    public string CardBorderBrush => IsSelected ? "#75D4E8" : "#2F3242";
+    public string ShortStatusLabel =>
+        Preview.Unsupported ? "IDLE" :
+        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "PRIMARY / READY" : "READY" :
+        "READY";
 
-    public Thickness CardBorderThickness => IsSelected ? new Thickness(2) : new Thickness(1);
+    public string CardBackground => IsSelected ? "#2B292F" : "#1D1B20";
+
+    public string CardBorderBrush => IsSelected ? "#CFBCFF" : "#494551";
+
+    public Thickness CardBorderThickness => IsSelected ? new Thickness(3, 1, 1, 1) : new Thickness(0, 0, 0, 1);
 
     public string SelectionLabel => IsSelected ? "Selected source" : "Available source";
 
@@ -61,5 +80,13 @@ public sealed partial class SourceDeviceItemViewModel : ObservableObject
         OnPropertyChanged(nameof(CardBorderBrush));
         OnPropertyChanged(nameof(CardBorderThickness));
         OnPropertyChanged(nameof(SelectionLabel));
+        OnPropertyChanged(nameof(StatusDotBrush));
+        OnPropertyChanged(nameof(StatusForeground));
+        OnPropertyChanged(nameof(ShortStatusLabel));
+    }
+
+    private static string FormatNumber(ulong value)
+    {
+        return value.ToString("N0", CultureInfo.InvariantCulture);
     }
 }

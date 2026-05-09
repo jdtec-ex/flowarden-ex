@@ -30,9 +30,48 @@ public sealed class TcpConnectionRowDto
 
     public string ConnectionLabel => $"{EndpointAAddress}:{EndpointAPort} ↔ {EndpointBAddress}:{EndpointBPort}";
 
+    public string BytesLabel => FormatBytes(Bytes);
+
+    public string PacketsLabel => FormatCount(Packets);
+
     public string FirstSeenLabel => FormatTimestamp(FirstSeen);
 
     public string LastSeenLabel => FormatTimestamp(LastSeen);
+
+    private static string FormatBytes(ulong bytes)
+    {
+        if (bytes >= 1_000_000_000)
+        {
+            return $"{bytes / 1_000_000_000.0:0.#}G";
+        }
+
+        if (bytes >= 1_000_000)
+        {
+            return $"{bytes / 1_000_000.0:0.#}M";
+        }
+
+        if (bytes >= 1_000)
+        {
+            return $"{bytes / 1_000.0:0.#}K";
+        }
+
+        return $"{bytes}B";
+    }
+
+    private static string FormatCount(ulong count)
+    {
+        if (count >= 1_000_000)
+        {
+            return $"{count / 1_000_000.0:0.#}M";
+        }
+
+        if (count >= 1_000)
+        {
+            return $"{count / 1_000.0:0.#}K";
+        }
+
+        return count.ToString();
+    }
 
     private static string FormatTimestamp(PacketTimestampDto timestamp)
     {

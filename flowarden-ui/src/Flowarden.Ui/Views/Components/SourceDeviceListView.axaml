@@ -3,56 +3,76 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SourceDeviceListView"
              x:DataType="vm:SourcePageViewModel">
-  <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <TextBlock Classes="section-title" Text="Device List" />
+  <Border Classes="tfc-panel" ClipToBounds="True">
+    <Grid RowDefinitions="64,*">
+      <Border Classes="tfc-panel-header" Padding="14,0">
+        <Grid ColumnDefinitions="*,Auto" Height="64">
+          <TextBlock VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Interfaces" />
+          <Border Grid.Column="1" Classes="tfc-chip" Padding="8,3" VerticalAlignment="Center">
+            <TextBlock Classes="tfc-label" Text="{Binding DeviceItems.Count, StringFormat={}{0} FOUND}" />
+          </Border>
+        </Grid>
+      </Border>
 
-      <ListBox Grid.Row="1"
-               ItemsSource="{Binding DeviceItems}"
-               SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
-               Background="Transparent"
-               BorderThickness="0">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:SourceDeviceItemViewModel">
-            <Border Classes="source-device-item"
-                    Background="{Binding CardBackground}"
-                    BorderBrush="{Binding CardBorderBrush}"
-                    BorderThickness="{Binding CardBorderThickness}">
-              <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                  <StackPanel Spacing="4">
-                    <SelectableTextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                    <SelectableTextBlock Classes="muted-text" Text="{Binding Description}" />
-                  </StackPanel>
-                  <Border Grid.Column="1"
-                          Background="{Binding StatusBackground}"
-                          CornerRadius="999"
-                          Padding="10,6">
-                    <SelectableTextBlock FontSize="12"
-                                         FontWeight="SemiBold"
-                                         Foreground="{Binding StatusForeground}"
-                                         Text="{Binding PreviewStatusLabel}" />
-                  </Border>
-                </Grid>
+      <Grid Grid.Row="1">
+        <Border Padding="18"
+                IsVisible="{Binding HasNoDevices}">
+          <StackPanel VerticalAlignment="Center" Spacing="8">
+            <TextBlock Classes="section-title" Text="No interfaces discovered" />
+            <TextBlock Classes="muted-text"
+                       FontSize="13"
+                       TextWrapping="Wrap"
+                       Text="Waiting for the resident core to return capture interfaces." />
+          </StackPanel>
+        </Border>
 
-                <SelectableTextBlock Grid.Row="1"
-                                     Classes="muted-text"
-                                     Text="{Binding PreviewSummary}" />
+        <ListBox ItemsSource="{Binding DeviceItems}"
+                 SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+                 IsVisible="{Binding HasDevices}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:SourceDeviceItemViewModel">
+              <Border Background="{Binding CardBackground}"
+                      BorderBrush="{Binding CardBorderBrush}"
+                      BorderThickness="{Binding CardBorderThickness}"
+                      Padding="16,14">
+                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                      <TextBlock FontSize="16" Foreground="{StaticResource TfcPrimaryBrush}" Text="&lt;&gt;" />
+                      <SelectableTextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                      <Border Width="7" Height="7" CornerRadius="1" Background="{Binding StatusDotBrush}" />
+                      <TextBlock Classes="tfc-label" Foreground="{Binding StatusForeground}" Text="{Binding ShortStatusLabel}" />
+                    </StackPanel>
+                  </Grid>
 
-                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                  <SelectableTextBlock FontSize="12"
-                                       FontWeight="SemiBold"
-                                       Foreground="{Binding StatusForeground}"
-                                       Text="{Binding SelectionLabel}" />
-                  <SelectableTextBlock Grid.Column="1"
+                  <SelectableTextBlock Grid.Row="1"
                                        Classes="muted-text"
-                                       Text="{Binding ReadinessLabel}" />
+                                       FontSize="12"
+                                       TextTrimming="CharacterEllipsis"
+                                       Text="{Binding Description}" />
+
+                  <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Border Classes="tfc-panel-low" Padding="10,7">
+                      <StackPanel>
+                        <TextBlock Classes="tfc-label" Text="RX PACKETS" />
+                        <SelectableTextBlock Classes="tfc-data" Text="{Binding RxPacketsLabel}" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Classes="tfc-panel-low" Padding="10,7">
+                      <StackPanel>
+                        <TextBlock Classes="tfc-label" Text="TX PACKETS" />
+                        <SelectableTextBlock Classes="tfc-data" Text="{Binding TxPacketsLabel}" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

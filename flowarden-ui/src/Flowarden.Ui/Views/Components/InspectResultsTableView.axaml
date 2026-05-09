@@ -3,55 +3,39 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.InspectResultsTableView"
              x:DataType="vm:InspectPageViewModel">
-  <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,*" RowSpacing="12">
-      <Grid ColumnDefinitions="170,140,180,140,72,104,96,92,82,*" ColumnSpacing="6">
-        <TextBlock Classes="muted-text" FontWeight="SemiBold" Text="Source" />
-        <TextBlock Grid.Column="1"
-                   Classes="muted-text"
-                   FontWeight="SemiBold"
-                   Text="Src Port" />
-        <TextBlock Grid.Column="2" Classes="muted-text" FontWeight="SemiBold" Text="Destination" />
-        <TextBlock Grid.Column="3"
-                   Classes="muted-text"
-                   FontWeight="SemiBold"
-                   Text="Dst Port" />
-        <TextBlock Grid.Column="4" Classes="muted-text" FontWeight="SemiBold" Text="Proto" />
-        <TextBlock Grid.Column="5" Classes="muted-text" FontWeight="SemiBold" Text="Service" />
-        <TextBlock Grid.Column="6" Classes="muted-text" FontWeight="SemiBold" Text="Direction" />
-        <TextBlock Grid.Column="7"
-                   Classes="muted-text"
-                   FontWeight="SemiBold"
-                   HorizontalAlignment="Right"
-                   Text="Bytes" />
-        <TextBlock Grid.Column="8"
-                   Classes="muted-text"
-                   FontWeight="SemiBold"
-                   HorizontalAlignment="Right"
-                   Text="Packets" />
-      </Grid>
+  <Border Classes="tfc-panel" ClipToBounds="True" CornerRadius="6,6,0,0">
+    <Grid RowDefinitions="Auto,*">
+      <Border Classes="tfc-table-header" Padding="14,8">
+        <Grid ColumnDefinitions="1.35*,0.7*,1.35*,0.7*,0.65*,0.9*,0.6*,0.8*,0.8*" ColumnSpacing="12">
+          <TextBlock Classes="tfc-label" Text="Src Address" />
+          <TextBlock Grid.Column="1" Classes="tfc-label" Text="Src Port" />
+          <TextBlock Grid.Column="2" Classes="tfc-label" Text="Dst Address" />
+          <TextBlock Grid.Column="3" Classes="tfc-label" Text="Dst Port" />
+          <TextBlock Grid.Column="4" Classes="tfc-label" Text="Proto" />
+          <TextBlock Grid.Column="5" Classes="tfc-label" Text="Service" />
+          <TextBlock Grid.Column="6" Classes="tfc-label" Text="Dir" />
+          <TextBlock Grid.Column="7" Classes="tfc-label" HorizontalAlignment="Right" Text="Bytes" />
+          <TextBlock Grid.Column="8" Classes="tfc-label" HorizontalAlignment="Right" Text="Packets" />
+        </Grid>
+      </Border>
 
-      <ScrollViewer Grid.Row="1"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Border Classes="status-pill" Margin="0,0,0,8">
-                <Grid ColumnDefinitions="170,140,180,140,72,104,96,92,82,*" ColumnSpacing="6">
-                  <TextBlock Text="{Binding SourceAddress}" />
-                  <TextBlock Grid.Column="1" Text="{Binding SourcePort}" />
-                  <TextBlock Grid.Column="2" Text="{Binding DestinationAddress}" />
-                  <TextBlock Grid.Column="3" Text="{Binding DestinationPort}" />
-                  <TextBlock Grid.Column="4" Text="{Binding Protocol}" />
-                  <TextBlock Grid.Column="5" Text="{Binding ServiceName}" />
-                  <TextBlock Grid.Column="6" Text="{Binding Direction}" />
-                  <TextBlock Grid.Column="7"
-                             HorizontalAlignment="Right"
-                             Text="{Binding Bytes}" />
-                  <TextBlock Grid.Column="8"
-                             HorizontalAlignment="Right"
-                             Text="{Binding Packets}" />
+              <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
+                <Grid ColumnDefinitions="1.35*,0.7*,1.35*,0.7*,0.65*,0.9*,0.6*,0.8*,0.8*" ColumnSpacing="12">
+                  <TextBlock Classes="tfc-data" Text="{Binding SourceAddress}" />
+                  <TextBlock Grid.Column="1" Classes="tfc-data" Text="{Binding SourcePort}" />
+                  <TextBlock Grid.Column="2" Classes="tfc-data" Text="{Binding DestinationAddress}" />
+                  <TextBlock Grid.Column="3" Classes="tfc-data" Text="{Binding DestinationPort}" />
+                  <Border Grid.Column="4" Classes="tfc-chip" Padding="6,2" HorizontalAlignment="Left">
+                    <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcPrimaryBrush}" FontSize="11" Text="{Binding ProtocolLabel}" />
+                  </Border>
+                  <TextBlock Grid.Column="5" Classes="muted-text" FontSize="13" Text="{Binding ServiceName}" />
+                  <TextBlock Grid.Column="6" Foreground="{StaticResource TfcWarningBrush}" HorizontalAlignment="Center" Text="{Binding DirectionGlyph}" />
+                  <TextBlock Grid.Column="7" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
+                  <TextBlock Grid.Column="8" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
                 </Grid>
               </Border>
             </DataTemplate>

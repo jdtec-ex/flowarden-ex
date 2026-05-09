@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -95,6 +96,10 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     public bool HasSelectedDevice => SelectedDevice is not null;
 
+    public bool HasDevices => DeviceItems.Count > 0;
+
+    public bool HasNoDevices => !HasDevices;
+
     public bool CanStartFormalCapture =>
         HasSelectedDevice
         && !IsControlBusy
@@ -129,61 +134,114 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             _ => "Idle",
         };
 
+    public string SelectedAddressLabel => SelectedDevice?.PrimaryAddress ?? "not reported";
+
+    public string SelectedMacLabel => "not reported";
+
+    public string SelectedMtuLabel => "not reported";
+
+    public string SelectedSpeedLabel => "not reported";
+
+    public string SelectedConfigurationTitle =>
+        SelectedDevice is null ? "No interface selected" : $"{SelectedDevice.DisplayName} Configuration";
+
+    public string SelectedDeviceDescriptionLabel =>
+        SelectedDevice?.Description ?? "Choose an interface to review capture readiness.";
+
+    public string SelectedPacketsCapturedLabel => FormatNumber(SelectedDevice?.Preview.PacketsSeen ?? 0);
+
+    public string SelectedBytesTransferredLabel => FormatBytes(SelectedDevice?.Preview.BytesSeen ?? 0);
+
+    public string SelectedAverageRateLabel => FormatBitRate(SelectedDevice?.Preview.BytesSeen ?? 0, PreviewWindowSeconds);
+
+    public string SelectedErrorCountLabel => "0";
+
+    public string HeaderRefreshLabel
+    {
+        get
+        {
+            const string refreshedPrefix = "Preview refreshed at ";
+            if (LastPreviewLabel.StartsWith(refreshedPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var refreshedAt = LastPreviewLabel[refreshedPrefix.Length..];
+                var deviceSuffixIndex = refreshedAt.IndexOf(" from ", StringComparison.OrdinalIgnoreCase);
+                if (deviceSuffixIndex >= 0)
+                {
+                    refreshedAt = refreshedAt[..deviceSuffixIndex];
+                }
+
+                return $"LAST REFRESHED: {refreshedAt}";
+            }
+
+            return "LAST REFRESHED: NOT STARTED";
+        }
+    }
+
+    public string CapturePreferenceModeLabel => "Default";
+
+    public string SnapshotLengthLabel => "65535";
+
+    public string BufferSizeLabel => "2 MB";
+
+    public string BpfFilterLabel => CurrentSession.Bpf ?? string.Empty;
+
     public string OfflineImportSummary => "Offline import remains a single file source, separate from live device preview.";
 
-    public async Task LoadAsync()
+    public Task StartFormalCaptureAsync() => StartFormalCapture();
+
+    public async Task LoadAsync(bool refreshPreview = true)
     {
         if (_discoveryClient is null || _isDesignTime)
         {
             return;
         }
 
-        SetPreviewState("Preview loading", "Loading devices and preview samples from resident core.", isWarning: false, isError: false);
+        SetPreviewState("Loading interfaces", "Loading capture interfaces from resident core.", isWarning: false, isError: false);
         StatusMessage = "Loading source inventory...";
         try
         {
             var previousSelection = SelectedDevice?.Device.Name;
             var devices = await _discoveryClient.GetDevicesAsync();
-            var previews = await _discoveryClient.GetDevicePreviewsAsync(PreviewWindowSeconds);
-            var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
-
-            var items = devices
-                .Select(device => new SourceDeviceItemViewModel
-                {
-                    Device = device,
-                    Preview = previewByName.TryGetValue(device.Name, out var preview)
-                        ? preview
-                        : new DevicePreviewDto
-                        {
-                            Name = device.Name,
-                            PacketsSeen = 0,
-                            BytesSeen = 0,
-                            Unsupported = true,
-                            Error = "Preview unavailable",
-                        },
-                })
-                .ToArray();
-
-            DeviceItems.Clear();
-            foreach (var item in items)
+            if (devices.Count == 0)
             {
-                DeviceItems.Add(item);
+                DeviceItems.Clear();
+                NotifyDeviceInventoryChanged();
+                SelectedDevice = null;
+                SelectedSourceMode = "Live source";
+                LastPreviewLabel = $"Device inventory loaded at {DateTime.Now:HH:mm:ss} from 0 device(s)";
+                StatusMessage = "No capture interfaces were returned by the resident core.";
+                SetPreviewState(
+                    "No interfaces discovered",
+                    "The resident core returned an empty capture interface list.",
+                    isWarning: true,
+                    isError: false
+                );
+                UpdateCurrentSessionFromSelectedDevice();
+                return;
             }
 
-            SelectedDevice = DeviceItems.FirstOrDefault(item =>
-                string.Equals(item.Device.Name, previousSelection, StringComparison.OrdinalIgnoreCase)
-            ) ?? DeviceItems.FirstOrDefault();
+            ApplyDeviceInventory(devices, previousSelection, previewByName: null);
             SelectedSourceMode = "Live source";
-            LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
-            StatusMessage = "Review one source, then continue into formal capture.";
-            UpdateCurrentSessionFromSelectedDevice();
+            LastPreviewLabel = $"Device inventory loaded at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
+            StatusMessage = refreshPreview
+                ? "Device inventory ready; preview samples loading."
+                : "Device inventory ready.";
+            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            {
+                UpdateCurrentSessionFromSelectedDevice();
+            }
+
+            if (refreshPreview)
+            {
+                await RefreshDevicePreviewsAsync();
+            }
         }
         catch (Exception)
         {
-            StatusMessage = "Preview unavailable";
+            StatusMessage = "Source inventory unavailable";
             SetPreviewState(
-                "Preview unavailable",
-                "Preview sampling is not currently wired or failed to return from the resident core. You can still review devices and continue with explicit source selection.",
+                "Source inventory unavailable",
+                "Device inventory failed to return from the resident core. Seed devices are shown so the Source page remains inspectable.",
                 isWarning: true,
                 isError: false
             );
@@ -199,11 +257,31 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             item.IsSelected = ReferenceEquals(item, value);
         }
 
-        UpdateCurrentSessionFromSelectedDevice();
-        UpdatePreviewStateFromSelectedDevice();
+        if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+        {
+            UpdateCurrentSessionFromSelectedDevice();
+            UpdatePreviewStateFromSelectedDevice();
+        }
+
         OnPropertyChanged(nameof(HasSelectedDevice));
         OnPropertyChanged(nameof(FormalCaptureSummary));
         OnPropertyChanged(nameof(CanStartFormalCapture));
+        OnPropertyChanged(nameof(SelectedAddressLabel));
+        OnPropertyChanged(nameof(SelectedMacLabel));
+        OnPropertyChanged(nameof(SelectedMtuLabel));
+        OnPropertyChanged(nameof(SelectedSpeedLabel));
+        OnPropertyChanged(nameof(SelectedConfigurationTitle));
+        OnPropertyChanged(nameof(SelectedDeviceDescriptionLabel));
+        OnPropertyChanged(nameof(SelectedPacketsCapturedLabel));
+        OnPropertyChanged(nameof(SelectedBytesTransferredLabel));
+        OnPropertyChanged(nameof(SelectedAverageRateLabel));
+        OnPropertyChanged(nameof(SelectedErrorCountLabel));
+        OnPropertyChanged(nameof(BpfFilterLabel));
+    }
+
+    partial void OnLastPreviewLabelChanged(string value)
+    {
+        OnPropertyChanged(nameof(HeaderRefreshLabel));
     }
 
     partial void OnCurrentSessionChanged(CaptureSessionStateDto value)
@@ -212,6 +290,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         OnPropertyChanged(nameof(CaptureStateLabel));
         OnPropertyChanged(nameof(CanStartFormalCapture));
         OnPropertyChanged(nameof(CanStopFormalCapture));
+        OnPropertyChanged(nameof(BpfFilterLabel));
         SessionStateChanged?.Invoke(value, StatusMessage);
     }
 
@@ -252,7 +331,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             return;
         }
 
-        _ = LoadAsync();
+        _ = LoadAsync(refreshPreview: true);
     }
 
     [RelayCommand]
@@ -490,6 +569,90 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         };
     }
 
+    private async Task RefreshDevicePreviewsAsync()
+    {
+        if (_discoveryClient is null || _isDesignTime || DeviceItems.Count == 0)
+        {
+            return;
+        }
+
+        var selectedName = SelectedDevice?.Device.Name;
+        var devices = DeviceItems.Select(item => item.Device).ToArray();
+        try
+        {
+            SetPreviewState(
+                "Preview loading",
+                "Loading device preview samples from resident core.",
+                isWarning: false,
+                isError: false
+            );
+            var previews = await _discoveryClient.GetDevicePreviewsAsync(PreviewWindowSeconds);
+            var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
+            ApplyDeviceInventory(devices, selectedName, previewByName);
+            LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
+            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            {
+                StatusMessage = "Review one source, then continue into formal capture.";
+                UpdatePreviewStateFromSelectedDevice();
+            }
+        }
+        catch (Exception)
+        {
+            LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
+            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            {
+                StatusMessage = "Preview unavailable";
+                SetPreviewState(
+                    "Preview unavailable",
+                    "Preview sampling failed, but the capture interface inventory remains available.",
+                    isWarning: true,
+                    isError: false
+                );
+            }
+        }
+    }
+
+    private void ApplyDeviceInventory(
+        IReadOnlyList<DeviceSummaryDto> devices,
+        string? selectedName,
+        IReadOnlyDictionary<string, DevicePreviewDto>? previewByName
+    )
+    {
+        var items = devices
+            .Select(device => new SourceDeviceItemViewModel
+            {
+                Device = device,
+                Preview = previewByName is not null && previewByName.TryGetValue(device.Name, out var preview)
+                    ? preview
+                    : new DevicePreviewDto
+                    {
+                        Name = device.Name,
+                        PacketsSeen = 0,
+                        BytesSeen = 0,
+                        Unsupported = false,
+                        Error = null,
+                    },
+            })
+            .ToArray();
+
+        DeviceItems.Clear();
+        foreach (var item in items)
+        {
+            DeviceItems.Add(item);
+        }
+
+        NotifyDeviceInventoryChanged();
+        SelectedDevice = DeviceItems.FirstOrDefault(item =>
+            string.Equals(item.Device.Name, selectedName, StringComparison.OrdinalIgnoreCase)
+        ) ?? DeviceItems.FirstOrDefault();
+    }
+
+    private void NotifyDeviceInventoryChanged()
+    {
+        OnPropertyChanged(nameof(HasDevices));
+        OnPropertyChanged(nameof(HasNoDevices));
+    }
+
     private void UpdateCurrentSessionFromSelectedDevice()
     {
         CurrentSession = new CaptureSessionStateDto
@@ -513,6 +676,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         SelectedDevice = DeviceItems.FirstOrDefault();
         SelectedSourceMode = "Live source";
         LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
+        NotifyDeviceInventoryChanged();
         UpdateCurrentSessionFromSelectedDevice();
         UpdatePreviewStateFromSelectedDevice();
     }
@@ -566,6 +730,13 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         PreviewStatusDetail = detail;
         PreviewStateIsWarning = isWarning;
         PreviewStateIsError = isError;
+    }
+
+    private static bool IsCaptureActiveStatus(string? status)
+    {
+        return string.Equals(status, "starting", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "running", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(status, "stopping", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyList<SourceDeviceItemViewModel> CreateSeedDevices()
@@ -629,5 +800,51 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                 },
             },
         ];
+    }
+
+    private static string FormatNumber(ulong value)
+    {
+        return value.ToString("N0", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatBytes(ulong bytes)
+    {
+        if (bytes >= 1_073_741_824)
+        {
+            return $"{bytes / 1_073_741_824d:0.##} GB";
+        }
+
+        if (bytes >= 1_048_576)
+        {
+            return $"{bytes / 1_048_576d:0.##} MB";
+        }
+
+        if (bytes >= 1024)
+        {
+            return $"{bytes / 1024d:0.##} KB";
+        }
+
+        return $"{bytes} B";
+    }
+
+    private static string FormatBitRate(ulong bytes, ulong seconds)
+    {
+        if (seconds == 0)
+        {
+            return "0 bps";
+        }
+
+        var bitsPerSecond = bytes * 8d / seconds;
+        if (bitsPerSecond >= 1_000_000)
+        {
+            return $"{bitsPerSecond / 1_000_000d:0.##} Mbps";
+        }
+
+        if (bitsPerSecond >= 1_000)
+        {
+            return $"{bitsPerSecond / 1_000d:0.##} Kbps";
+        }
+
+        return $"{bitsPerSecond:0} bps";
     }
 }

@@ -3,64 +3,127 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SourcePreviewWorkbenchView"
              x:DataType="vm:SourcePageViewModel">
-  <Border Classes="glass-panel">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12">
-      <TextBlock Classes="section-title" Text="Preview Workbench" />
-
-      <StackPanel Grid.Row="1" Spacing="4">
-        <SelectableTextBlock Text="{Binding SelectedDevice.DisplayName}" FontWeight="SemiBold" />
-        <SelectableTextBlock Classes="muted-text" Text="Preview only. Formal capture still requires one explicit source selection." />
-      </StackPanel>
-
-      <Border Grid.Row="2"
-              Background="#23293B"
-              CornerRadius="14"
-              Padding="14,12">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-          <Border Background="{Binding SelectedDevice.StatusBackground}"
-                  CornerRadius="999"
-                  Padding="10,6">
-            <SelectableTextBlock FontSize="12"
-                                 FontWeight="SemiBold"
-                                 Foreground="{Binding SelectedDevice.StatusForeground}"
-                                 Text="{Binding PreviewStatusLabel}" />
-          </Border>
-          <StackPanel Grid.Column="1" Spacing="4">
-            <SelectableTextBlock FontWeight="SemiBold" Text="{Binding PreviewStatusLabel}" />
-            <SelectableTextBlock Classes="muted-text" Text="{Binding PreviewStatusDetail}" />
+  <Border Classes="tfc-panel" ClipToBounds="True">
+    <Grid RowDefinitions="72,*,76">
+      <Border Classes="tfc-panel-header" Padding="20,0">
+        <Grid ColumnDefinitions="*,Auto" Height="72">
+          <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+            <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="18" Text="&lt;&gt;" />
+            <StackPanel>
+              <TextBlock FontSize="20" FontWeight="SemiBold" Text="{Binding SelectedConfigurationTitle}" />
+              <TextBlock Classes="muted-text" FontSize="12" Text="{Binding SelectedDeviceDescriptionLabel}" />
+            </StackPanel>
           </StackPanel>
+          <Border Grid.Column="1" Classes="tfc-chip" Background="{StaticResource TfcPrimaryBrush}" BorderBrush="{StaticResource TfcPrimaryBrush}" Padding="12,6" VerticalAlignment="Center">
+            <TextBlock Classes="tfc-label" Foreground="{StaticResource TfcPrimaryOnBrush}" Text="SELECTED" />
+          </Border>
         </Grid>
       </Border>
 
-      <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
-        <Border Classes="status-pill">
-          <StackPanel Spacing="4">
-            <SelectableTextBlock Text="Packets Seen" />
-            <SelectableTextBlock Text="{Binding SelectedDevice.Preview.PacketsSeen}" FontSize="20" FontWeight="SemiBold" />
-          </StackPanel>
-        </Border>
-        <Border Grid.Column="1" Classes="status-pill">
-          <StackPanel Spacing="4">
-            <SelectableTextBlock Text="Bytes Seen" />
-            <SelectableTextBlock Text="{Binding SelectedDevice.Preview.BytesSeen}" FontSize="20" FontWeight="SemiBold" />
-          </StackPanel>
-        </Border>
-      </Grid>
-
-      <StackPanel Grid.Row="4" Spacing="8">
-        <TextBlock Classes="section-title" Text="Selected Device Details" />
-        <SelectableTextBlock Classes="muted-text" Text="{Binding SelectedDevice.ReadinessLabel}" />
-        <ItemsControl ItemsSource="{Binding SelectedDevice.Device.Addresses}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Classes="status-pill">
-                <SelectableTextBlock Text="{Binding Address}" />
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="28">
+          <StackPanel Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="15" Text="i" />
+              <TextBlock FontSize="16" FontWeight="SemiBold" Text="Hardware Details" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+              <Border Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="MAC ADDRESS" />
+                  <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedMacLabel}" />
+                </StackPanel>
               </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-      
+              <Border Grid.Column="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="IPV4 ADDRESS" />
+                  <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedAddressLabel}" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="MTU" />
+                  <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedMtuLabel}" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="SPEED" />
+                  <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedSpeedLabel}" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </StackPanel>
+
+          <StackPanel Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="15" Text="v" />
+              <TextBlock FontSize="16" FontWeight="SemiBold" Text="Traffic Summary" />
+            </StackPanel>
+            <Border Background="{StaticResource TfcPanelLowBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="16">
+              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="36" RowSpacing="20">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="PACKETS CAPTURED" />
+                  <SelectableTextBlock Foreground="{StaticResource TfcTextBrush}" FontSize="28" FontWeight="SemiBold" Text="{Binding SelectedPacketsCapturedLabel}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Classes="tfc-label" Text="AVERAGE RATE" />
+                  <SelectableTextBlock Foreground="{StaticResource TfcTextBrush}" FontSize="28" FontWeight="SemiBold" Text="{Binding SelectedAverageRateLabel}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1">
+                  <TextBlock Classes="tfc-label" Text="BYTES TRANSFERRED" />
+                  <SelectableTextBlock Foreground="{StaticResource TfcTextBrush}" FontSize="28" FontWeight="SemiBold" Text="{Binding SelectedBytesTransferredLabel}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1">
+                  <TextBlock Classes="tfc-label" Text="ERRORS" />
+                  <SelectableTextBlock Foreground="{StaticResource TfcTextBrush}" FontSize="28" FontWeight="SemiBold" Text="{Binding SelectedErrorCountLabel}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <TextBlock Classes="muted-text" FontSize="12" Text="{Binding PreviewStatusDetail}" TextWrapping="Wrap" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Border Grid.Row="2"
+              Background="{StaticResource TfcPanelLowBrush}"
+              BorderBrush="{StaticResource TfcBorderBrush}"
+              BorderThickness="0,1,0,0"
+              Padding="20,10">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18" VerticalAlignment="Center">
+          <StackPanel MinWidth="0" Spacing="4" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Classes="tfc-label" Text="CAPTURE CONTROL" />
+              <Border Background="{StaticResource TfcRaisedBrush}"
+                      BorderBrush="{StaticResource TfcBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="4"
+                      Padding="6,2">
+                <TextBlock Classes="tfc-label" Text="{Binding CaptureStateLabel}" />
+              </Border>
+            </StackPanel>
+            <TextBlock Classes="muted-text"
+                       FontSize="12"
+                       Text="{Binding FormalCaptureSummary}"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+            <Button Classes="danger-button"
+                    Width="144"
+                    Height="36"
+                    Content="Capture Stop"
+                    Command="{Binding StopFormalCaptureCommand}"
+                    IsEnabled="{Binding CanStopFormalCapture}" />
+            <Button Classes="mode-button"
+                    Width="220"
+                    Height="36"
+                    Content="Start Live Capture"
+                    Command="{Binding StartFormalCaptureCommand}"
+                    IsEnabled="{Binding CanStartFormalCapture}" />
+          </StackPanel>
+        </Grid>
+      </Border>
     </Grid>
   </Border>
 </UserControl>
