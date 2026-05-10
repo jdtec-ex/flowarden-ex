@@ -23,9 +23,39 @@ public sealed class ControlClient
         _client = new ControlService.ControlServiceClient(channel);
     }
 
-    public async Task<ControlActionResult> SetSourceAsync(
-        string source,
+    public Task<ControlActionResult> SetLiveSourceAsync(
+        string deviceName,
         CancellationToken cancellationToken = default
+    )
+    {
+        return SetSourceAsync(
+            new CaptureSourceSpec
+            {
+                Mode = CaptureSourceMode.Live,
+                DeviceName = deviceName,
+            },
+            cancellationToken
+        );
+    }
+
+    public Task<ControlActionResult> SetOfflineSourceAsync(
+        string filePath,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return SetSourceAsync(
+            new CaptureSourceSpec
+            {
+                Mode = CaptureSourceMode.Offline,
+                FilePath = filePath,
+            },
+            cancellationToken
+        );
+    }
+
+    private async Task<ControlActionResult> SetSourceAsync(
+        CaptureSourceSpec source,
+        CancellationToken cancellationToken
     )
     {
         return await ExecuteAsync(

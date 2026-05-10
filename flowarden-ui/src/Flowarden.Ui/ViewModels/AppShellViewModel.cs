@@ -459,17 +459,13 @@ public sealed partial class AppShellViewModel : ViewModelBase
             status == "idle"
             && (previousStatus == "running" || previousStatus == "stopping")
             && !_isRefreshingAfterStop
-            && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
         )
         {
             StopOverviewStreaming();
             _ = RefreshProjectionAfterStopAsync();
         }
 
-        if (
-            status == "running"
-            && string.Equals(session?.Mode, "live", System.StringComparison.OrdinalIgnoreCase)
-        )
+        if (status == "running")
         {
             BeginOverviewStreaming();
         }
@@ -521,16 +517,22 @@ public sealed partial class AppShellViewModel : ViewModelBase
             return;
         }
 
+        var session = SourcePage.CurrentSession;
+        var mode = string.Equals(session.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            ? "offline"
+            : "live";
+        var sourceLabelPrefix = mode == "offline" ? "Offline source" : "Live source";
         _liveProjectionState.ResetOverview(
             new OverviewSnapshotDto
             {
-                CaptureId = "live:running",
-                SourceLabel = SourcePage.CurrentSession.SourceDisplayName == "none"
-                    ? "Live source · not started"
-                    : $"Live source · {SourcePage.CurrentSession.SourceDisplayName}",
-                FilterLabel = string.IsNullOrWhiteSpace(SourcePage.CurrentSession.Bpf)
+                CaptureId = $"{mode}:running",
+                Mode = mode,
+                SourceLabel = session.SourceDisplayName == "none"
+                    ? $"{sourceLabelPrefix} · not started"
+                    : $"{sourceLabelPrefix} · {session.SourceDisplayName}",
+                FilterLabel = string.IsNullOrWhiteSpace(session.Bpf)
                     ? "Filter · none"
-                    : $"Filter · {SourcePage.CurrentSession.Bpf}",
+                    : $"Filter · {session.Bpf}",
                 MetricMode = "bytes",
             }
         );

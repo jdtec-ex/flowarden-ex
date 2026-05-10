@@ -83,7 +83,9 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     public string ActiveSourceLabel =>
         Snapshot.SourceLabel
             .Replace("Live source · ", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("Live source", "not started", StringComparison.OrdinalIgnoreCase);
+            .Replace("Offline source · ", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("Live source", "not started", StringComparison.OrdinalIgnoreCase)
+            .Replace("Offline source", "not started", StringComparison.OrdinalIgnoreCase);
 
     public string TopHostLabel => Snapshot.TopHosts.FirstOrDefault()?.Host ?? "-";
 
@@ -651,11 +653,15 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(modeOverride))
         {
             return string.Equals(modeOverride, "Replay", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(modeOverride, "Offline", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(modeOverride, "offline", System.StringComparison.OrdinalIgnoreCase)
                 ? "Offline"
                 : "Live";
         }
 
-        return snapshot.CaptureId.StartsWith("offline") ? "Offline" : "Live";
+        return string.Equals(snapshot.Mode, "offline", System.StringComparison.OrdinalIgnoreCase)
+            ? "Offline"
+            : "Live";
     }
 
     private static OverviewSnapshotDto CreateSeedSnapshot()
@@ -663,6 +669,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         return new OverviewSnapshotDto
         {
             CaptureId = "live-seed",
+            Mode = "live",
             Sequence = 42,
             SourceLabel = "Live source · en0",
             FilterLabel = "Filter · tcp",
@@ -805,6 +812,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         return new OverviewSnapshotDto
         {
             CaptureId = "live:inactive",
+            Mode = "live",
             Sequence = 0,
             SourceLabel = "Live source · not started",
             FilterLabel = "Filter · none",

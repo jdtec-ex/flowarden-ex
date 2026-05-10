@@ -402,7 +402,9 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         var filteredRows = _allRows.Where(MatchesFilter).ToArray();
         ReplaceRows(filteredRows);
         Summary = BuildSummary(filteredRows);
-        ProjectionStateLabel = "Live projection";
+        ProjectionStateLabel = string.Equals(snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            ? "Offline projection"
+            : "Live projection";
         ActiveFilterSummary = BuildFilterSummary();
         ReplaceActiveFilterChips(BuildFilterChips(Filter));
         OnPropertyChanged(nameof(ResultCountLabel));

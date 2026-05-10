@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -116,7 +117,18 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         && !IsControlBusy;
 
     public string FormalCaptureSummary =>
-        SelectedDevice is null
+        string.Equals(CurrentSession.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            ? CurrentSession.CaptureStatus.ToLowerInvariant() switch
+            {
+                "starting" => $"Starting offline replay for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "running" => $"Offline replay is running from {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "stopping" => $"Offline replay is stopping for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "armed" => $"Offline replay is armed for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                _ => CurrentSession.SourceKind == "offline"
+                    ? $"Offline replay target: {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}"
+                    : "Formal capture requires selecting exactly one source.",
+            }
+            : SelectedDevice is null
             ? "Formal capture requires selecting exactly one source."
             : CurrentSession.CaptureStatus.ToLowerInvariant() switch
             {
@@ -190,7 +202,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     public string BpfFilterLabel => CurrentSession.Bpf ?? string.Empty;
 
-    public string OfflineImportSummary => "Offline import remains a single file source, separate from live device preview.";
+    public string OfflineImportSummary => "Offline import replays one pcap file through the same overview and inspect projections.";
 
     public Task StartFormalCaptureAsync() => StartFormalCapture();
 
@@ -368,23 +380,143 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             return;
         }
 
-        SelectedSourceMode = "Offline file";
-        SetPreviewState(
-            "Offline import selected",
-            "Preview sampling applies only to live devices. Offline capture remains a single file source and will be wired to replay control in a later step.",
-            isWarning: false,
-            isError: false
-        );
-        CurrentSession = new CaptureSessionStateDto
+        if (!_isDesignTime && !File.Exists(offlinePath))
         {
-            SourceKind = "offline",
-            SourceDisplayName = offlinePath,
-            CaptureStatus = "idle",
-            Mode = "offline",
-            Bpf = null,
-        };
-        StatusMessage = $"Offline file selected: {offlinePath}";
-        OnPropertyChanged(nameof(FormalCaptureSummary));
+            StatusMessage = $"Offline file not found: {offlinePath}";
+            SetPreviewState(
+                "Offline file unavailable",
+                "The selected pcap file could not be found on disk.",
+                isWarning: false,
+                isError: true
+            );
+            return;
+        }
+
+        SelectedSourceMode = "Offline file";
+        var bpf = CurrentSession.Bpf ?? string.Empty;
+
+        if (_controlClient is null || _isDesignTime)
+        {
+            SetPreviewState(
+                "Offline replay armed",
+                "Offline replay is armed for the selected pcap file.",
+                isWarning: false,
+                isError: false
+            );
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "offline",
+                SourceDisplayName = offlinePath,
+                CaptureStatus = "armed",
+                Mode = "offline",
+                Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+            };
+            StatusMessage = $"Offline file armed: {offlinePath}";
+            return;
+        }
+
+        IsControlBusy = true;
+        try
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "offline",
+                SourceDisplayName = offlinePath,
+                CaptureStatus = "starting",
+                Mode = "offline",
+                Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+            };
+            StatusMessage = "Starting offline replay...";
+            SetPreviewState(
+                "Starting offline replay",
+                "Submitting the pcap file, filter and replay command to the resident core.",
+                isWarning: false,
+                isError: false
+            );
+
+            var sourceResult = await _controlClient.SetOfflineSourceAsync(offlinePath);
+            if (!sourceResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "offline",
+                    SourceDisplayName = offlinePath,
+                    CaptureStatus = "idle",
+                    Mode = "offline",
+                    Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+                };
+                StatusMessage = sourceResult.Message;
+                SetPreviewState(
+                    "Offline source rejected",
+                    sourceResult.Message,
+                    isWarning: false,
+                    isError: true
+                );
+                return;
+            }
+
+            var filterResult = await _controlClient.ApplyFilterAsync(bpf);
+            if (!filterResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "offline",
+                    SourceDisplayName = offlinePath,
+                    CaptureStatus = "idle",
+                    Mode = "offline",
+                    Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+                };
+                StatusMessage = filterResult.Message;
+                SetPreviewState(
+                    "Filter rejected",
+                    filterResult.Message,
+                    isWarning: false,
+                    isError: true
+                );
+                return;
+            }
+
+            var startResult = await _controlClient.StartCaptureAsync();
+            if (!startResult.Accepted)
+            {
+                CurrentSession = new CaptureSessionStateDto
+                {
+                    SourceKind = "offline",
+                    SourceDisplayName = offlinePath,
+                    CaptureStatus = "idle",
+                    Mode = "offline",
+                    Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+                };
+                StatusMessage = startResult.Message;
+                SetPreviewState(
+                    "Offline replay rejected",
+                    startResult.Message,
+                    isWarning: false,
+                    isError: true
+                );
+                return;
+            }
+
+            SetPreviewState(
+                "Offline replay running",
+                startResult.Message,
+                isWarning: false,
+                isError: false
+            );
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = "offline",
+                SourceDisplayName = offlinePath,
+                CaptureStatus = "running",
+                Mode = "offline",
+                Bpf = string.IsNullOrWhiteSpace(bpf) ? null : bpf,
+            };
+            StatusMessage = startResult.Message;
+        }
+        finally
+        {
+            IsControlBusy = false;
+        }
     }
 
     [RelayCommand]
@@ -439,7 +571,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                 isError: false
             );
 
-            var sourceResult = await _controlClient.SetSourceAsync(SelectedDevice.Device.Name);
+            var sourceResult = await _controlClient.SetLiveSourceAsync(SelectedDevice.Device.Name);
             if (!sourceResult.Accepted)
             {
                 CurrentSession = new CaptureSessionStateDto
@@ -907,6 +1039,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private static string FormatNumber(ulong value)
     {
         return value.ToString("N0", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatOfflineDisplayName(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        return string.IsNullOrWhiteSpace(fileName) ? path : fileName;
     }
 
     private static string FormatBytes(ulong bytes)

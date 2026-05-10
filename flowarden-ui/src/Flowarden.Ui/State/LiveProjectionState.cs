@@ -28,6 +28,7 @@ public sealed class LiveProjectionState
         return new OverviewSnapshotDto
         {
             CaptureId = "live:inactive",
+            Mode = "live",
             SourceLabel = "Live source · not started",
             FilterLabel = "Filter · none",
             MetricMode = "bytes",

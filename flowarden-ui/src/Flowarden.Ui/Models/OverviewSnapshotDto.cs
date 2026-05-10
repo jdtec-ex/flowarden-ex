@@ -7,6 +7,8 @@ public sealed class OverviewSnapshotDto
 {
     public string CaptureId { get; init; } = string.Empty;
 
+    public string Mode { get; init; } = "live";
+
     public ulong Sequence { get; init; }
 
     public PacketTimestampDto Timestamp { get; init; } = new();

@@ -32,6 +32,7 @@ public sealed class ProjectionClient
         return new OverviewSnapshotDto
         {
             CaptureId = response.CaptureId,
+            Mode = MapProjectionMode(response.Mode),
             Sequence = response.Sequence,
             Timestamp = response.Timestamp is null
                 ? new PacketTimestampDto()
@@ -148,6 +149,7 @@ public sealed class ProjectionClient
             yield return new OverviewSnapshotDto
             {
                 CaptureId = response.CaptureId,
+                Mode = MapProjectionMode(response.Mode),
                 Sequence = response.Sequence,
                 Timestamp = response.Timestamp is null
                     ? new PacketTimestampDto()
@@ -295,6 +297,16 @@ public sealed class ProjectionClient
                 SortBy = "bytes",
                 SortDirection = "desc",
             },
+        };
+    }
+
+    private static string MapProjectionMode(ProjectionMode mode)
+    {
+        return mode switch
+        {
+            ProjectionMode.Offline => "offline",
+            ProjectionMode.Live => "live",
+            _ => "live",
         };
     }
 
