@@ -6,7 +6,7 @@
   <Border Classes="tfc-panel" ClipToBounds="True" CornerRadius="6,6,0,0">
     <Grid RowDefinitions="Auto,*">
       <Border Classes="tfc-table-header" Padding="14,8">
-        <Grid ColumnDefinitions="2*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
+        <Grid ColumnDefinitions="3*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
           <TextBlock Classes="tfc-label" Text="Connection" />
           <TextBlock Grid.Column="1" Classes="tfc-label" Text="State" />
           <TextBlock Grid.Column="2" Classes="tfc-label" HorizontalAlignment="Right" Text="SYN" />
@@ -19,29 +19,51 @@
         </Grid>
       </Border>
 
-      <ScrollViewer Grid.Row="1"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
-        <ItemsControl ItemsSource="{Binding TcpRows}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
-                <Grid ColumnDefinitions="2*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
-                  <TextBlock Classes="tfc-data" Text="{Binding ConnectionLabel}" />
-                  <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13" Text="{Binding State}" />
-                  <TextBlock Grid.Column="2" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding SynCount}" />
-                  <TextBlock Grid.Column="3" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding FinCount}" />
-                  <TextBlock Grid.Column="4" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding RstCount}" />
-                  <TextBlock Grid.Column="5" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
-                  <TextBlock Grid.Column="6" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
-                  <TextBlock Grid.Column="7" Classes="tfc-data" Text="{Binding FirstSeenLabel}" />
-                  <TextBlock Grid.Column="8" Classes="tfc-data" Text="{Binding LastSeenLabel}" />
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
+      <Grid Grid.Row="1">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      IsVisible="{Binding HasTcpRows}">
+          <ItemsControl ItemsSource="{Binding TcpRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
+                  <Grid ColumnDefinitions="3*,0.8*,0.45*,0.45*,0.45*,0.75*,0.75*,0.8*,0.8*" ColumnSpacing="12">
+                    <TextBlock Classes="tfc-data"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding ConnectionLabel}" />
+                    <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13" Text="{Binding State}" />
+                    <TextBlock Grid.Column="2" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding SynCount}" />
+                    <TextBlock Grid.Column="3" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding FinCount}" />
+                    <TextBlock Grid.Column="4" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding RstCount}" />
+                    <TextBlock Grid.Column="5" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
+                    <TextBlock Grid.Column="6" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
+                    <TextBlock Grid.Column="7" Classes="tfc-data" Text="{Binding FirstSeenLabel}" />
+                    <TextBlock Grid.Column="8" Classes="tfc-data" Text="{Binding LastSeenLabel}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <Border Padding="24"
+                IsVisible="{Binding HasNoTcpRows}">
+          <StackPanel VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      Spacing="8"
+                      MaxWidth="420">
+            <TextBlock FontSize="16"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Text="{Binding TcpEmptyStateTitle}" />
+            <TextBlock Classes="muted-text"
+                       FontSize="13"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Text="{Binding TcpEmptyStateDetail}" />
+          </StackPanel>
+        </Border>
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

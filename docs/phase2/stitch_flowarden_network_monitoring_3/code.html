@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inspect - Flowarden</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600&family=JetBrains+Mono:wght@400;450&display=swap');
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e6e0e9",
+                        "surface-container-low": "#1d1b20",
+                        "secondary-fixed": "#e9ddff",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "inverse-on-surface": "#322f35",
+                        "secondary": "#cdc0e9",
+                        "on-tertiary": "#3e2e00",
+                        "surface-dim": "#141218",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-container": "#211f24",
+                        "on-primary-fixed": "#22005d",
+                        "surface-container-high": "#2b292f",
+                        "surface-tint": "#cfbcff",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "surface-variant": "#36343a",
+                        "inverse-primary": "#6750a4",
+                        "primary": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "outline": "#948e9c",
+                        "surface": "#141218",
+                        "on-surface": "#e6e0e9",
+                        "on-error": "#690005",
+                        "secondary-container": "#4d4465",
+                        "on-tertiary-container": "#503d00",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline-variant": "#494551",
+                        "on-surface-variant": "#cbc4d2",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "tertiary-fixed": "#ffdf93",
+                        "primary-fixed": "#e9ddff",
+                        "inverse-surface": "#e6e0e9",
+                        "on-secondary": "#342b4b",
+                        "tertiary-container": "#c9a74d",
+                        "on-secondary-fixed": "#1f1635",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "primary-container": "#6750a4",
+                        "on-primary-container": "#e0d2ff",
+                        "surface-container-highest": "#36343a",
+                        "on-secondary-container": "#bfb2da",
+                        "on-error-container": "#ffdad6",
+                        "background": "#141218",
+                        "tertiary": "#e7c365",
+                        "surface-bright": "#3b383e",
+                        "primary-fixed-dim": "#cfbcff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table_row_height": "32px",
+                        "group_gap": "8px",
+                        "element_gap": "16px",
+                        "control_height_md": "32px",
+                        "page_padding": "24px",
+                        "control_height_lg": "36px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Geist", "sans-serif"],
+                        "body-lg": ["Geist", "sans-serif"],
+                        "body-sm": ["Geist", "sans-serif"],
+                        "data-mono": ["JetBrains Mono", "monospace"],
+                        "h1": ["Geist", "sans-serif"],
+                        "h3": ["Geist", "sans-serif"],
+                        "h2": ["Geist", "sans-serif"],
+                        "body-md": ["Geist", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "data-mono": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "450" }],
+                        "h1": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "h3": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "h2": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md antialiased overflow-hidden">
+<!-- SideNavBar -->
+<nav class="w-[176px] h-screen fixed left-0 top-0 bg-surface dark:bg-surface border-r border-outline-variant dark:border-outline-variant flex flex-col gap-group_gap py-page_padding z-50">
+<div class="px-4 mb-4">
+<h1 class="font-h2 text-h2 text-on-surface dark:text-on-surface tracking-tight">Flowarden</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Traffic Flow Warden</p>
+</div>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface px-4 py-3 hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface px-4 py-3 hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">lan</span>
+<span class="font-body-md text-body-md">Source</span>
+</a>
+<a class="flex items-center text-primary dark:text-primary bg-surface-container-high border-l-[3px] border-primary px-4 py-3 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">search_check</span>
+<span class="font-body-md text-body-md">Inspect</span>
+</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface px-4 py-3 hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-[176px] flex flex-col h-screen overflow-hidden bg-background">
+<!-- TopAppBar -->
+<header class="h-[48px] w-full sticky top-0 z-40 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant flex justify-between items-center px-page_padding">
+<div class="font-h3 text-h3 text-on-surface">Console Dashboard</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:bg-surface-variant dark:hover:bg-surface-variant p-1 rounded-DEFAULT transition-colors">
+<span class="material-symbols-outlined text-[20px]">sensors</span>
+</button>
+<button class="hover:bg-surface-variant dark:hover:bg-surface-variant p-1 rounded-DEFAULT transition-colors">
+<span class="material-symbols-outlined text-[20px]">memory</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden ml-2" title="System Status">
+<!-- Avatar placeholder -->
+</div>
+</div>
+</header>
+<!-- Workbench Content -->
+<main class="flex-1 flex flex-col p-page_padding gap-element_gap overflow-hidden">
+<!-- Top Filter Bar -->
+<div class="bg-surface-container border border-outline-variant rounded-DEFAULT p-3 flex flex-wrap items-center gap-3 shrink-0">
+<!-- Source Selector -->
+<div class="flex items-center gap-2 border-r border-outline-variant pr-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">filter_list</span>
+<select class="h-control_height_md bg-background border border-outline-variant rounded-DEFAULT text-body-sm text-on-surface px-2 focus:ring-1 focus:ring-primary focus:border-primary w-[140px] appearance-none">
+<option>All Sources</option>
+<option>VPC-A</option>
+<option>Datacenter-1</option>
+</select>
+</div>
+<!-- Protocol Filter -->
+<select class="h-control_height_md bg-background border border-outline-variant rounded-DEFAULT text-body-sm text-on-surface px-2 focus:ring-1 focus:ring-primary focus:border-primary w-[100px] appearance-none">
+<option>Protocol</option>
+<option>TCP</option>
+<option>UDP</option>
+<option>ICMP</option>
+</select>
+<!-- Service Filter -->
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">search</span>
+<input class="h-control_height_md pl-8 pr-2 bg-background border border-outline-variant rounded-DEFAULT text-body-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary w-[140px] placeholder:text-on-surface-variant" placeholder="Service / Port" type="text"/>
+</div>
+<!-- Direction Filter -->
+<div class="flex items-center bg-background border border-outline-variant rounded-DEFAULT h-control_height_md p-1 gap-1">
+<button class="px-2 py-0.5 rounded-sm bg-surface-variant text-body-sm text-on-surface">Both</button>
+<button class="px-2 py-0.5 rounded-sm text-on-surface-variant hover:text-on-surface text-body-sm">In</button>
+<button class="px-2 py-0.5 rounded-sm text-on-surface-variant hover:text-on-surface text-body-sm">Out</button>
+</div>
+<!-- Global Search -->
+<div class="relative flex-1 min-w-[200px]">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">search</span>
+<input class="h-control_height_md w-full pl-8 pr-2 bg-background border border-outline-variant rounded-DEFAULT text-body-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-on-surface-variant" placeholder="Search IPs, hosts..." type="text"/>
+</div>
+<!-- Time Range -->
+<select class="h-control_height_md bg-background border border-outline-variant rounded-DEFAULT text-body-sm text-on-surface px-2 focus:ring-1 focus:ring-primary focus:border-primary w-[120px] appearance-none">
+<option>Last 5m</option>
+<option>Last 1h</option>
+<option>Last 24h</option>
+</select>
+<button class="h-control_height_md px-3 border border-outline-variant text-on-surface hover:bg-surface-variant rounded-DEFAULT text-body-sm transition-colors">Clear</button>
+<button class="h-control_height_md px-4 bg-primary text-on-primary font-medium rounded-DEFAULT text-body-sm hover:opacity-90 transition-opacity">Apply</button>
+</div>
+<!-- Active Filter Chips -->
+<div class="flex items-center gap-2 shrink-0">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ACTIVE FILTERS:</span>
+<div class="flex items-center gap-1.5 bg-surface-container border border-primary/30 rounded-DEFAULT px-2 py-1">
+<span class="font-body-sm text-body-sm text-primary">Protocol: TCP</span>
+<button class="text-primary hover:text-on-primary ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container border border-primary/30 rounded-DEFAULT px-2 py-1">
+<span class="font-body-sm text-body-sm text-primary">Port: 443</span>
+<button class="text-primary hover:text-on-primary ml-1"><span class="material-symbols-outlined text-[14px]">close</span></button>
+</div>
+</div>
+<!-- Main Data Table -->
+<div class="flex-1 bg-surface-container border border-outline-variant rounded-DEFAULT overflow-hidden flex flex-col">
+<div class="overflow-auto flex-1">
+<table class="w-full text-left whitespace-nowrap border-collapse">
+<thead class="sticky top-0 bg-surface-container-high border-b border-outline-variant z-10">
+<tr>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-48">Src Address</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-24">Src Port</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-48">Dst Address</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-24">Dst Port</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-24">Proto</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-32">Service</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant w-16 text-center">Dir</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant text-right w-32">Bytes</th>
+<th class="px-4 py-2 font-label-caps text-label-caps text-on-surface-variant text-right w-32">Packets</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-variant transition-colors h-table_row_height group">
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.1.24.105</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">54321</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">192.168.10.50</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">443</td>
+<td class="px-4 py-1">
+<span class="inline-block px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary font-data-mono text-[11px]">TCP</span>
+</td>
+<td class="px-4 py-1 font-body-sm text-body-sm text-on-surface-variant">https</td>
+<td class="px-4 py-1 text-center">
+<span class="material-symbols-outlined text-[16px] text-tertiary">arrow_forward</span>
+</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">14.2M</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">1,245</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-variant transition-colors h-table_row_height group">
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.1.24.106</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">49152</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.0.0.1</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">53</td>
+<td class="px-4 py-1">
+<span class="inline-block px-1.5 py-0.5 rounded-sm bg-secondary/10 border border-secondary/20 text-secondary font-data-mono text-[11px]">UDP</span>
+</td>
+<td class="px-4 py-1 font-body-sm text-body-sm text-on-surface-variant">dns</td>
+<td class="px-4 py-1 text-center">
+<span class="material-symbols-outlined text-[16px] text-tertiary">arrow_forward</span>
+</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">512B</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">2</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-variant transition-colors h-table_row_height group">
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">192.168.10.50</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">443</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.1.24.105</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">54321</td>
+<td class="px-4 py-1">
+<span class="inline-block px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary font-data-mono text-[11px]">TCP</span>
+</td>
+<td class="px-4 py-1 font-body-sm text-body-sm text-on-surface-variant">https</td>
+<td class="px-4 py-1 text-center">
+<span class="material-symbols-outlined text-[16px] text-secondary">arrow_back</span>
+</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">8.1M</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">980</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-variant transition-colors h-table_row_height group">
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.5.0.22</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">3306</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface">10.1.10.100</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface-variant">61002</td>
+<td class="px-4 py-1">
+<span class="inline-block px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20 text-primary font-data-mono text-[11px]">TCP</span>
+</td>
+<td class="px-4 py-1 font-body-sm text-body-sm text-on-surface-variant">mysql</td>
+<td class="px-4 py-1 text-center">
+<span class="material-symbols-outlined text-[16px] text-tertiary">arrow_forward</span>
+</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">1.2G</td>
+<td class="px-4 py-1 font-data-mono text-data-mono text-on-surface text-right">84.2K</td>
+</tr>
+<!-- Additional rows to fill space can be imagined here -->
+</tbody>
+</table>
+</div>
+<!-- Footer Summary -->
+<div class="h-8 bg-surface-container-high border-t border-outline-variant flex items-center justify-between px-4 shrink-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Filtered by Protocol: TCP, Port: 443</span>
+<div class="font-data-mono text-[12px] text-on-surface-variant flex gap-4">
+<span>3,482 connections</span>
+<span class="text-outline-variant">|</span>
+<span>1.2 GB total</span>
+<span class="text-outline-variant">|</span>
+<span>8.4M packets</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

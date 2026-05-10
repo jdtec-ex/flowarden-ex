@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,6 +19,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private readonly DiscoveryClient? _discoveryClient;
     private readonly ControlClient? _controlClient;
     private readonly bool _isDesignTime;
+    private bool _needsInitialActiveSelection = true;
     private const ulong PreviewWindowSeconds = 2;
 
     public event Action<CaptureSessionStateDto?, string?>? SessionStateChanged;
@@ -136,6 +139,8 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     public string SelectedAddressLabel => SelectedDevice?.PrimaryAddress ?? "not reported";
 
+    public string SelectedIpv6AddressLabel => SelectedDevice?.PrimaryIpv6Address ?? "not reported";
+
     public string SelectedMacLabel => "not reported";
 
     public string SelectedMtuLabel => "not reported";
@@ -220,7 +225,13 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                 return;
             }
 
-            ApplyDeviceInventory(devices, previousSelection, previewByName: null);
+            var preferActiveSelection = _needsInitialActiveSelection || string.IsNullOrWhiteSpace(previousSelection);
+            ApplyDeviceInventory(
+                devices,
+                previousSelection,
+                previewByName: null,
+                preferActiveSelection
+            );
             SelectedSourceMode = "Live source";
             LastPreviewLabel = $"Device inventory loaded at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
             StatusMessage = refreshPreview
@@ -233,8 +244,9 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
             if (refreshPreview)
             {
-                await RefreshDevicePreviewsAsync();
+                await RefreshDevicePreviewsAsync(preferActiveSelection);
             }
+            _needsInitialActiveSelection = false;
         }
         catch (Exception)
         {
@@ -267,6 +279,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         OnPropertyChanged(nameof(FormalCaptureSummary));
         OnPropertyChanged(nameof(CanStartFormalCapture));
         OnPropertyChanged(nameof(SelectedAddressLabel));
+        OnPropertyChanged(nameof(SelectedIpv6AddressLabel));
         OnPropertyChanged(nameof(SelectedMacLabel));
         OnPropertyChanged(nameof(SelectedMtuLabel));
         OnPropertyChanged(nameof(SelectedSpeedLabel));
@@ -569,7 +582,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         };
     }
 
-    private async Task RefreshDevicePreviewsAsync()
+    private async Task RefreshDevicePreviewsAsync(bool preferActiveSelection = false)
     {
         if (_discoveryClient is null || _isDesignTime || DeviceItems.Count == 0)
         {
@@ -588,11 +601,13 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             );
             var previews = await _discoveryClient.GetDevicePreviewsAsync(PreviewWindowSeconds);
             var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
-            ApplyDeviceInventory(devices, selectedName, previewByName);
+            ApplyDeviceInventory(devices, selectedName, previewByName, preferActiveSelection);
             LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
             if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
             {
-                StatusMessage = "Review one source, then continue into formal capture.";
+                StatusMessage = preferActiveSelection && SelectedDevice is not null
+                    ? $"Active interface selected: {SelectedDevice.DisplayName}."
+                    : "Review one source, then continue into formal capture.";
                 UpdatePreviewStateFromSelectedDevice();
             }
         }
@@ -615,7 +630,8 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private void ApplyDeviceInventory(
         IReadOnlyList<DeviceSummaryDto> devices,
         string? selectedName,
-        IReadOnlyDictionary<string, DevicePreviewDto>? previewByName
+        IReadOnlyDictionary<string, DevicePreviewDto>? previewByName,
+        bool preferActiveSelection
     )
     {
         var items = devices
@@ -642,9 +658,95 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         }
 
         NotifyDeviceInventoryChanged();
-        SelectedDevice = DeviceItems.FirstOrDefault(item =>
-            string.Equals(item.Device.Name, selectedName, StringComparison.OrdinalIgnoreCase)
-        ) ?? DeviceItems.FirstOrDefault();
+        var preservedSelection = preferActiveSelection
+            ? null
+            : DeviceItems.FirstOrDefault(item =>
+                string.Equals(item.Device.Name, selectedName, StringComparison.OrdinalIgnoreCase)
+            );
+        SelectedDevice = preservedSelection ?? SelectActiveDevice(DeviceItems);
+    }
+
+    private static SourceDeviceItemViewModel? SelectActiveDevice(
+        IReadOnlyList<SourceDeviceItemViewModel> items
+    )
+    {
+        if (items.Count == 0)
+        {
+            return null;
+        }
+
+        var nonLoopbackCandidates = items
+            .Where(item => !IsLoopbackInterfaceName(item.DisplayName))
+            .ToArray();
+        var candidates = nonLoopbackCandidates.Length > 0 ? nonLoopbackCandidates : items;
+
+        return candidates
+            .OrderByDescending(HasPreviewTraffic)
+            .ThenByDescending(item => item.Preview.BytesSeen)
+            .ThenByDescending(item => item.Preview.PacketsSeen)
+            .ThenByDescending(HasNonLoopbackIpv4)
+            .ThenByDescending(HasUsableNonLoopbackAddress)
+            .ThenByDescending(item => IsCommonPrimaryInterfaceName(item.DisplayName))
+            .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    private static bool HasPreviewTraffic(SourceDeviceItemViewModel item)
+    {
+        return item.Preview.PacketsSeen > 0 || item.Preview.BytesSeen > 0;
+    }
+
+    private static bool HasNonLoopbackIpv4(SourceDeviceItemViewModel item)
+    {
+        return item.Device.Addresses.Any(address => IsNonLoopbackIpv4(address.Address));
+    }
+
+    private static bool HasUsableNonLoopbackAddress(SourceDeviceItemViewModel item)
+    {
+        return item.Device.Addresses.Any(address => IsUsableNonLoopbackAddress(address.Address));
+    }
+
+    private static bool IsNonLoopbackIpv4(string value)
+    {
+        return IPAddress.TryParse(value, out var address)
+            && address.AddressFamily == AddressFamily.InterNetwork
+            && !IPAddress.IsLoopback(address)
+            && !IsLinkLocalIpv4(address);
+    }
+
+    private static bool IsUsableNonLoopbackAddress(string value)
+    {
+        if (!IPAddress.TryParse(value, out var address) || IPAddress.IsLoopback(address))
+        {
+            return false;
+        }
+
+        if (address.AddressFamily == AddressFamily.InterNetwork)
+        {
+            return !IsLinkLocalIpv4(address);
+        }
+
+        return address.AddressFamily == AddressFamily.InterNetworkV6 && !address.IsIPv6LinkLocal;
+    }
+
+    private static bool IsLinkLocalIpv4(IPAddress address)
+    {
+        var bytes = address.GetAddressBytes();
+        return bytes.Length >= 2 && bytes[0] == 169 && bytes[1] == 254;
+    }
+
+    private static bool IsLoopbackInterfaceName(string name)
+    {
+        return string.Equals(name, "lo", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, "lo0", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("loopback", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsCommonPrimaryInterfaceName(string name)
+    {
+        return string.Equals(name, "en0", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, "eth0", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(name, "wlan0", StringComparison.OrdinalIgnoreCase);
     }
 
     private void NotifyDeviceInventoryChanged()

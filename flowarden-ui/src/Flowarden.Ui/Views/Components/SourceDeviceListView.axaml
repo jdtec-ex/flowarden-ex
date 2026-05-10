@@ -37,10 +37,28 @@
                       Padding="16,14">
                 <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                      <TextBlock FontSize="16" Foreground="{StaticResource TfcPrimaryBrush}" Text="&lt;&gt;" />
-                      <SelectableTextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding DisplayName}" />
-                    </StackPanel>
+                    <Grid ColumnDefinitions="36,*" ColumnSpacing="10">
+                      <Border Width="36"
+                              Height="36"
+                              Background="{Binding InterfaceIconBackground}"
+                              BorderBrush="{Binding InterfaceAccentBrush}"
+                              BorderThickness="1"
+                              CornerRadius="4">
+                        <TextBlock FontFamily="JetBrains Mono, Menlo, Consolas, monospace"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{Binding InterfaceAccentBrush}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding InterfaceIconText}" />
+                      </Border>
+                      <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                        <SelectableTextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                        <TextBlock Classes="tfc-label"
+                                   Foreground="{Binding InterfaceAccentBrush}"
+                                   Text="{Binding InterfaceTypeLabel}" />
+                      </StackPanel>
+                    </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                       <Border Width="7" Height="7" CornerRadius="1" Background="{Binding StatusDotBrush}" />
                       <TextBlock Classes="tfc-label" Foreground="{Binding StatusForeground}" Text="{Binding ShortStatusLabel}" />

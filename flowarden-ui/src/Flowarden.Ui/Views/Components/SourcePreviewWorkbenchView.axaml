@@ -27,26 +27,32 @@
               <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="15" Text="i" />
               <TextBlock FontSize="16" FontWeight="SemiBold" Text="Hardware Details" />
             </StackPanel>
-            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-              <Border Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+              <Border Grid.Column="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
                 <StackPanel>
                   <TextBlock Classes="tfc-label" Text="MAC ADDRESS" />
                   <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedMacLabel}" />
                 </StackPanel>
               </Border>
-              <Border Grid.Column="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+              <Border Grid.Column="1" Grid.Row="2" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
                 <StackPanel>
                   <TextBlock Classes="tfc-label" Text="IPV4 ADDRESS" />
                   <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedAddressLabel}" />
                 </StackPanel>
               </Border>
-              <Border Grid.Row="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+              <Border Grid.Row="1" Grid.Column="2" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+                <StackPanel>
+                  <TextBlock Classes="tfc-label" Text="IPV6 ADDRESS" />
+                  <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedIpv6AddressLabel}" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="0" Grid.Column="0" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
                 <StackPanel>
                   <TextBlock Classes="tfc-label" Text="MTU" />
                   <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedMtuLabel}" />
                 </StackPanel>
               </Border>
-              <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+              <Border Grid.Row="1" Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
                 <StackPanel>
                   <TextBlock Classes="tfc-label" Text="SPEED" />
                   <SelectableTextBlock Classes="tfc-data" Foreground="{StaticResource TfcTextBrush}" Text="{Binding SelectedSpeedLabel}" />

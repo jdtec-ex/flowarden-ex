@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Flowarden - Settings &amp; Diagnostics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#e6e0e9",
+                        "surface-container-low": "#1d1b20",
+                        "secondary-fixed": "#e9ddff",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "surface-container-lowest": "#0f0d13",
+                        "inverse-on-surface": "#322f35",
+                        "secondary": "#cdc0e9",
+                        "on-tertiary": "#3e2e00",
+                        "surface-dim": "#141218",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-container": "#211f24",
+                        "on-primary-fixed": "#22005d",
+                        "surface-container-high": "#2b292f",
+                        "surface-tint": "#cfbcff",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "surface-variant": "#36343a",
+                        "inverse-primary": "#6750a4",
+                        "primary": "#cfbcff",
+                        "on-primary": "#381e72",
+                        "outline": "#948e9c",
+                        "surface": "#141218",
+                        "on-surface": "#e6e0e9",
+                        "on-error": "#690005",
+                        "secondary-container": "#4d4465",
+                        "on-tertiary-container": "#503d00",
+                        "on-tertiary-fixed": "#241a00",
+                        "outline-variant": "#494551",
+                        "on-surface-variant": "#cbc4d2",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "tertiary-fixed": "#ffdf93",
+                        "primary-fixed": "#e9ddff",
+                        "inverse-surface": "#e6e0e9",
+                        "on-secondary": "#342b4b",
+                        "tertiary-container": "#c9a74d",
+                        "on-secondary-fixed": "#1f1635",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "primary-container": "#6750a4",
+                        "on-primary-container": "#e0d2ff",
+                        "surface-container-highest": "#36343a",
+                        "on-secondary-container": "#bfb2da",
+                        "on-error-container": "#ffdad6",
+                        "background": "#141218",
+                        "tertiary": "#e7c365",
+                        "surface-bright": "#3b383e",
+                        "primary-fixed-dim": "#cfbcff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table_row_height": "32px",
+                        "group_gap": "8px",
+                        "element_gap": "16px",
+                        "control_height_md": "32px",
+                        "page_padding": "24px",
+                        "control_height_lg": "36px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Geist"],
+                        "body-lg": ["Geist"],
+                        "body-sm": ["Geist"],
+                        "data-mono": ["JetBrains Mono"],
+                        "h1": ["Geist"],
+                        "h3": ["Geist"],
+                        "h2": ["Geist"],
+                        "body-md": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "data-mono": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "450" }],
+                        "h1": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "h3": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "h2": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar -->
+<nav class="w-[176px] h-screen fixed left-0 top-0 bg-surface border-r border-outline-variant flex flex-col gap-group_gap py-page_padding z-50">
+<div class="px-4 mb-6">
+<h2 class="font-h2 text-h2 text-on-surface tracking-tight">Flowarden</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Traffic Flow Warden</p>
+</div>
+<div class="flex flex-col w-full">
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">lan</span>
+<span class="font-body-md text-body-md">Source</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 active:bg-surface-container-highest px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search_check</span>
+<span class="font-body-md text-body-md">Inspect</span>
+</a>
+<a class="flex items-center gap-3 text-primary bg-surface-container-high border-l-[3px] border-primary px-4 py-3 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-body-md text-body-md font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-[176px] flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="h-[48px] w-full sticky top-0 z-40 bg-surface border-b border-outline-variant flex justify-between items-center px-page_padding">
+<h1 class="font-h3 text-h3 text-on-surface font-bold">Console Dashboard</h1>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant p-1 rounded-DEFAULT transition-colors" title="Sensors">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+<button class="text-on-surface-variant hover:text-on-surface hover:bg-surface-variant p-1 rounded-DEFAULT transition-colors" title="Memory">
+<span class="material-symbols-outlined">memory</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
+<!-- Profile Image Placeholder -->
+<span class="material-symbols-outlined text-[16px] m-1 text-on-surface-variant">person</span>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-page_padding grid grid-cols-12 gap-4 auto-rows-max">
+<div class="col-span-12 mb-2">
+<h2 class="font-h2 text-h2 text-on-surface">Settings &amp; Diagnostics</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Configure core connectivity, runtime defaults, and system health.</p>
+</div>
+<!-- Runtime Status Panel -->
+<section class="col-span-12 lg:col-span-6 bg-[#181B23] border border-outline-variant rounded-xl p-6">
+<h3 class="font-h3 text-h3 text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">monitor_heart</span>
+                    Runtime Status
+                </h3>
+<div class="flex flex-wrap gap-3 mb-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container border border-[#3F444E] rounded-DEFAULT">
+<div class="w-2 h-2 rounded-full bg-[#10B981]"></div>
+<span class="font-label-caps text-label-caps text-on-surface">CORE: ACTIVE</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container border border-[#3F444E] rounded-DEFAULT">
+<div class="w-2 h-2 rounded-full bg-[#F59E0B]"></div>
+<span class="font-label-caps text-label-caps text-on-surface">CAPTURE: IDLE</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 font-body-sm text-body-sm">
+<div>
+<p class="text-on-surface-variant mb-1">Operating Mode</p>
+<p class="text-on-surface font-medium">Standalone Node</p>
+</div>
+<div>
+<p class="text-on-surface-variant mb-1">Uptime</p>
+<p class="font-data-mono text-data-mono text-on-surface">14d 08h 22m</p>
+</div>
+<div>
+<p class="text-on-surface-variant mb-1">Last Config Update</p>
+<p class="font-data-mono text-data-mono text-on-surface">2023-10-24 14:05:12</p>
+</div>
+<div>
+<p class="text-on-surface-variant mb-1">System Load</p>
+<p class="font-data-mono text-data-mono text-on-surface">1.24 / 0.89 / 0.65</p>
+</div>
+</div>
+</section>
+<!-- Core Connection Panel -->
+<section class="col-span-12 lg:col-span-6 bg-[#181B23] border border-outline-variant rounded-xl p-6">
+<h3 class="font-h3 text-h3 text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">hub</span>
+                    Core Connection
+                </h3>
+<div class="flex items-center justify-between mb-4 pb-4 border-b border-[#2B303B]">
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Core Version</p>
+<p class="font-data-mono text-data-mono text-on-surface mt-1">v1.4.2-stable</p>
+</div>
+<div class="text-right">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Health</p>
+<p class="font-body-sm text-body-sm text-[#10B981] flex items-center gap-1 mt-1 justify-end">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981]"></span> Connected
+                        </p>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">DAEMON ENDPOINT</label>
+<div class="flex gap-2">
+<input class="flex-1 h-[32px] bg-background border border-[#2B303B] rounded-DEFAULT px-3 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" type="text" value="localhost:8080"/>
+<button class="h-[32px] px-4 bg-transparent border border-[#2B303B] text-on-surface font-body-sm hover:bg-[#20242E] rounded-DEFAULT transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+                                Reconnect
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Capture Defaults Panel -->
+<section class="col-span-12 lg:col-span-6 bg-[#181B23] border border-outline-variant rounded-xl p-6">
+<h3 class="font-h3 text-h3 text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+                    Capture Defaults
+                </h3>
+<div class="flex flex-col gap-5">
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="font-body-md text-body-md text-on-surface">Auto-start capture on launch</span>
+<div class="relative w-9 h-5 bg-primary rounded-full transition-colors">
+<div class="absolute right-[2px] top-[2px] w-4 h-4 bg-background rounded-full transition-transform"></div>
+</div>
+</label>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">OFFLINE BUFFER SIZE</label>
+<div class="relative">
+<select class="w-full h-[32px] bg-background border border-[#2B303B] rounded-DEFAULT px-3 font-data-mono text-data-mono text-on-surface appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+<option>512 MB</option>
+<option selected="">1024 MB</option>
+<option>2048 MB</option>
+<option>4096 MB</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">RETENTION PERIOD (HOURS)</label>
+<input class="w-full h-[32px] bg-background border border-[#2B303B] rounded-DEFAULT px-3 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" type="number" value="72"/>
+</div>
+</div>
+</section>
+<!-- Diagnostics Panel -->
+<section class="col-span-12 lg:col-span-6 bg-[#181B23] border border-outline-variant rounded-xl p-6 flex flex-col">
+<div class="flex justify-between items-start mb-4">
+<h3 class="font-h3 text-h3 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
+                        Diagnostics
+                    </h3>
+<button class="h-[32px] px-3 bg-primary text-on-primary font-body-sm font-medium rounded-DEFAULT hover:bg-surface-tint transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                        Export
+                    </button>
+</div>
+<div class="flex-1 bg-background border border-[#2B303B] rounded-DEFAULT p-3 overflow-y-auto max-h-[160px] font-data-mono text-data-mono text-on-surface-variant text-[12px] leading-relaxed">
+<div class="flex gap-3"><span class="text-[#10B981]">[INFO]</span><span>2023-10-24 14:00:01 - Core daemon initialized successfully.</span></div>
+<div class="flex gap-3"><span class="text-[#10B981]">[INFO]</span><span>2023-10-24 14:00:02 - Binding to interface eth0.</span></div>
+<div class="flex gap-3"><span class="text-[#F59E0B]">[WARN]</span><span>2023-10-24 14:15:43 - eth0 drop detected: packet buffer overflow (14 packets).</span></div>
+<div class="flex gap-3"><span class="text-[#10B981]">[INFO]</span><span>2023-10-24 14:16:00 - Buffer auto-scaled to 1024MB.</span></div>
+<div class="flex gap-3"><span class="text-[#10B981]">[INFO]</span><span>2023-10-24 15:30:12 - Client connection from 192.168.1.45 established.</span></div>
+<div class="flex gap-3"><span class="text-[#3B82F6]">[DEBUG]</span><span>2023-10-24 15:30:15 - Syncing config payload...</span></div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

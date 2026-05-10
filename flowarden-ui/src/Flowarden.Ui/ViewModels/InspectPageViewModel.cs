@@ -23,6 +23,7 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     private readonly LiveProjectionState? _liveProjectionState;
     private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
+    private bool _tcpRefreshInFlight;
     private IReadOnlyList<ConnectionRowDto> _allRows;
     private IReadOnlyList<TcpConnectionRowDto> _allTcpRows;
 
@@ -67,7 +68,7 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         ProjectionStateLabel = "Seed dataset";
         if (!isDesignTime && _liveProjectionState is not null)
         {
-            _liveProjectionState.OverviewUpdated += ApplyLiveOverviewToFlows;
+            _liveProjectionState.OverviewUpdated += ApplyLiveOverviewToInspect;
         }
     }
 
@@ -134,9 +135,33 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     public bool IsTcpConnectionsMode => CurrentMode == InspectMode.TcpConnections;
 
+    public bool HasTcpRows => TcpRows.Count > 0;
+
+    public bool HasNoTcpRows => !HasTcpRows;
+
     public string FlowModeLabel => "Flows";
 
     public string TcpConnectionsModeLabel => "TCP Connections";
+
+    public string FlowModeBackground => IsFlowsMode ? "#CFBCFF" : "#1D1B20";
+
+    public string FlowModeForeground => IsFlowsMode ? "#381E72" : "#E6E0E9";
+
+    public string FlowModeBorderBrush => IsFlowsMode ? "#CFBCFF" : "#494551";
+
+    public string TcpModeBackground => IsTcpConnectionsMode ? "#CFBCFF" : "#1D1B20";
+
+    public string TcpModeForeground => IsTcpConnectionsMode ? "#381E72" : "#E6E0E9";
+
+    public string TcpModeBorderBrush => IsTcpConnectionsMode ? "#CFBCFF" : "#494551";
+
+    public string TcpEmptyStateTitle =>
+        HasActiveFilters ? "No TCP connections match the current filters" : "No TCP connections observed";
+
+    public string TcpEmptyStateDetail =>
+        _projectionClient is null || _isDesignTime
+            ? "The design-time TCP dataset is empty after filtering."
+            : "Start capture or wait for TCP packets, then adjust address, port, or state filters if needed.";
 
     public async Task LoadAsync()
     {
@@ -246,6 +271,8 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         {
             Rows.Add(row);
         }
+
+        OnPropertyChanged(nameof(FlowModeLabel));
     }
 
     private void ReplaceTcpRows(IEnumerable<TcpConnectionRowDto> rows)
@@ -255,6 +282,12 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         {
             TcpRows.Add(row);
         }
+
+        OnPropertyChanged(nameof(HasTcpRows));
+        OnPropertyChanged(nameof(HasNoTcpRows));
+        OnPropertyChanged(nameof(TcpEmptyStateTitle));
+        OnPropertyChanged(nameof(TcpEmptyStateDetail));
+        OnPropertyChanged(nameof(TcpConnectionsModeLabel));
     }
 
     private bool MatchesFilter(ConnectionRowDto row)
@@ -322,6 +355,9 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         {
             ActiveFilterChips.Add(chip);
         }
+
+        OnPropertyChanged(nameof(TcpEmptyStateTitle));
+        OnPropertyChanged(nameof(TcpEmptyStateDetail));
     }
 
     private static bool MatchesText(string? filter, string value)
@@ -335,8 +371,28 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    private void ApplyLiveOverviewToFlows(OverviewSnapshotDto snapshot)
+    partial void OnCurrentModeChanged(InspectMode value)
     {
+        OnPropertyChanged(nameof(IsFlowsMode));
+        OnPropertyChanged(nameof(IsTcpConnectionsMode));
+        OnPropertyChanged(nameof(FlowModeBackground));
+        OnPropertyChanged(nameof(FlowModeForeground));
+        OnPropertyChanged(nameof(FlowModeBorderBrush));
+        OnPropertyChanged(nameof(TcpModeBackground));
+        OnPropertyChanged(nameof(TcpModeForeground));
+        OnPropertyChanged(nameof(TcpModeBorderBrush));
+        OnPropertyChanged(nameof(TcpEmptyStateTitle));
+        OnPropertyChanged(nameof(TcpEmptyStateDetail));
+    }
+
+    private void ApplyLiveOverviewToInspect(OverviewSnapshotDto snapshot)
+    {
+        if (CurrentMode == InspectMode.TcpConnections)
+        {
+            _ = RefreshTcpConnectionsFromProjectionAsync();
+            return;
+        }
+
         if (CurrentMode != InspectMode.Flows)
         {
             return;
@@ -354,6 +410,28 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(TotalPacketsLabel));
         OnPropertyChanged(nameof(SortLabel));
         OnPropertyChanged(nameof(HasActiveFilters));
+    }
+
+    private async Task RefreshTcpConnectionsFromProjectionAsync()
+    {
+        if (_projectionClient is null || _isDesignTime || _tcpRefreshInFlight)
+        {
+            return;
+        }
+
+        _tcpRefreshInFlight = true;
+        try
+        {
+            await ReloadAsync();
+        }
+        catch
+        {
+            ProjectionStateLabel = "TCP refresh unavailable";
+        }
+        finally
+        {
+            _tcpRefreshInFlight = false;
+        }
     }
 
     private static string FormatBytes(ulong bytes)

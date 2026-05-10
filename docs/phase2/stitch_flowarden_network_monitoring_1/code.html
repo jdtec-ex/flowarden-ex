@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Overview Dashboard - Flowarden</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#e6e0e9",
+                      "surface-container-low": "#1d1b20",
+                      "secondary-fixed": "#e9ddff",
+                      "secondary-fixed-dim": "#cdc0e9",
+                      "surface-container-lowest": "#0f0d13",
+                      "inverse-on-surface": "#322f35",
+                      "secondary": "#cdc0e9",
+                      "on-tertiary": "#3e2e00",
+                      "surface-dim": "#141218",
+                      "on-tertiary-fixed-variant": "#594400",
+                      "surface-container": "#211f24",
+                      "on-primary-fixed": "#22005d",
+                      "surface-container-high": "#2b292f",
+                      "surface-tint": "#cfbcff",
+                      "on-primary-fixed-variant": "#4f378a",
+                      "surface-variant": "#36343a",
+                      "inverse-primary": "#6750a4",
+                      "primary": "#cfbcff",
+                      "on-primary": "#381e72",
+                      "outline": "#948e9c",
+                      "surface": "#141218",
+                      "on-surface": "#e6e0e9",
+                      "on-error": "#690005",
+                      "secondary-container": "#4d4465",
+                      "on-tertiary-container": "#503d00",
+                      "on-tertiary-fixed": "#241a00",
+                      "outline-variant": "#494551",
+                      "on-surface-variant": "#cbc4d2",
+                      "tertiary-fixed-dim": "#e7c365",
+                      "tertiary-fixed": "#ffdf93",
+                      "primary-fixed": "#e9ddff",
+                      "inverse-surface": "#e6e0e9",
+                      "on-secondary": "#342b4b",
+                      "tertiary-container": "#c9a74d",
+                      "on-secondary-fixed": "#1f1635",
+                      "error": "#ffb4ab",
+                      "error-container": "#93000a",
+                      "on-secondary-fixed-variant": "#4b4263",
+                      "primary-container": "#6750a4",
+                      "on-primary-container": "#e0d2ff",
+                      "surface-container-highest": "#36343a",
+                      "on-secondary-container": "#bfb2da",
+                      "on-error-container": "#ffdad6",
+                      "background": "#141218",
+                      "tertiary": "#e7c365",
+                      "surface-bright": "#3b383e",
+                      "primary-fixed-dim": "#cfbcff",
+                      "chart-cyan": "#00f0ff",
+                      "chart-purple": "#b026ff",
+                      "status-green": "#00ff66",
+                      "panel-bg": "#181B23",
+                      "panel-border": "#2B303B"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "table_row_height": "32px",
+                      "group_gap": "8px",
+                      "element_gap": "16px",
+                      "control_height_md": "32px",
+                      "page_padding": "24px",
+                      "control_height_lg": "36px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Geist", "sans-serif"],
+                      "body-lg": ["Geist", "sans-serif"],
+                      "body-sm": ["Geist", "sans-serif"],
+                      "data-mono": ["JetBrains Mono", "monospace"],
+                      "h1": ["Geist", "sans-serif"],
+                      "h3": ["Geist", "sans-serif"],
+                      "h2": ["Geist", "sans-serif"],
+                      "body-md": ["Geist", "sans-serif"]
+              },
+              "fontSize": {
+                      "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                      "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                      "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                      "data-mono": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "450" }],
+                      "h1": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                      "h3": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                      "h2": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                      "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+          font-variation-settings: 'FILL' 1;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="w-[176px] h-screen fixed left-0 top-0 bg-surface dark:bg-surface border-r border-outline-variant dark:border-outline-variant flex flex-col gap-group_gap py-page_padding z-50">
+<div class="px-4 mb-6">
+<h1 class="font-h2 text-h2 text-on-surface dark:text-on-surface tracking-tight">Flowarden</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mt-1">Traffic Flow Warden</p>
+</div>
+<div class="flex flex-col w-full">
+<a class="flex items-center text-primary dark:text-primary bg-surface-container-high border-l-[3px] border-primary px-4 py-3 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">dashboard</span>
+<span class="font-body-md">Overview</span>
+</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 px-4 py-3 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">lan</span>
+<span class="font-body-md">Source</span>
+</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 px-4 py-3 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">search_check</span>
+<span class="font-body-md">Inspect</span>
+</a>
+<a class="flex items-center text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors duration-150 px-4 py-3 active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="ml-[176px] flex-1 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="h-[48px] w-full sticky top-0 z-40 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant flex justify-between items-center px-page_padding">
+<div class="font-h3 text-h3 text-on-surface">Console Dashboard</div>
+<div class="flex items-center gap-4">
+<button aria-label="sensors" class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">sensors</span>
+</button>
+<button aria-label="memory" class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-variant p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">memory</span>
+</button>
+<div class="w-6 h-6 rounded-full bg-surface-variant border border-outline-variant overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-on-surface">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<main class="flex-1 p-page_padding flex flex-col gap-element_gap bg-background">
+<!-- KPI Row (Level 1 Panels) -->
+<div class="grid grid-cols-12 gap-element_gap">
+<!-- Packets -->
+<div class="col-span-12 sm:col-span-6 lg:col-span-2 bg-panel-bg border border-panel-border p-3 flex flex-col justify-center h-[72px]">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Packets</div>
+<div class="flex items-baseline gap-2">
+<div class="font-data-mono text-[20px] leading-tight font-medium text-on-surface">45.2M</div>
+<div class="font-data-mono text-status-green text-[11px]">+12%</div>
+</div>
+</div>
+<!-- Bytes -->
+<div class="col-span-12 sm:col-span-6 lg:col-span-2 bg-panel-bg border border-panel-border p-3 flex flex-col justify-center h-[72px]">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Bytes</div>
+<div class="flex items-baseline gap-2">
+<div class="font-data-mono text-[20px] leading-tight font-medium text-on-surface">18.4GB</div>
+<div class="font-data-mono text-status-green text-[11px]">+5.2%</div>
+</div>
+</div>
+<!-- Active Source -->
+<div class="col-span-12 sm:col-span-4 lg:col-span-2 bg-panel-bg border border-panel-border p-3 flex flex-col justify-center h-[72px]">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Active Source</div>
+<div class="font-data-mono text-body-md text-chart-cyan">eth0</div>
+</div>
+<!-- Top Host -->
+<div class="col-span-12 sm:col-span-4 lg:col-span-3 bg-panel-bg border border-panel-border p-3 flex flex-col justify-center h-[72px]">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Top Host</div>
+<div class="font-data-mono text-body-md text-on-surface">192.168.1.1</div>
+</div>
+<!-- Top Service -->
+<div class="col-span-12 sm:col-span-4 lg:col-span-3 bg-panel-bg border border-panel-border p-3 flex flex-col justify-center h-[72px]">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Top Service</div>
+<div class="font-data-mono text-body-md text-on-surface flex items-center gap-2">
+<span class="w-2 h-2 bg-chart-purple inline-block"></span>
+                        HTTPS
+                    </div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="grid grid-cols-12 gap-element_gap h-[400px]">
+<!-- Left: Traffic Throughput Chart -->
+<div class="col-span-12 lg:col-span-8 bg-panel-bg border border-panel-border flex flex-col relative overflow-hidden">
+<!-- Chart Header -->
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-panel-bg justify-between z-10">
+<div class="font-h3 text-body-md text-on-surface">Traffic Throughput</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-[2px] bg-chart-cyan"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">INBOUND</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-[2px] bg-chart-purple"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">OUTBOUND</span>
+</div>
+</div>
+</div>
+<!-- Chart Area (Simulated) -->
+<div class="flex-1 relative p-4 bg-[#0F1117]">
+<!-- Subtle Grid -->
+<div class="absolute inset-0 flex flex-col justify-between px-4 py-6 pointer-events-none">
+<div class="w-full h-px bg-panel-border"></div>
+<div class="w-full h-px bg-panel-border"></div>
+<div class="w-full h-px bg-panel-border"></div>
+<div class="w-full h-px bg-panel-border"></div>
+<div class="w-full h-px bg-panel-border"></div>
+</div>
+<!-- Y-Axis Labels -->
+<div class="absolute left-4 top-6 bottom-6 flex flex-col justify-between font-data-mono text-[10px] text-outline z-10">
+<span>100G</span>
+<span>75G</span>
+<span>50G</span>
+<span>25G</span>
+<span>0</span>
+</div>
+<!-- Current Summary Overlay -->
+<div class="absolute top-6 right-6 bg-[#20242E] border border-[#3F444E] p-3 z-20 shadow-md">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">CURRENT THROUGHPUT</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between gap-4 font-data-mono text-body-sm">
+<span class="text-chart-cyan">IN</span>
+<span class="text-on-surface">82.4 Gbps</span>
+</div>
+<div class="flex justify-between gap-4 font-data-mono text-body-sm">
+<span class="text-chart-purple">OUT</span>
+<span class="text-on-surface">18.1 Gbps</span>
+</div>
+</div>
+</div>
+<!-- SVG Lines Simulation -->
+<svg class="absolute inset-0 w-full h-full pt-6 pb-6 px-12 z-0" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Outbound (Purple) -->
+<path d="M0,80 L10,75 L20,85 L30,60 L40,65 L50,40 L60,50 L70,30 L80,45 L90,20 L100,25" fill="none" opacity="0.8" stroke="#b026ff" stroke-width="0.5" vector-effect="non-scaling-stroke"></path>
+<!-- Inbound (Cyan) -->
+<path d="M0,90 L15,85 L25,95 L35,70 L45,80 L55,50 L65,70 L75,40 L85,60 L100,10" fill="none" stroke="#00f0ff" stroke-width="0.5" vector-effect="non-scaling-stroke"></path>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute bottom-1 left-12 right-4 flex justify-between font-data-mono text-[10px] text-outline z-10">
+<span>10:00</span>
+<span>10:15</span>
+<span>10:30</span>
+<span>10:45</span>
+<span>11:00</span>
+</div>
+</div>
+</div>
+<!-- Right: Destination Context -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-element_gap">
+<!-- Map Area -->
+<div class="bg-panel-bg border border-panel-border h-[200px] relative overflow-hidden flex-shrink-0">
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-panel-bg absolute top-0 w-full z-10">
+<div class="font-h3 text-body-md text-on-surface">Geospatial Routing</div>
+</div>
+<!-- Minimalist Map Background -->
+<div class="absolute inset-0 mt-control_height_md bg-[#0F1117] opacity-80" data-alt="A highly stylized, minimalist dark mode world map used for a technical dashboard. The map features deep black oceans and dark grey landmasses with subtle cyan and purple glowing nodes indicating network traffic hubs. The aesthetic is strictly technical, flat, and lacks geographic realism, focusing instead on data visualization. The lighting is dark with high-contrast glowing elements." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDoYax1p-FYdELD1gMgfh5dTKDX6HKSK6quMDdto0omspdsCY4mzG6n3ZSN7Qgqy-yj3TR6zac7qfK8c9tvW0aAzJ6-FsIIPd6FFcICw9gIQOdjJuO5dQUyrzhz_6fMgmZ_XVsgUVPB4uBpmv0AVaUFkzRfoPw09vqObnOvbaJSktbtj0EUqw1JnM10tnMPt2uMPjO_7eQTQOBac_20mdIbkUO5Hiq1ntQTWvOS1IjQCWWf3isne1DKJ_2MIUgNKCZKIUqLofI5LHVB'); background-size: cover; background-position: center;">
+</div>
+<!-- Overlay nodes -->
+<div class="absolute top-[40%] left-[25%] w-2 h-2 bg-chart-cyan rounded-full shadow-[0_0_8px_#00f0ff]"></div>
+<div class="absolute top-[35%] left-[55%] w-2 h-2 bg-chart-purple rounded-full shadow-[0_0_8px_#b026ff]"></div>
+<div class="absolute top-[60%] left-[75%] w-1.5 h-1.5 bg-chart-cyan rounded-full opacity-60"></div>
+</div>
+<!-- Top Destinations List -->
+<div class="bg-panel-bg border border-panel-border flex-1 flex flex-col overflow-hidden">
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-panel-bg flex-shrink-0">
+<div class="font-h3 text-body-md text-on-surface">Top Regions</div>
+</div>
+<div class="flex-1 overflow-y-auto p-2">
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border/50 hover:bg-[#20242E]">
+<div class="font-data-mono text-body-sm text-on-surface flex-1">US-East</div>
+<div class="font-data-mono text-body-sm text-chart-cyan">32%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border/50 hover:bg-[#20242E]">
+<div class="font-data-mono text-body-sm text-on-surface flex-1">EU-West</div>
+<div class="font-data-mono text-body-sm text-chart-purple">28%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border/50 hover:bg-[#20242E]">
+<div class="font-data-mono text-body-sm text-on-surface flex-1">AP-South</div>
+<div class="font-data-mono text-body-sm text-on-surface-variant">15%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border/50 hover:bg-[#20242E]">
+<div class="font-data-mono text-body-sm text-on-surface flex-1">SA-East</div>
+<div class="font-data-mono text-body-sm text-on-surface-variant">12%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border/50 hover:bg-[#20242E]">
+<div class="font-data-mono text-body-sm text-on-surface flex-1">US-West</div>
+<div class="font-data-mono text-body-sm text-on-surface-variant">8%</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Data Tables -->
+<div class="grid grid-cols-12 gap-element_gap flex-1 min-h-[300px]">
+<!-- Top Hosts -->
+<div class="col-span-12 lg:col-span-4 bg-panel-bg border border-panel-border flex flex-col">
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-[#20242E]">
+<div class="font-h3 text-body-md text-on-surface">Top Hosts by Packets</div>
+</div>
+<div class="flex-1 p-2">
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[110px] font-data-mono text-body-sm text-on-surface truncate">192.168.1.1</div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-chart-cyan w-[90%]"></div>
+</div>
+<div class="w-[60px] text-right font-data-mono text-body-sm text-on-surface-variant">12.4M</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[110px] font-data-mono text-body-sm text-on-surface truncate">10.0.0.45</div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-chart-cyan w-[75%] opacity-80"></div>
+</div>
+<div class="w-[60px] text-right font-data-mono text-body-sm text-on-surface-variant">9.1M</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[110px] font-data-mono text-body-sm text-on-surface truncate">172.16.0.12</div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-chart-cyan w-[45%] opacity-60"></div>
+</div>
+<div class="w-[60px] text-right font-data-mono text-body-sm text-on-surface-variant">4.2M</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[110px] font-data-mono text-body-sm text-on-surface truncate">192.168.1.100</div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-chart-cyan w-[20%] opacity-40"></div>
+</div>
+<div class="w-[60px] text-right font-data-mono text-body-sm text-on-surface-variant">1.8M</div>
+</div>
+</div>
+</div>
+<!-- Top Services -->
+<div class="col-span-12 lg:col-span-4 bg-panel-bg border border-panel-border flex flex-col">
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-[#20242E]">
+<div class="font-h3 text-body-md text-on-surface">Top Services Distribution</div>
+</div>
+<div class="flex-1 p-2">
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[80px] font-data-mono text-body-sm text-on-surface flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-chart-purple inline-block"></span>HTTPS
+                            </div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-chart-purple w-[65%]"></div>
+</div>
+<div class="w-[40px] text-right font-data-mono text-body-sm text-on-surface-variant">65%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[80px] font-data-mono text-body-sm text-on-surface flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-outline inline-block"></span>DNS
+                            </div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-outline w-[15%]"></div>
+</div>
+<div class="w-[40px] text-right font-data-mono text-body-sm text-on-surface-variant">15%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[80px] font-data-mono text-body-sm text-on-surface flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-outline inline-block"></span>SSH
+                            </div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-outline w-[8%]"></div>
+</div>
+<div class="w-[40px] text-right font-data-mono text-body-sm text-on-surface-variant">8%</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="w-[80px] font-data-mono text-body-sm text-on-surface flex items-center gap-2">
+<span class="w-1.5 h-1.5 bg-outline inline-block"></span>HTTP
+                            </div>
+<div class="flex-1 px-2 flex items-center">
+<div class="h-1.5 bg-outline w-[5%]"></div>
+</div>
+<div class="w-[40px] text-right font-data-mono text-body-sm text-on-surface-variant">5%</div>
+</div>
+</div>
+</div>
+<!-- Top Connections -->
+<div class="col-span-12 lg:col-span-4 bg-panel-bg border border-panel-border flex flex-col">
+<div class="h-control_height_md flex items-center px-4 border-b border-panel-border bg-[#20242E] justify-between">
+<div class="font-h3 text-body-md text-on-surface">Top Connections</div>
+<div class="font-label-caps text-label-caps text-outline">VOLUME</div>
+</div>
+<div class="flex-1 p-2">
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="flex-1 flex items-center gap-2">
+<span class="font-data-mono text-body-sm text-chart-cyan">192.168.1.1</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="font-data-mono text-body-sm text-chart-purple">104.21.45.1</span>
+</div>
+<div class="font-data-mono text-body-sm text-on-surface">4.2 GB</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="flex-1 flex items-center gap-2">
+<span class="font-data-mono text-body-sm text-chart-cyan">10.0.0.45</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="font-data-mono text-body-sm text-chart-purple">8.8.8.8</span>
+</div>
+<div class="font-data-mono text-body-sm text-on-surface">1.1 GB</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="flex-1 flex items-center gap-2">
+<span class="font-data-mono text-body-sm text-chart-cyan">192.168.1.100</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="font-data-mono text-body-sm text-chart-purple">52.4.12.9</span>
+</div>
+<div class="font-data-mono text-body-sm text-on-surface">850 MB</div>
+</div>
+<div class="h-table_row_height flex items-center px-2 border-b border-panel-border group hover:bg-[#20242E]">
+<div class="flex-1 flex items-center gap-2">
+<span class="font-data-mono text-body-sm text-chart-cyan">172.16.0.12</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_forward</span>
+<span class="font-data-mono text-body-sm text-chart-purple">13.249.120.4</span>
+</div>
+<div class="font-data-mono text-body-sm text-on-surface">320 MB</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
