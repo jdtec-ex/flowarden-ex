@@ -10,7 +10,6 @@ public partial class MainWindow : Window
 {
     private bool _applyingGeometry;
     private PixelPoint? _normalPosition;
-    private Size? _normalSize;
 
     public MainWindow()
     {
@@ -45,33 +44,26 @@ public partial class MainWindow : Window
             if (shell.IsThumbnailMode)
             {
                 _normalPosition = Position;
-                _normalSize = new Size(Width, Height);
-                shell.Preferences.NormalWidth = Width;
-                shell.Preferences.NormalHeight = Height;
+                shell.Preferences.NormalWidth = FiniteOr(Width, 1440, 960, 3840);
+                shell.Preferences.NormalHeight = FiniteOr(Height, 900, 640, 2160);
 
                 Topmost = true;
                 CanResize = true;
-                var width = Sanitize(shell.Preferences.ThumbnailWidth, 360, 320, 520);
-                var height = Sanitize(shell.Preferences.ThumbnailHeight, 220, 180, 360);
+                var width = FiniteOr(shell.Preferences.ThumbnailWidth, 360, 320, 520);
+                var height = FiniteOr(shell.Preferences.ThumbnailHeight, 220, 180, 360);
                 Width = width;
                 Height = height;
-                if (
-                    !double.IsNaN(shell.Preferences.ThumbnailX)
-                    && !double.IsNaN(shell.Preferences.ThumbnailY)
-                )
+                if (shell.Preferences.ThumbnailX is { } x && shell.Preferences.ThumbnailY is { } y)
                 {
-                    Position = new PixelPoint(
-                        (int)shell.Preferences.ThumbnailX,
-                        (int)shell.Preferences.ThumbnailY
-                    );
+                    Position = new PixelPoint((int)x, (int)y);
                 }
             }
             else
             {
                 Topmost = false;
                 CanResize = true;
-                Width = Sanitize(shell.Preferences.NormalWidth, 1440, 960, 3840);
-                Height = Sanitize(shell.Preferences.NormalHeight, 900, 640, 2160);
+                Width = FiniteOr(shell.Preferences.NormalWidth, 1440, 960, 3840);
+                Height = FiniteOr(shell.Preferences.NormalHeight, 900, 640, 2160);
                 if (_normalPosition is { } pos)
                 {
                     Position = pos;
@@ -110,13 +102,13 @@ public partial class MainWindow : Window
         {
             shell.Preferences.ThumbnailX = Position.X;
             shell.Preferences.ThumbnailY = Position.Y;
-            shell.Preferences.ThumbnailWidth = Width;
-            shell.Preferences.ThumbnailHeight = Height;
+            shell.Preferences.ThumbnailWidth = FiniteOr(Width, 360, 320, 520);
+            shell.Preferences.ThumbnailHeight = FiniteOr(Height, 220, 180, 360);
         }
         else
         {
-            shell.Preferences.NormalWidth = Width;
-            shell.Preferences.NormalHeight = Height;
+            shell.Preferences.NormalWidth = FiniteOr(Width, 1440, 960, 3840);
+            shell.Preferences.NormalHeight = FiniteOr(Height, 900, 640, 2160);
         }
 
         shell.PreferencesStore.Save(shell.Preferences);
@@ -148,7 +140,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private static double Sanitize(double value, double fallback, double min, double max)
+    private static double FiniteOr(double value, double fallback, double min, double max)
     {
         if (double.IsNaN(value) || double.IsInfinity(value) || value < min || value > max)
         {
