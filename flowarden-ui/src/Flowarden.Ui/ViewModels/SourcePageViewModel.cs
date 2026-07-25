@@ -13,6 +13,8 @@ using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
 
+using Flowarden.Ui.ViewModels.Source;
+
 namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class SourcePageViewModel : ViewModelBase
@@ -120,12 +122,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         string.Equals(CurrentSession.Mode, "offline", StringComparison.OrdinalIgnoreCase)
             ? CurrentSession.CaptureStatus.ToLowerInvariant() switch
             {
-                "starting" => $"Starting offline replay for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
-                "running" => $"Offline replay is running from {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
-                "stopping" => $"Offline replay is stopping for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
-                "armed" => $"Offline replay is armed for {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "starting" => $"Starting offline replay for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "running" => $"Offline replay is running from {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "stopping" => $"Offline replay is stopping for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "armed" => $"Offline replay is armed for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
                 _ => CurrentSession.SourceKind == "offline"
-                    ? $"Offline replay target: {FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}"
+                    ? $"Offline replay target: {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}"
                     : "Formal capture requires selecting exactly one source.",
             }
             : SelectedDevice is null
@@ -165,11 +167,11 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     public string SelectedDeviceDescriptionLabel =>
         SelectedDevice?.Description ?? "Choose an interface to review capture readiness.";
 
-    public string SelectedPacketsCapturedLabel => FormatNumber(SelectedDevice?.Preview.PacketsSeen ?? 0);
+    public string SelectedPacketsCapturedLabel => SourceFormatting.FormatNumber(SelectedDevice?.Preview.PacketsSeen ?? 0);
 
-    public string SelectedBytesTransferredLabel => FormatBytes(SelectedDevice?.Preview.BytesSeen ?? 0);
+    public string SelectedBytesTransferredLabel => SourceFormatting.FormatBytes(SelectedDevice?.Preview.BytesSeen ?? 0);
 
-    public string SelectedAverageRateLabel => FormatBitRate(SelectedDevice?.Preview.BytesSeen ?? 0, PreviewWindowSeconds);
+    public string SelectedAverageRateLabel => SourceFormatting.FormatBitRate(SelectedDevice?.Preview.BytesSeen ?? 0, PreviewWindowSeconds);
 
     public string SelectedErrorCountLabel => "0";
 
@@ -249,7 +251,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             StatusMessage = refreshPreview
                 ? "Device inventory ready; preview samples loading."
                 : "Device inventory ready.";
-            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            if (!SourceDeviceSelection.IsCaptureActiveStatus(CurrentSession.CaptureStatus))
             {
                 UpdateCurrentSessionFromSelectedDevice();
             }
@@ -281,7 +283,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             item.IsSelected = ReferenceEquals(item, value);
         }
 
-        if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+        if (!SourceDeviceSelection.IsCaptureActiveStatus(CurrentSession.CaptureStatus))
         {
             UpdateCurrentSessionFromSelectedDevice();
             UpdatePreviewStateFromSelectedDevice();
@@ -756,7 +758,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             var previewByName = previews.ToDictionary(preview => preview.Name, StringComparer.OrdinalIgnoreCase);
             ApplyDeviceInventory(devices, selectedName, previewByName, preferActiveSelection);
             LastPreviewLabel = $"Preview refreshed at {DateTime.Now:HH:mm:ss} from {DeviceItems.Count} device(s)";
-            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            if (!SourceDeviceSelection.IsCaptureActiveStatus(CurrentSession.CaptureStatus))
             {
                 StatusMessage = preferActiveSelection && SelectedDevice is not null
                     ? $"Active interface selected: {SelectedDevice.DisplayName}."
@@ -767,7 +769,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         catch (Exception)
         {
             LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
-            if (!IsCaptureActiveStatus(CurrentSession.CaptureStatus))
+            if (!SourceDeviceSelection.IsCaptureActiveStatus(CurrentSession.CaptureStatus))
             {
                 StatusMessage = "Preview unavailable";
                 SetPreviewState(
@@ -816,90 +818,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             : DeviceItems.FirstOrDefault(item =>
                 string.Equals(item.Device.Name, selectedName, StringComparison.OrdinalIgnoreCase)
             );
-        SelectedDevice = preservedSelection ?? SelectActiveDevice(DeviceItems);
-    }
-
-    private static SourceDeviceItemViewModel? SelectActiveDevice(
-        IReadOnlyList<SourceDeviceItemViewModel> items
-    )
-    {
-        if (items.Count == 0)
-        {
-            return null;
-        }
-
-        var nonLoopbackCandidates = items
-            .Where(item => !IsLoopbackInterfaceName(item.DisplayName))
-            .ToArray();
-        var candidates = nonLoopbackCandidates.Length > 0 ? nonLoopbackCandidates : items;
-
-        return candidates
-            .OrderByDescending(HasPreviewTraffic)
-            .ThenByDescending(item => item.Preview.BytesSeen)
-            .ThenByDescending(item => item.Preview.PacketsSeen)
-            .ThenByDescending(HasNonLoopbackIpv4)
-            .ThenByDescending(HasUsableNonLoopbackAddress)
-            .ThenByDescending(item => IsCommonPrimaryInterfaceName(item.DisplayName))
-            .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-    }
-
-    private static bool HasPreviewTraffic(SourceDeviceItemViewModel item)
-    {
-        return item.Preview.PacketsSeen > 0 || item.Preview.BytesSeen > 0;
-    }
-
-    private static bool HasNonLoopbackIpv4(SourceDeviceItemViewModel item)
-    {
-        return item.Device.Addresses.Any(address => IsNonLoopbackIpv4(address.Address));
-    }
-
-    private static bool HasUsableNonLoopbackAddress(SourceDeviceItemViewModel item)
-    {
-        return item.Device.Addresses.Any(address => IsUsableNonLoopbackAddress(address.Address));
-    }
-
-    private static bool IsNonLoopbackIpv4(string value)
-    {
-        return IPAddress.TryParse(value, out var address)
-            && address.AddressFamily == AddressFamily.InterNetwork
-            && !IPAddress.IsLoopback(address)
-            && !IsLinkLocalIpv4(address);
-    }
-
-    private static bool IsUsableNonLoopbackAddress(string value)
-    {
-        if (!IPAddress.TryParse(value, out var address) || IPAddress.IsLoopback(address))
-        {
-            return false;
-        }
-
-        if (address.AddressFamily == AddressFamily.InterNetwork)
-        {
-            return !IsLinkLocalIpv4(address);
-        }
-
-        return address.AddressFamily == AddressFamily.InterNetworkV6 && !address.IsIPv6LinkLocal;
-    }
-
-    private static bool IsLinkLocalIpv4(IPAddress address)
-    {
-        var bytes = address.GetAddressBytes();
-        return bytes.Length >= 2 && bytes[0] == 169 && bytes[1] == 254;
-    }
-
-    private static bool IsLoopbackInterfaceName(string name)
-    {
-        return string.Equals(name, "lo", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(name, "lo0", StringComparison.OrdinalIgnoreCase)
-            || name.StartsWith("loopback", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsCommonPrimaryInterfaceName(string name)
-    {
-        return string.Equals(name, "en0", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(name, "eth0", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(name, "wlan0", StringComparison.OrdinalIgnoreCase);
+        SelectedDevice = preservedSelection ?? SourceDeviceSelection.SelectActiveDevice(DeviceItems);
     }
 
     private void NotifyDeviceInventoryChanged()
@@ -923,7 +842,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private void LoadSeedDevices()
     {
         DeviceItems.Clear();
-        foreach (var item in CreateSeedDevices())
+        foreach (var item in SourceSeedData.CreateSeedDevices())
         {
             DeviceItems.Add(item);
         }
@@ -987,125 +906,4 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         PreviewStateIsError = isError;
     }
 
-    private static bool IsCaptureActiveStatus(string? status)
-    {
-        return string.Equals(status, "starting", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(status, "running", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(status, "stopping", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static IReadOnlyList<SourceDeviceItemViewModel> CreateSeedDevices()
-    {
-        return
-        [
-            new SourceDeviceItemViewModel
-            {
-                Device = new DeviceSummaryDto
-                {
-                    Name = "en0",
-                    Description = "Wi-Fi adapter",
-                    Addresses =
-                    [
-                        new DeviceAddressDto { Address = "192.168.50.21" },
-                    ],
-                },
-                Preview = new DevicePreviewDto
-                {
-                    Name = "en0",
-                    PacketsSeen = 318,
-                    BytesSeen = 142_880,
-                    Unsupported = false,
-                    Error = null,
-                },
-            },
-            new SourceDeviceItemViewModel
-            {
-                Device = new DeviceSummaryDto
-                {
-                    Name = "lo0",
-                    Description = "Loopback",
-                    Addresses =
-                    [
-                        new DeviceAddressDto { Address = "127.0.0.1" },
-                    ],
-                },
-                Preview = new DevicePreviewDto
-                {
-                    Name = "lo0",
-                    PacketsSeen = 103,
-                    BytesSeen = 18_468,
-                    Unsupported = false,
-                    Error = null,
-                },
-            },
-            new SourceDeviceItemViewModel
-            {
-                Device = new DeviceSummaryDto
-                {
-                    Name = "utun5",
-                    Description = "Tunnel interface",
-                },
-                Preview = new DevicePreviewDto
-                {
-                    Name = "utun5",
-                    PacketsSeen = 0,
-                    BytesSeen = 0,
-                    Unsupported = true,
-                    Error = "Link type: unsupported",
-                },
-            },
-        ];
-    }
-
-    private static string FormatNumber(ulong value)
-    {
-        return value.ToString("N0", CultureInfo.InvariantCulture);
-    }
-
-    private static string FormatOfflineDisplayName(string path)
-    {
-        var fileName = Path.GetFileName(path);
-        return string.IsNullOrWhiteSpace(fileName) ? path : fileName;
-    }
-
-    private static string FormatBytes(ulong bytes)
-    {
-        if (bytes >= 1_073_741_824)
-        {
-            return $"{bytes / 1_073_741_824d:0.##} GB";
-        }
-
-        if (bytes >= 1_048_576)
-        {
-            return $"{bytes / 1_048_576d:0.##} MB";
-        }
-
-        if (bytes >= 1024)
-        {
-            return $"{bytes / 1024d:0.##} KB";
-        }
-
-        return $"{bytes} B";
-    }
-
-    private static string FormatBitRate(ulong bytes, ulong seconds)
-    {
-        if (seconds == 0)
-        {
-            return "0 bps";
-        }
-
-        var bitsPerSecond = bytes * 8d / seconds;
-        if (bitsPerSecond >= 1_000_000)
-        {
-            return $"{bitsPerSecond / 1_000_000d:0.##} Mbps";
-        }
-
-        if (bitsPerSecond >= 1_000)
-        {
-            return $"{bitsPerSecond / 1_000d:0.##} Kbps";
-        }
-
-        return $"{bitsPerSecond:0} bps";
-    }
 }
