@@ -96,6 +96,7 @@ internal static class SourceDeviceSelection
         {
             return string.Equals(status, "starting", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(status, "running", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(status, "paused", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(status, "stopping", StringComparison.OrdinalIgnoreCase);
         }
 }

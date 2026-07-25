@@ -24,8 +24,24 @@
 
       <StackPanel Grid.Column="1"
                   Orientation="Horizontal"
+                  Spacing="8"
+                  VerticalAlignment="Center"
+                  Margin="0,0,8,0">
+        <Button Classes="tools-button"
+                Width="28"
+                Height="24"
+                Padding="0"
+                Command="{Binding ToggleThumbnailCommand}"
+                ToolTip.Tip="Thumbnail mode (compact always-on-top)">
+          <TextBlock FontSize="11" Text="▣" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Button>
+      </StackPanel>
+
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
                   Spacing="12"
                   VerticalAlignment="Center"
+                  Margin="40,0,0,0"
                   IsVisible="{Binding IsSourcePageActive}">
         <TextBlock Classes="tfc-label"
                    VerticalAlignment="Center"

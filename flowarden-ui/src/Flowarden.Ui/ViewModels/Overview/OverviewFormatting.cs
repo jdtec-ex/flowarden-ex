@@ -89,10 +89,29 @@ internal static class OverviewFormatting
         return localTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
     }
 
-    public static string FormatAddressWithOwner(string address, string ownerLabel)
+    public static string FormatAddressWithOwner(
+        string address,
+        string ownerLabel,
+        string? hostname = null,
+        string? sni = null
+    )
     {
+        var host = address?.Trim() ?? string.Empty;
+        // Product order: SNI (business domain) > rDNS PTR > Country+IP.
+        var name = !string.IsNullOrWhiteSpace(sni)
+            ? sni.Trim()
+            : hostname?.Trim() ?? string.Empty;
         var ownerCode = ExtractOwnerCode(ownerLabel);
-        return string.IsNullOrWhiteSpace(ownerCode) ? address : $"{address}({ownerCode})";
+
+        if (!string.IsNullOrWhiteSpace(name)
+            && !string.Equals(name, host, StringComparison.OrdinalIgnoreCase))
+        {
+            return string.IsNullOrWhiteSpace(ownerCode)
+                ? name
+                : $"{name} · {ownerCode}";
+        }
+
+        return string.IsNullOrWhiteSpace(ownerCode) ? host : $"{host} · {ownerCode}";
     }
 
     public static string ExtractOwnerCode(string ownerLabel)

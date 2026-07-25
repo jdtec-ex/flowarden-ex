@@ -23,9 +23,10 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     private readonly LiveProjectionState? _liveProjectionState;
     private readonly ProjectionSettingsState _projectionSettings;
     private readonly bool _isDesignTime;
-    private bool _tcpRefreshInFlight;
     private IReadOnlyList<ConnectionRowDto> _allRows;
     private IReadOnlyList<TcpConnectionRowDto> _allTcpRows;
+    private string? _activeSignalPivotKind;
+    private string? _activeSignalPivotValue;
 
     public InspectPageViewModel()
         : this(
@@ -173,9 +174,121 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         await ReloadAsync();
     }
 
+    /// <summary>Apply a signal pivot into Flows filters and reload.</summary>
+    public async Task ApplySignalPivotAsync(string pivotKind, string pivotValue)
+    {
+        if (string.IsNullOrWhiteSpace(pivotValue))
+        {
+            return;
+        }
+
+        CurrentMode = InspectMode.Flows;
+        SourceAddressInput = string.Empty;
+        DestinationAddressInput = string.Empty;
+        ServiceInput = string.Empty;
+        ProtocolInput = string.Empty;
+        DirectionInput = string.Empty;
+        BpfInput = string.Empty;
+
+        var kind = pivotKind.Trim().ToLowerInvariant();
+        var value = pivotValue.Trim();
+        _activeSignalPivotKind = kind;
+        _activeSignalPivotValue = value;
+
+        switch (kind)
+        {
+            case "host":
+                DestinationAddressInput = value;
+                break;
+            case "sni":
+                // SNI is local-only enrichment; keep free-text visible in BPF chip.
+                BpfInput = $"sni:{value}";
+                break;
+            case "service":
+                ServiceInput = value;
+                break;
+            case "process":
+                // Process is not a backend inspect filter yet; surface token + local filter.
+                BpfInput = $"process:{value}";
+                break;
+            default:
+                DestinationAddressInput = value;
+                break;
+        }
+
+        await ApplyFilters();
+        ApplyLocalPivotFilter(kind, value);
+    }
+
+    private void ApplyLocalPivotFilter(string pivotKind, string pivotValue)
+    {
+        IEnumerable<ConnectionRowDto> source = _liveProjectionState is not null
+            ? _liveProjectionState.CurrentOverview.TopConnections
+            : _allRows;
+        _allRows = source.ToArray();
+
+        var filtered = FilterRowsByPivot(_allRows, pivotKind, pivotValue);
+        ReplaceRows(filtered);
+        Summary = BuildSummary(filtered);
+        ProjectionStateLabel = "Signal pivot";
+        ActiveFilterSummary = $"{pivotKind}:{pivotValue}";
+        ReplaceActiveFilterChips([ActiveFilterSummary]);
+        NotifyResultSummaryChanged();
+    }
+
+    private static IReadOnlyList<ConnectionRowDto> FilterRowsByPivot(
+        IEnumerable<ConnectionRowDto> rows,
+        string pivotKind,
+        string pivotValue
+    )
+    {
+        return pivotKind.ToLowerInvariant() switch
+        {
+            "host" => rows
+                .Where(r =>
+                    r.SourceAddress.Contains(pivotValue, StringComparison.OrdinalIgnoreCase)
+                    || r.DestinationAddress.Contains(pivotValue, StringComparison.OrdinalIgnoreCase)
+                    || r.Sni.Contains(pivotValue, StringComparison.OrdinalIgnoreCase))
+                .ToArray(),
+            "sni" => rows
+                .Where(r => r.Sni.Contains(pivotValue, StringComparison.OrdinalIgnoreCase))
+                .ToArray(),
+            "process" => rows
+                .Where(r =>
+                    r.ProcessName.Contains(pivotValue, StringComparison.OrdinalIgnoreCase))
+                .ToArray(),
+            "service" => rows
+                .Where(r =>
+                    r.ServiceName.Contains(pivotValue, StringComparison.OrdinalIgnoreCase))
+                .ToArray(),
+            _ => rows.ToArray(),
+        };
+    }
+
     [RelayCommand]
     private async Task ApplyFilters()
     {
+        // Manual filter apply clears signal-pivot retention so normal filters take over.
+        if (!string.IsNullOrWhiteSpace(SourceAddressInput)
+            || !string.IsNullOrWhiteSpace(DestinationAddressInput)
+            || !string.IsNullOrWhiteSpace(ServiceInput)
+            || !string.IsNullOrWhiteSpace(ProtocolInput)
+            || !string.IsNullOrWhiteSpace(DirectionInput)
+            || !string.IsNullOrWhiteSpace(BpfInput)
+            || !string.IsNullOrWhiteSpace(AddressInput)
+            || !string.IsNullOrWhiteSpace(PortInput)
+            || !string.IsNullOrWhiteSpace(StateInput))
+        {
+            // Keep pivot when the inputs were set by ApplySignalPivotAsync itself.
+            // Clear only when user edits away from the stored pivot tokens.
+            if (_activeSignalPivotKind is not null
+                && !IsCurrentInputStillSignalPivot())
+            {
+                _activeSignalPivotKind = null;
+                _activeSignalPivotValue = null;
+            }
+        }
+
         Filter = CurrentMode == InspectMode.Flows
             ? new InspectFilterDto
             {
@@ -196,6 +309,35 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         await ReloadAsync();
     }
 
+    private bool IsCurrentInputStillSignalPivot()
+    {
+        if (_activeSignalPivotKind is null || _activeSignalPivotValue is null)
+        {
+            return false;
+        }
+
+        return _activeSignalPivotKind.ToLowerInvariant() switch
+        {
+            "host" => string.Equals(
+                DestinationAddressInput.Trim(),
+                _activeSignalPivotValue,
+                StringComparison.OrdinalIgnoreCase),
+            "service" => string.Equals(
+                ServiceInput.Trim(),
+                _activeSignalPivotValue,
+                StringComparison.OrdinalIgnoreCase),
+            "sni" => string.Equals(
+                BpfInput.Trim(),
+                $"sni:{_activeSignalPivotValue}",
+                StringComparison.OrdinalIgnoreCase),
+            "process" => string.Equals(
+                BpfInput.Trim(),
+                $"process:{_activeSignalPivotValue}",
+                StringComparison.OrdinalIgnoreCase),
+            _ => false,
+        };
+    }
+
     [RelayCommand]
     private async Task ApplyDirection(string? direction)
     {
@@ -206,6 +348,8 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     [RelayCommand]
     private void ClearFilters()
     {
+        _activeSignalPivotKind = null;
+        _activeSignalPivotValue = null;
         SourceAddressInput = string.Empty;
         DestinationAddressInput = string.Empty;
         ServiceInput = string.Empty;
@@ -292,11 +436,43 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     private bool MatchesFilter(ConnectionRowDto row)
     {
-        return MatchesText(Filter.SourceAddress, row.SourceAddress)
-            && MatchesText(Filter.DestinationAddress, row.DestinationAddress)
-            && MatchesText(Filter.ServiceName, row.ServiceName)
-            && MatchesText(Filter.Protocol, row.Protocol)
-            && MatchesText(Filter.Direction, row.Direction);
+        if (!MatchesText(Filter.SourceAddress, row.SourceAddress)
+            || !MatchesText(Filter.DestinationAddress, row.DestinationAddress)
+            || !MatchesText(Filter.ServiceName, row.ServiceName)
+            || !MatchesText(Filter.Protocol, row.Protocol)
+            || !MatchesText(Filter.Direction, row.Direction))
+        {
+            return false;
+        }
+
+        // Local enrichment tokens carried in Bpf field (process:/sni:/free text).
+        if (string.IsNullOrWhiteSpace(Filter.Bpf))
+        {
+            return true;
+        }
+
+        var bpf = Filter.Bpf.Trim();
+        if (bpf.StartsWith("process:", StringComparison.OrdinalIgnoreCase))
+        {
+            var token = bpf["process:".Length..].Trim();
+            return string.IsNullOrEmpty(token)
+                || row.ProcessName.Contains(token, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (bpf.StartsWith("sni:", StringComparison.OrdinalIgnoreCase))
+        {
+            var token = bpf["sni:".Length..].Trim();
+            return string.IsNullOrEmpty(token)
+                || row.Sni.Contains(token, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Free-text: match any common column.
+        return row.SourceAddress.Contains(bpf, StringComparison.OrdinalIgnoreCase)
+            || row.DestinationAddress.Contains(bpf, StringComparison.OrdinalIgnoreCase)
+            || row.ServiceName.Contains(bpf, StringComparison.OrdinalIgnoreCase)
+            || row.ProcessName.Contains(bpf, StringComparison.OrdinalIgnoreCase)
+            || row.Sni.Contains(bpf, StringComparison.OrdinalIgnoreCase)
+            || row.Protocol.Contains(bpf, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool MatchesTcpFilter(TcpConnectionRowDto row)
@@ -387,21 +563,17 @@ public sealed partial class InspectPageViewModel : ViewModelBase
 
     private void ApplyLiveOverviewToInspect(OverviewSnapshotDto snapshot)
     {
+        // Single live source: Overview stream drives Flows + TCP mode with local filters.
         if (CurrentMode == InspectMode.TcpConnections)
         {
-            if (IsEmptyProjectionSnapshot(snapshot))
-            {
-                _allTcpRows = Array.Empty<TcpConnectionRowDto>();
-                ReplaceTcpRows(_allTcpRows);
-                Summary = BuildTcpSummary(_allTcpRows);
-                ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
-                ActiveFilterSummary = BuildFilterSummary();
-                ReplaceActiveFilterChips(BuildFilterChips(Filter));
-                NotifyResultSummaryChanged();
-                return;
-            }
-
-            _ = RefreshTcpConnectionsFromProjectionAsync();
+            _allTcpRows = snapshot.TopTcpConnections.ToArray();
+            var filteredTcp = _allTcpRows.Where(MatchesTcpFilter).ToArray();
+            ReplaceTcpRows(filteredTcp);
+            Summary = BuildTcpSummary(filteredTcp);
+            ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
+            ActiveFilterSummary = BuildFilterSummary();
+            ReplaceActiveFilterChips(BuildFilterChips(Filter));
+            NotifyResultSummaryChanged();
             return;
         }
 
@@ -411,6 +583,22 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         }
 
         _allRows = snapshot.TopConnections.ToArray();
+        if (_activeSignalPivotKind is not null && _activeSignalPivotValue is not null)
+        {
+            var pivotRows = FilterRowsByPivot(
+                _allRows,
+                _activeSignalPivotKind,
+                _activeSignalPivotValue
+            );
+            ReplaceRows(pivotRows);
+            Summary = BuildSummary(pivotRows);
+            ProjectionStateLabel = "Signal pivot";
+            ActiveFilterSummary = $"{_activeSignalPivotKind}:{_activeSignalPivotValue}";
+            ReplaceActiveFilterChips([ActiveFilterSummary]);
+            NotifyResultSummaryChanged();
+            return;
+        }
+
         var filteredRows = _allRows.Where(MatchesFilter).ToArray();
         ReplaceRows(filteredRows);
         Summary = BuildSummary(filteredRows);
@@ -418,16 +606,6 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         ActiveFilterSummary = BuildFilterSummary();
         ReplaceActiveFilterChips(BuildFilterChips(Filter));
         NotifyResultSummaryChanged();
-    }
-
-    private static bool IsEmptyProjectionSnapshot(OverviewSnapshotDto snapshot)
-    {
-        return snapshot.Totals.Packets == 0
-            && snapshot.TopConnections.Count == 0
-            && snapshot.TopHosts.Count == 0
-            && snapshot.TopServices.Count == 0
-            && snapshot.TopDestinations.Count == 0
-            && snapshot.LastPacketTimestamp is null;
     }
 
     private static string ProjectionLabelForSnapshot(OverviewSnapshotDto snapshot)
@@ -444,28 +622,6 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(TotalPacketsLabel));
         OnPropertyChanged(nameof(SortLabel));
         OnPropertyChanged(nameof(HasActiveFilters));
-    }
-
-    private async Task RefreshTcpConnectionsFromProjectionAsync()
-    {
-        if (_projectionClient is null || _isDesignTime || _tcpRefreshInFlight)
-        {
-            return;
-        }
-
-        _tcpRefreshInFlight = true;
-        try
-        {
-            await ReloadAsync();
-        }
-        catch
-        {
-            ProjectionStateLabel = "TCP refresh unavailable";
-        }
-        finally
-        {
-            _tcpRefreshInFlight = false;
-        }
     }
 
     private static string FormatBytes(ulong bytes)

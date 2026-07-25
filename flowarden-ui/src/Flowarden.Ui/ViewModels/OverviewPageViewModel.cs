@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
 using Flowarden.Ui.State;
@@ -87,6 +88,9 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public IReadOnlyList<OverviewStatusCardViewModel> StatusCards { get; private set; }
 
+    /// <summary>Raised when user wants Inspect after a forensics focus is active.</summary>
+    public event Action? OpenInspectRequested;
+
     public string ModeLabel => OverviewRankingsBuilder.ResolveModeLabel(_modeOverride, Snapshot);
 
     public string HeroTitle => "Traffic Overview";
@@ -99,6 +103,54 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string MetricModeSummary => $"Metric · {Snapshot.MetricMode}";
 
+    /// Live uses a rolling tick window; offline keeps the full capture timeline.
+    public string TimelinePolicyLabel =>
+        string.Equals(Snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            ? "Timeline · full offline capture"
+            : "Timeline · live rolling window";
+
+    public string ForensicsFocusLabel { get; private set; } = string.Empty;
+
+    public bool HasForensicsFocus => !string.IsNullOrWhiteSpace(ForensicsFocusLabel);
+
+    private bool _isForensicsMarkerVisible;
+    private double _forensicsMarkerLeft;
+    private double _forensicsPlotHeight = 200;
+    private string _forensicsMarkerTimeLabel = string.Empty;
+    private long? _forensicsFocusUnixSeconds;
+
+    public bool IsForensicsMarkerVisible
+    {
+        get => _isForensicsMarkerVisible;
+        private set => SetProperty(ref _isForensicsMarkerVisible, value);
+    }
+
+    public double ForensicsMarkerLeft
+    {
+        get => _forensicsMarkerLeft;
+        private set => SetProperty(ref _forensicsMarkerLeft, value);
+    }
+
+    public double ForensicsPlotHeight
+    {
+        get => _forensicsPlotHeight;
+        private set => SetProperty(ref _forensicsPlotHeight, value);
+    }
+
+    public string ForensicsMarkerTimeLabel
+    {
+        get => _forensicsMarkerTimeLabel;
+        private set => SetProperty(ref _forensicsMarkerTimeLabel, value);
+    }
+
+    public void SetForensicsPlotHeight(double height)
+    {
+        if (height > 0)
+        {
+            ForensicsPlotHeight = height;
+        }
+    }
+
     public string ActiveSourceLabel =>
         Snapshot.SourceLabel
             .Replace("Live source · ", string.Empty, StringComparison.OrdinalIgnoreCase)
@@ -106,7 +158,24 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             .Replace("Live source", "not started", StringComparison.OrdinalIgnoreCase)
             .Replace("Offline source", "not started", StringComparison.OrdinalIgnoreCase);
 
-    public string TopHostLabel => Snapshot.TopHosts.FirstOrDefault()?.Host ?? "-";
+    public string TopHostLabel
+    {
+        get
+        {
+            var host = Snapshot.TopHosts.FirstOrDefault();
+            if (host is null)
+            {
+                return "-";
+            }
+
+            return OverviewFormatting.FormatAddressWithOwner(
+                host.Host,
+                host.CountryLabel,
+                host.Hostname,
+                host.Sni
+            );
+        }
+    }
 
     public string TopServiceLabel => Snapshot.TopServices.FirstOrDefault()?.Name ?? "-";
 
@@ -379,10 +448,51 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         Snapshot = snapshot;
         StatusCards = OverviewRankingsBuilder.BuildStatusCards(snapshot, ModeLabel);
         RebuildSnapshotDerivedState(snapshot);
+        if (HasForensicsFocus && ForensicsFocusLabel.Contains(':', StringComparison.Ordinal))
+        {
+            var parts = ForensicsFocusLabel.Split(':', 2);
+            if (parts.Length == 2)
+            {
+                ReorderRankingsForFocus(parts[1]);
+            }
+        }
+
+        if (_forensicsFocusUnixSeconds is not null)
+        {
+            UpdateForensicsTimelineMarker(640);
+        }
+
         NotifySnapshotPropertiesChanged();
         if (!HasTimeline)
         {
             ClearThroughputHover();
+        }
+    }
+
+    private void ReorderRankingsForFocus(string pivotValue)
+    {
+        var value = pivotValue.Trim();
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        if (_topHostRows.Count > 0)
+        {
+            _topHostRows = _topHostRows
+                .OrderByDescending(row =>
+                    row.Label.Contains(value, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
+
+        if (_topConnectionRows.Count > 0)
+        {
+            _topConnectionRows = _topConnectionRows
+                .OrderByDescending(row =>
+                    row.SourceAddress.Contains(value, StringComparison.OrdinalIgnoreCase)
+                    || row.DestinationAddress.Contains(value, StringComparison.OrdinalIgnoreCase)
+                    || row.ProcessLabel.Contains(value, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
         }
     }
 
@@ -391,6 +501,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(Snapshot));
         OnPropertyChanged(nameof(StatusCards));
         OnPropertyChanged(nameof(ModeLabel));
+        OnPropertyChanged(nameof(TimelinePolicyLabel));
         OnPropertyChanged(nameof(HeroSummary));
         OnPropertyChanged(nameof(ActiveSourceLabel));
         OnPropertyChanged(nameof(TopHostLabel));
@@ -443,12 +554,111 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     private string BuildHeroSummary()
     {
+        var policy = TimelinePolicyLabel;
+        var focus = HasForensicsFocus ? $" · focus {ForensicsFocusLabel}" : string.Empty;
         var timestamp = Snapshot.LastPacketTimestamp;
         if (timestamp is null || timestamp.Seconds <= 0)
         {
-            return $"Sequence {Snapshot.Sequence} · waiting for packets";
+            return $"{policy} · sequence {Snapshot.Sequence} · waiting for packets{focus}";
         }
 
-        return $"Sequence {Snapshot.Sequence} · last packet {OverviewFormatting.FormatPacketTimestamp(timestamp)}";
+        return $"{policy} · sequence {Snapshot.Sequence} · last packet {OverviewFormatting.FormatPacketTimestamp(timestamp)}{focus}";
+    }
+
+    /// <summary>
+    /// Highlight a host/sni from an offline finding and bind a timeline marker
+    /// to the nearest second (replay forensics pivot).
+    /// </summary>
+    public void ApplyForensicsFocus(
+        string pivotKind,
+        string pivotValue,
+        DateTimeOffset? eventTime = null,
+        double plotWidthHint = 640
+    )
+    {
+        if (string.IsNullOrWhiteSpace(pivotValue))
+        {
+            ClearForensicsFocus();
+            return;
+        }
+
+        ForensicsFocusLabel = $"{pivotKind}:{pivotValue.Trim()}";
+        _forensicsFocusUnixSeconds = eventTime?.ToUnixTimeSeconds();
+        ReorderRankingsForFocus(pivotValue);
+        UpdateForensicsTimelineMarker(plotWidthHint);
+        OnPropertyChanged(nameof(ForensicsFocusLabel));
+        OnPropertyChanged(nameof(HasForensicsFocus));
+        OnPropertyChanged(nameof(HeroSummary));
+        OnPropertyChanged(nameof(TopHostRows));
+        OnPropertyChanged(nameof(TopConnectionRows));
+    }
+
+    public void ClearForensicsFocus()
+    {
+        if (!HasForensicsFocus && !IsForensicsMarkerVisible)
+        {
+            return;
+        }
+
+        ForensicsFocusLabel = string.Empty;
+        _forensicsFocusUnixSeconds = null;
+        IsForensicsMarkerVisible = false;
+        ForensicsMarkerTimeLabel = string.Empty;
+        OnPropertyChanged(nameof(ForensicsFocusLabel));
+        OnPropertyChanged(nameof(HasForensicsFocus));
+        OnPropertyChanged(nameof(HeroSummary));
+    }
+
+    [RelayCommand]
+    private void OpenInspectFromForensics()
+    {
+        if (!HasForensicsFocus)
+        {
+            return;
+        }
+
+        OpenInspectRequested?.Invoke();
+    }
+
+    /// <summary>Recompute marker X when plot width is known (chart layout / resize).</summary>
+    public void LayoutForensicsMarker(double plotWidth)
+    {
+        if (_forensicsFocusUnixSeconds is null)
+        {
+            return;
+        }
+
+        UpdateForensicsTimelineMarker(plotWidth > 0 ? plotWidth : 640);
+    }
+
+    private void UpdateForensicsTimelineMarker(double plotWidth)
+    {
+        if (_forensicsFocusUnixSeconds is not { } targetSeconds
+            || Snapshot.TimelinePoints.Count == 0
+            || plotWidth <= 0)
+        {
+            IsForensicsMarkerVisible = false;
+            return;
+        }
+
+        var points = Snapshot.TimelinePoints;
+        var bestIndex = 0;
+        var bestDelta = long.MaxValue;
+        for (var i = 0; i < points.Count; i++)
+        {
+            var delta = Math.Abs(points[i].Timestamp.Seconds - targetSeconds);
+            if (delta < bestDelta)
+            {
+                bestDelta = delta;
+                bestIndex = i;
+            }
+        }
+
+        ForensicsMarkerLeft = points.Count == 1
+            ? 0
+            : bestIndex / (double)(points.Count - 1) * plotWidth;
+        ForensicsMarkerTimeLabel =
+            OverviewFormatting.FormatPacketTimestamp(points[bestIndex].Timestamp);
+        IsForensicsMarkerVisible = true;
     }
 }

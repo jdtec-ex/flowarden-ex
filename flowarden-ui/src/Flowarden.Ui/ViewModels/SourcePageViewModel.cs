@@ -111,12 +111,26 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         && !IsControlBusy
         && string.Equals(CurrentSession.Mode, "live", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(CurrentSession.CaptureStatus, "paused", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "starting", StringComparison.OrdinalIgnoreCase)
         && !string.Equals(CurrentSession.CaptureStatus, "stopping", StringComparison.OrdinalIgnoreCase);
 
     public bool CanStopFormalCapture =>
-        string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
+        (
+            string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(CurrentSession.CaptureStatus, "paused", StringComparison.OrdinalIgnoreCase)
+        )
         && !IsControlBusy;
+
+    public bool ShowPauseCaptureAction =>
+        string.Equals(CurrentSession.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase);
+
+    public bool ShowResumeCaptureAction =>
+        string.Equals(CurrentSession.CaptureStatus, "paused", StringComparison.OrdinalIgnoreCase);
+
+    public bool CanPauseFormalCapture => ShowPauseCaptureAction && !IsControlBusy;
+
+    public bool CanResumeFormalCapture => ShowResumeCaptureAction && !IsControlBusy;
 
     public string FormalCaptureSummary =>
         string.Equals(CurrentSession.Mode, "offline", StringComparison.OrdinalIgnoreCase)
@@ -124,6 +138,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             {
                 "starting" => $"Starting offline replay for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
                 "running" => $"Offline replay is running from {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
+                "paused" => $"Offline replay is paused for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
                 "stopping" => $"Offline replay is stopping for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
                 "armed" => $"Offline replay is armed for {SourceFormatting.FormatOfflineDisplayName(CurrentSession.SourceDisplayName)}.",
                 _ => CurrentSession.SourceKind == "offline"
@@ -136,6 +151,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             {
                 "starting" => $"Starting resident capture for {SelectedDevice.DisplayName}.",
                 "running" => $"Resident capture is running on {CurrentSession.SourceDisplayName}.",
+                "paused" => $"Resident capture is paused on {CurrentSession.SourceDisplayName}.",
                 "stopping" => $"Resident capture is stopping on {CurrentSession.SourceDisplayName}.",
                 "armed" => $"Formal capture is armed for {SelectedDevice.DisplayName}.",
                 _ => $"Formal capture target: {SelectedDevice.DisplayName}",
@@ -146,6 +162,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         {
             "starting" => "Starting",
             "running" => "Running",
+            "paused" => "Paused",
             "stopping" => "Stopping",
             "armed" => "Armed",
             _ => "Idle",
@@ -317,6 +334,10 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         OnPropertyChanged(nameof(CaptureStateLabel));
         OnPropertyChanged(nameof(CanStartFormalCapture));
         OnPropertyChanged(nameof(CanStopFormalCapture));
+        OnPropertyChanged(nameof(ShowPauseCaptureAction));
+        OnPropertyChanged(nameof(ShowResumeCaptureAction));
+        OnPropertyChanged(nameof(CanPauseFormalCapture));
+        OnPropertyChanged(nameof(CanResumeFormalCapture));
         OnPropertyChanged(nameof(BpfFilterLabel));
         SessionStateChanged?.Invoke(value, StatusMessage);
     }
@@ -325,6 +346,8 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(CanStartFormalCapture));
         OnPropertyChanged(nameof(CanStopFormalCapture));
+        OnPropertyChanged(nameof(CanPauseFormalCapture));
+        OnPropertyChanged(nameof(CanResumeFormalCapture));
     }
 
     partial void OnStatusMessageChanged(string? value)
@@ -695,25 +718,96 @@ public sealed partial class SourcePageViewModel : ViewModelBase
             StatusMessage = "Sending resident core stop request...";
             var stopResult = await _controlClient.StopCaptureAsync();
             SetPreviewState(
-                "Capture stop requested",
+                stopResult.Accepted ? "Capture stopped" : "Capture stop declined",
                 stopResult.Message,
-                isWarning: false,
+                isWarning: !stopResult.Accepted,
                 isError: false
             );
-            CurrentSession = new CaptureSessionStateDto
-            {
-                SourceKind = CurrentSession.SourceKind,
-                SourceDisplayName = CurrentSession.SourceDisplayName,
-                CaptureStatus = "idle",
-                Mode = CurrentSession.Mode,
-                Bpf = CurrentSession.Bpf,
-            };
+            CurrentSession = CloneSessionWithStatus(stopResult.Accepted ? "idle" : "running");
             StatusMessage = stopResult.Message;
         }
         finally
         {
             IsControlBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task PauseFormalCapture()
+    {
+        if (_controlClient is null || _isDesignTime)
+        {
+            CurrentSession = CloneSessionWithStatus("paused");
+            return;
+        }
+
+        IsControlBusy = true;
+        try
+        {
+            StatusMessage = "Sending resident core pause request...";
+            var result = await _controlClient.PauseCaptureAsync();
+            SetPreviewState(
+                result.Accepted ? "Capture paused" : "Capture pause declined",
+                result.Message,
+                isWarning: !result.Accepted,
+                isError: false
+            );
+            if (result.Accepted)
+            {
+                CurrentSession = CloneSessionWithStatus("paused");
+            }
+
+            StatusMessage = result.Message;
+        }
+        finally
+        {
+            IsControlBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ResumeFormalCapture()
+    {
+        if (_controlClient is null || _isDesignTime)
+        {
+            CurrentSession = CloneSessionWithStatus("running");
+            return;
+        }
+
+        IsControlBusy = true;
+        try
+        {
+            StatusMessage = "Sending resident core resume request...";
+            var result = await _controlClient.ResumeCaptureAsync();
+            SetPreviewState(
+                result.Accepted ? "Capture resumed" : "Capture resume declined",
+                result.Message,
+                isWarning: !result.Accepted,
+                isError: false
+            );
+            if (result.Accepted)
+            {
+                CurrentSession = CloneSessionWithStatus("running");
+            }
+
+            StatusMessage = result.Message;
+        }
+        finally
+        {
+            IsControlBusy = false;
+        }
+    }
+
+    private CaptureSessionStateDto CloneSessionWithStatus(string captureStatus)
+    {
+        return new CaptureSessionStateDto
+        {
+            SourceKind = CurrentSession.SourceKind,
+            SourceDisplayName = CurrentSession.SourceDisplayName,
+            CaptureStatus = captureStatus,
+            Mode = CurrentSession.Mode,
+            Bpf = CurrentSession.Bpf,
+        };
     }
 
     [RelayCommand]

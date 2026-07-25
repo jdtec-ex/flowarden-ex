@@ -18,12 +18,26 @@ internal static class OverviewRankingsBuilder
     {
         var maxPackets = rows.Count == 0 ? 0 : rows.Max(row => row.Packets);
         return rows
-            .Select(row => new OverviewMetricRowViewModel(
-                OverviewFormatting.FormatAddressWithOwner(row.Host, row.CountryLabel),
-                OverviewFormatting.FormatCount(row.Packets),
-                CalculateBarWidth(row.Packets, maxPackets),
-                NeutralMetricBrush
-            ))
+            .Select(row =>
+            {
+                var label = OverviewFormatting.FormatAddressWithOwner(
+                    row.Host,
+                    row.CountryLabel,
+                    row.Hostname,
+                    row.Sni
+                );
+                if (!string.IsNullOrWhiteSpace(row.AsnLabel))
+                {
+                    label = $"{label} · {row.AsnLabel}";
+                }
+
+                return new OverviewMetricRowViewModel(
+                    label,
+                    OverviewFormatting.FormatCount(row.Packets),
+                    CalculateBarWidth(row.Packets, maxPackets),
+                    NeutralMetricBrush
+                );
+            })
             .ToArray();
     }
 
@@ -86,7 +100,8 @@ internal static class OverviewRankingsBuilder
                         ? destinationOwner
                         : string.Empty
                 ),
-                OverviewFormatting.FormatBytes(row.Bytes)
+                OverviewFormatting.FormatBytes(row.Bytes),
+                row.ProcessLabel
             ))
             .ToArray();
     }

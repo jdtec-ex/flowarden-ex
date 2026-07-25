@@ -89,11 +89,17 @@ public sealed class OverviewRegionMarkerViewModel
 
 public sealed class OverviewConnectionRowViewModel
 {
-    public OverviewConnectionRowViewModel(string sourceAddress, string destinationAddress, string volumeLabel)
+    public OverviewConnectionRowViewModel(
+        string sourceAddress,
+        string destinationAddress,
+        string volumeLabel,
+        string processLabel = "—"
+    )
     {
         SourceAddress = sourceAddress;
         DestinationAddress = destinationAddress;
         VolumeLabel = volumeLabel;
+        ProcessLabel = string.IsNullOrWhiteSpace(processLabel) ? "—" : processLabel;
     }
 
     public string SourceAddress { get; }
@@ -101,4 +107,6 @@ public sealed class OverviewConnectionRowViewModel
     public string DestinationAddress { get; }
 
     public string VolumeLabel { get; }
+
+    public string ProcessLabel { get; }
 }

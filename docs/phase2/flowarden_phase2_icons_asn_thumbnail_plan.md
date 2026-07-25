@@ -4,7 +4,7 @@
 
 | 字段 | 内容 |
 | --- | --- |
-| 状态 | Draft → 待评审冻结 |
+| 状态 | **Accepted**（评审冻结 2026-07-25） |
 | 日期 | 2026-07-25 |
 | 质量基线 | 与 `flowarden_phase2_parity_and_surpass_plan.md` §4.3 同等硬门禁 |
 | 参考 | Sniffnet `picon` / `mmdb/asn` / thumbnail chart & window config |
@@ -583,11 +583,13 @@ string asn_label = 8;
 
 ---
 
-## 12. 评审待拍板
+## 12. 评审结论（已冻结）
 
-1. 缩略窗是否 **必须** 含 Pause/Resume（推荐：要）。  
-2. 图标一版是否 **强制 Windows 与 macOS 同 PR 达标**（推荐：是；Linux 可降级）。  
-3. ASN 是否默认嵌入 mmdb 还是可选 feature（推荐：默认嵌入，与 Country 一致）。  
-4. Destination 是否一版就支持按 ASN 聚合（推荐：**否**，二期）。  
+| # | 议题 | 结论 |
+| --- | --- | --- |
+| 1 | 缩略窗 Pause/Resume | **必须包含** |
+| 2 | 图标平台 | **macOS + Windows 一版硬达标**；Linux glyph 降级 |
+| 3 | ASN mmdb | **默认嵌入**（与 Country 一致） |
+| 4 | Destination 按 ASN 聚合 | **二期**；一版仅展示 ASN 标签 |
 
-评审通过后，按 §6 Sprint 顺序建任务并开工。
+按 §6 Sprint 顺序实施。

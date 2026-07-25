@@ -38,6 +38,19 @@ public sealed class OverviewSnapshotDto
     public string CaptureStatus { get; init; } = "idle";
 
     public IReadOnlyList<TimelinePointDto> TimelinePoints { get; init; } = Array.Empty<TimelinePointDto>();
+
+    /// TCP slice from the same live tick as top connections (Inspect TCP mode).
+    public IReadOnlyList<TcpConnectionRowDto> TopTcpConnections { get; init; } =
+        Array.Empty<TcpConnectionRowDto>();
+
+    /// Behavior signals evaluated by resident core.
+    public IReadOnlyList<SignalItemDto> Signals { get; init; } = Array.Empty<SignalItemDto>();
+
+    /// Pending process lookups in the async worker queue.
+    public uint ProcessLookupPending { get; init; }
+
+    /// Process lookup cache entry count.
+    public uint ProcessLookupCacheSize { get; init; }
 }
 
 public sealed class PacketTimestampDto

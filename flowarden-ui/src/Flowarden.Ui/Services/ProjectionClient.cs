@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+// DateTimeOffset used when mapping BehaviorSignal timestamps
 using Flowarden.Projection.V1;
 using Flowarden.Ui.Models;
 using Grpc.Core;
@@ -29,6 +30,30 @@ public sealed class ProjectionClient
             cancellationToken: cancellationToken
         );
 
+        return MapOverviewResponse(response);
+    }
+
+    public async IAsyncEnumerable<OverviewSnapshotDto> StreamOverviewAsync(
+        uint topN,
+        [System.Runtime.CompilerServices.EnumeratorCancellation]
+            CancellationToken cancellationToken = default
+    )
+    {
+        using var call = _client.StreamOverview(
+            new StreamOverviewRequest { TopN = topN },
+            cancellationToken: cancellationToken
+        );
+
+        await foreach (
+            var response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false)
+        )
+        {
+            yield return MapOverviewResponse(response);
+        }
+    }
+
+    private static OverviewSnapshotDto MapOverviewResponse(OverviewSnapshotResponse response)
+    {
         return new OverviewSnapshotDto
         {
             CaptureId = response.CaptureId,
@@ -59,24 +84,18 @@ public sealed class ProjectionClient
                     Microseconds = response.LastPacketTimestamp.Microseconds,
                 },
             TopConnections = response.TopConnections
-                .Select(connection => new ConnectionRowDto
-                {
-                    SourceAddress = connection.SourceAddress,
-                    SourcePort = connection.SourcePort == 0 ? null : (ushort?)connection.SourcePort,
-                    DestinationAddress = connection.DestinationAddress,
-                    DestinationPort = connection.DestinationPort == 0 ? null : (ushort?)connection.DestinationPort,
-                    Protocol = connection.Protocol,
-                    ServiceName = connection.ServiceName,
-                    Direction = connection.Direction,
-                    Packets = connection.Packets,
-                    Bytes = connection.Bytes,
-                })
+                .Select(MapConnectionRow)
                 .ToArray(),
             TopHosts = response.TopHosts
                 .Select(host => new HostRowDto
                 {
                     Host = host.Host,
                     CountryLabel = host.CountryLabel,
+                    Hostname = host.Hostname ?? string.Empty,
+                    Sni = host.Sni ?? string.Empty,
+                    AsnNumber = host.AsnNumber,
+                    AsnOrganization = host.AsnOrganization ?? string.Empty,
+                    AsnLabel = host.AsnLabel ?? string.Empty,
                     Packets = host.Packets,
                     Bytes = host.Bytes,
                 })
@@ -132,131 +151,87 @@ public sealed class ProjectionClient
                     OutboundBytes = point.OutboundBytes,
                 })
                 .ToArray(),
+            TopTcpConnections = response.TopTcpConnections
+                .Select(MapTcpConnectionRow)
+                .ToArray(),
+            Signals = response.Signals
+                .Select(signal => new SignalItemDto
+                {
+                    Id = signal.Id ?? string.Empty,
+                    Kind = signal.Kind ?? string.Empty,
+                    Title = signal.Summary ?? string.Empty,
+                    Detail = signal.Detail ?? string.Empty,
+                    Subject = signal.Subject ?? string.Empty,
+                    Severity = signal.Severity ?? "info",
+                    Mode = string.IsNullOrWhiteSpace(signal.Mode) ? "live" : signal.Mode,
+                    Status = string.IsNullOrWhiteSpace(signal.Status) ? "active" : signal.Status,
+                    Timestamp = signal.LastSeen is null
+                        ? DateTimeOffset.Now
+                        : DateTimeOffset.FromUnixTimeSeconds(signal.LastSeen.Seconds),
+                    PivotKind = string.IsNullOrWhiteSpace(signal.PivotKind) ? "none" : signal.PivotKind,
+                    PivotValue = signal.PivotValue ?? string.Empty,
+                    IsUnread = true,
+                })
+                .ToArray(),
+            ProcessLookupPending = response.ProcessLookupPending,
+            ProcessLookupCacheSize = response.ProcessLookupCacheSize,
         };
     }
 
-    public async IAsyncEnumerable<OverviewSnapshotDto> StreamOverviewAsync(
-        uint topN,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-            CancellationToken cancellationToken = default
-    )
+    private static ConnectionRowDto MapConnectionRow(ConnectionRow connection)
     {
-        using var call = _client.StreamOverview(
-            new StreamOverviewRequest { TopN = topN },
-            cancellationToken: cancellationToken
-        );
-
-        await foreach (
-            var response in call.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false)
-        )
+        return new ConnectionRowDto
         {
-            yield return new OverviewSnapshotDto
-            {
-                CaptureId = response.CaptureId,
-                Mode = MapProjectionMode(response.Mode),
-                Sequence = response.Sequence,
-                Timestamp = response.Timestamp is null
-                    ? new PacketTimestampDto()
-                    : new PacketTimestampDto
-                    {
-                        Seconds = response.Timestamp.Seconds,
-                        Microseconds = response.Timestamp.Microseconds,
-                    },
-                Totals = response.Totals is null
-                    ? new AggregateTotalsDto()
-                    : new AggregateTotalsDto
-                    {
-                        Packets = response.Totals.Packets,
-                        Bytes = response.Totals.Bytes,
-                        BytesIn = response.Totals.BytesIn,
-                        BytesOut = response.Totals.BytesOut,
-                    },
-                DroppedPackets = response.DroppedPackets,
-                LastPacketTimestamp = response.LastPacketTimestamp is null
-                    ? null
-                    : new PacketTimestampDto
-                    {
-                        Seconds = response.LastPacketTimestamp.Seconds,
-                        Microseconds = response.LastPacketTimestamp.Microseconds,
-                    },
-                TopConnections = response.TopConnections
-                    .Select(connection => new ConnectionRowDto
-                    {
-                        SourceAddress = connection.SourceAddress,
-                        SourcePort = connection.SourcePort == 0 ? null : (ushort?)connection.SourcePort,
-                        DestinationAddress = connection.DestinationAddress,
-                        DestinationPort = connection.DestinationPort == 0
-                            ? null
-                            : (ushort?)connection.DestinationPort,
-                        Protocol = connection.Protocol,
-                        ServiceName = connection.ServiceName,
-                        Direction = connection.Direction,
-                        Packets = connection.Packets,
-                        Bytes = connection.Bytes,
-                    })
-                    .ToArray(),
-                TopHosts = response.TopHosts
-                    .Select(host => new HostRowDto
-                    {
-                        Host = host.Host,
-                        CountryLabel = host.CountryLabel,
-                        Packets = host.Packets,
-                        Bytes = host.Bytes,
-                    })
-                    .ToArray(),
-                TopServices = response.TopServices
-                    .Select(service => new ServiceRowDto
-                    {
-                        Name = service.Name,
-                        Transport = service.Transport,
-                        Packets = service.Packets,
-                        Bytes = service.Bytes,
-                    })
-                    .ToArray(),
-                DestinationMap = new DestinationMapPlaceholderDto
+            SourceAddress = connection.SourceAddress,
+            SourcePort = connection.SourcePort == 0 ? null : (ushort?)connection.SourcePort,
+            DestinationAddress = connection.DestinationAddress,
+            DestinationPort = connection.DestinationPort == 0
+                ? null
+                : (ushort?)connection.DestinationPort,
+            Protocol = connection.Protocol,
+            ServiceName = connection.ServiceName,
+            Direction = connection.Direction,
+            Packets = connection.Packets,
+            Bytes = connection.Bytes,
+            ProcessName = connection.ProcessName ?? string.Empty,
+            ProcessPid = connection.ProcessPid,
+            ProcessInferred = connection.ProcessInferred,
+            Sni = connection.Sni ?? string.Empty,
+            ProcessPath = connection.ProcessPath ?? string.Empty,
+            ProcessBundleId = connection.ProcessBundleId ?? string.Empty,
+            RemoteAsnLabel = connection.RemoteAsnLabel ?? string.Empty,
+        };
+    }
+
+    private static TcpConnectionRowDto MapTcpConnectionRow(TcpConnectionRow row)
+    {
+        return new TcpConnectionRowDto
+        {
+            EndpointAAddress = row.EndpointAAddress,
+            EndpointAPort = (ushort)row.EndpointAPort,
+            EndpointBAddress = row.EndpointBAddress,
+            EndpointBPort = (ushort)row.EndpointBPort,
+            State = row.State,
+            SynCount = row.SynCount,
+            FinCount = row.FinCount,
+            RstCount = row.RstCount,
+            Packets = row.Packets,
+            Bytes = row.Bytes,
+            FirstSeen = row.FirstSeen is null
+                ? new PacketTimestampDto()
+                : new PacketTimestampDto
                 {
-                    State = response.DestinationMap?.State ?? "reserved",
-                    Message = response.DestinationMap?.Message
-                        ?? "Destination map is reserved for a future phase 2 enhancement.",
+                    Seconds = row.FirstSeen.Seconds,
+                    Microseconds = row.FirstSeen.Microseconds,
                 },
-                TopDestinations = response.TopDestinations
-                    .Select(destination => new DestinationSummaryDto
-                    {
-                        Label = destination.Label,
-                        CountryLabel = destination.CountryLabel,
-                        CountryCode = destination.CountryCode,
-                        Bytes = destination.Bytes,
-                        Ratio = destination.Ratio,
-                    })
-                    .ToArray(),
-                SourceLabel = string.IsNullOrWhiteSpace(response.SourceLabel)
-                    ? "Live source · unknown"
-                    : response.SourceLabel,
-                FilterLabel = string.IsNullOrWhiteSpace(response.FilterLabel)
-                    ? "Filter · none"
-                    : response.FilterLabel,
-                MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
-                    ? "bytes"
-                    : response.MetricMode,
-                CaptureStatus = string.IsNullOrWhiteSpace(response.CaptureStatus)
-                    ? "idle"
-                    : response.CaptureStatus,
-                TimelinePoints = response.TimelinePoints
-                    .Select(point => new TimelinePointDto
-                    {
-                        Timestamp = point.Timestamp is null
-                            ? new PacketTimestampDto()
-                            : new PacketTimestampDto
-                            {
-                                Seconds = point.Timestamp.Seconds,
-                                Microseconds = point.Timestamp.Microseconds,
-                            },
-                        InboundBytes = point.InboundBytes,
-                        OutboundBytes = point.OutboundBytes,
-                    })
-                    .ToArray(),
-            };
-        }
+            LastSeen = row.LastSeen is null
+                ? new PacketTimestampDto()
+                : new PacketTimestampDto
+                {
+                    Seconds = row.LastSeen.Seconds,
+                    Microseconds = row.LastSeen.Microseconds,
+                },
+        };
     }
 
     public async Task<InspectResultDto> GetInspectPageAsync(
@@ -282,20 +257,7 @@ public sealed class ProjectionClient
         return new InspectResultDto
         {
             State = response.State,
-            Rows = response.Rows
-                .Select(row => new ConnectionRowDto
-                {
-                    SourceAddress = row.SourceAddress,
-                    SourcePort = row.SourcePort == 0 ? null : (ushort?)row.SourcePort,
-                    DestinationAddress = row.DestinationAddress,
-                    DestinationPort = row.DestinationPort == 0 ? null : (ushort?)row.DestinationPort,
-                    Protocol = row.Protocol,
-                    ServiceName = row.ServiceName,
-                    Direction = row.Direction,
-                    Packets = row.Packets,
-                    Bytes = row.Bytes,
-                })
-                .ToArray(),
+            Rows = response.Rows.Select(MapConnectionRow).ToArray(),
             Summary = new InspectResultSummaryDto
             {
                 TotalRows = (ulong)response.Rows.Count,

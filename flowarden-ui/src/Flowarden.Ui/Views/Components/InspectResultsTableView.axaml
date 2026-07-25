@@ -6,16 +6,18 @@
   <Border Classes="tfc-panel" ClipToBounds="True" CornerRadius="6,6,0,0">
     <Grid RowDefinitions="Auto,*">
       <Border Classes="tfc-table-header" Padding="14,8">
-        <Grid ColumnDefinitions="1.35*,0.7*,1.35*,0.7*,0.65*,0.9*,0.6*,0.8*,0.8*" ColumnSpacing="12">
+        <Grid ColumnDefinitions="1.1*,0.5*,1.1*,0.5*,0.5*,0.65*,0.9*,0.9*,0.45*,0.65*,0.65*" ColumnSpacing="8">
           <TextBlock Classes="tfc-label" Text="Src Address" />
           <TextBlock Grid.Column="1" Classes="tfc-label" Text="Src Port" />
           <TextBlock Grid.Column="2" Classes="tfc-label" Text="Dst Address" />
           <TextBlock Grid.Column="3" Classes="tfc-label" Text="Dst Port" />
           <TextBlock Grid.Column="4" Classes="tfc-label" Text="Proto" />
           <TextBlock Grid.Column="5" Classes="tfc-label" Text="Service" />
-          <TextBlock Grid.Column="6" Classes="tfc-label" Text="Dir" />
-          <TextBlock Grid.Column="7" Classes="tfc-label" HorizontalAlignment="Right" Text="Bytes" />
-          <TextBlock Grid.Column="8" Classes="tfc-label" HorizontalAlignment="Right" Text="Packets" />
+          <TextBlock Grid.Column="6" Classes="tfc-label" Text="SNI" />
+          <TextBlock Grid.Column="7" Classes="tfc-label" Text="Process" />
+          <TextBlock Grid.Column="8" Classes="tfc-label" Text="Dir" />
+          <TextBlock Grid.Column="9" Classes="tfc-label" HorizontalAlignment="Right" Text="Bytes" />
+          <TextBlock Grid.Column="10" Classes="tfc-label" HorizontalAlignment="Right" Text="Packets" />
         </Grid>
       </Border>
 
@@ -24,18 +26,47 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
-                <Grid ColumnDefinitions="1.35*,0.7*,1.35*,0.7*,0.65*,0.9*,0.6*,0.8*,0.8*" ColumnSpacing="12">
-                  <TextBlock Classes="tfc-data" Text="{Binding SourceAddress}" />
+                <Grid ColumnDefinitions="1.1*,0.5*,1.1*,0.5*,0.5*,0.65*,0.9*,0.9*,0.45*,0.65*,0.65*" ColumnSpacing="8">
+                  <TextBlock Classes="tfc-data" Text="{Binding SourceAddress}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="1" Classes="tfc-data" Text="{Binding SourcePort}" />
-                  <TextBlock Grid.Column="2" Classes="tfc-data" Text="{Binding DestinationAddress}" />
+                  <TextBlock Grid.Column="2" Classes="tfc-data" Text="{Binding DestinationAddress}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="3" Classes="tfc-data" Text="{Binding DestinationPort}" />
                   <Border Grid.Column="4" Classes="tfc-chip" Padding="6,2" HorizontalAlignment="Left">
                     <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcPrimaryBrush}" FontSize="11" Text="{Binding ProtocolLabel}" />
                   </Border>
-                  <TextBlock Grid.Column="5" Classes="muted-text" FontSize="13" Text="{Binding ServiceName}" />
-                  <TextBlock Grid.Column="6" Foreground="{StaticResource TfcWarningBrush}" HorizontalAlignment="Center" Text="{Binding DirectionGlyph}" />
-                  <TextBlock Grid.Column="7" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
-                  <TextBlock Grid.Column="8" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
+                  <TextBlock Grid.Column="5" Classes="muted-text" FontSize="13" Text="{Binding ServiceName}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="6"
+                             Classes="muted-text"
+                             FontSize="12"
+                             Foreground="{StaticResource TfcPrimaryBrush}"
+                             Text="{Binding SniLabel}"
+                             TextTrimming="CharacterEllipsis"
+                             ToolTip.Tip="{Binding SniLabel}" />
+                  <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="6">
+                    <Border Width="16"
+                            Height="16"
+                            CornerRadius="8"
+                            Background="{StaticResource TfcSurfaceBrush}"
+                            BorderBrush="{StaticResource TfcBorderBrush}"
+                            BorderThickness="1"
+                            VerticalAlignment="Center">
+                      <TextBlock FontSize="9"
+                                 FontWeight="SemiBold"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding ProcessMonogram}"
+                                 Foreground="{StaticResource TfcPrimaryBrush}" />
+                    </Border>
+                    <TextBlock Classes="muted-text"
+                               FontSize="12"
+                               Text="{Binding ProcessLabel}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding ProcessTooltip}"
+                               VerticalAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="8" Foreground="{StaticResource TfcWarningBrush}" HorizontalAlignment="Center" Text="{Binding DirectionGlyph}" />
+                  <TextBlock Grid.Column="9" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
+                  <TextBlock Grid.Column="10" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
                 </Grid>
               </Border>
             </DataTemplate>

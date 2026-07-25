@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
 using Flowarden.Ui.State;
+// OverviewSnapshotDto / preferences live under Models + State.
 
 namespace Flowarden.Ui.ViewModels;
 
@@ -26,12 +27,22 @@ public sealed partial class AppShellViewModel : ViewModelBase
     private readonly bool _shouldApplyInitialPageAfterLoad;
     private readonly LiveProjectionState _liveProjectionState;
     private readonly ProjectionSettingsState _projectionSettings;
+    private readonly UserPreferencesStore _preferencesStore;
+    private readonly UserPreferences _preferences;
+    private readonly SignalFeedState _signalFeed;
     private bool _isRefreshingAfterStop;
     private bool _autoStartCaptureAttempted;
     private string _lastCaptureStatus = "idle";
     private System.Diagnostics.Process? _launchedCoreProcess;
     private bool _launchedCoreByUi;
     private CancellationTokenSource? _liveOverviewCts;
+    private CancellationTokenSource? _healthWatchCts;
+    private bool _projectionStale;
+    private string? _coreWorkingDirectory;
+    private string? _coreBinaryPath;
+    private string? _coreBindAddress;
+    private const int StreamReconnectMaxAttempts = 5;
+    private static readonly TimeSpan HealthPollInterval = TimeSpan.FromSeconds(3);
 
     public AppShellViewModel()
         : this(null)
@@ -60,12 +71,18 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _shouldApplyInitialPageAfterLoad = !string.IsNullOrWhiteSpace(initialPageId);
         _liveProjectionState = new LiveProjectionState();
         _projectionSettings = new ProjectionSettingsState();
+        _preferencesStore = new UserPreferencesStore();
+        _preferences = _preferencesStore.Load();
+        _projectionSettings.SetTopN(_preferences.TopN);
         _projectionSettings.TopNChanged += OnProjectionTopNChanged;
+        _signalFeed = new SignalFeedState();
+        _liveProjectionState.OverviewUpdated += OnLiveOverviewForSignals;
         NavigationItems = new ReadOnlyCollection<AppNavigationItemViewModel>(
             [
                 new AppNavigationItemViewModel { Id = "source", Label = "Source", CompactLabel = "Src" },
                 new AppNavigationItemViewModel { Id = "overview", Label = "Overview", CompactLabel = "Ovr" },
                 new AppNavigationItemViewModel { Id = "inspect", Label = "Inspect", CompactLabel = "Insp" },
+                new AppNavigationItemViewModel { Id = "signals", Label = "Signals", CompactLabel = "Sig" },
                 new AppNavigationItemViewModel { Id = "settings", Label = "Settings", CompactLabel = "Set" },
             ]
         );
@@ -90,6 +107,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 Title = "Inspect",
                 Description = "Filter-first results table for connections, services and ranked summaries.",
             },
+            ["signals"] = new AppShellPageViewModel
+            {
+                Id = "signals",
+                Title = "Signals",
+                Description = "Behavior signals for thresholds, watched hosts, and known-bad traffic.",
+            },
             ["settings"] = new AppShellPageViewModel
             {
                 Id = "settings",
@@ -105,19 +128,38 @@ public sealed partial class AppShellViewModel : ViewModelBase
             _liveProjectionState,
             _projectionSettings
         );
+        OverviewPage.OpenInspectRequested += () =>
+        {
+            Navigate("inspect");
+            ConnectionMessage = OverviewPage.HasForensicsFocus
+                ? $"Inspect opened from forensics focus ({OverviewPage.ForensicsFocusLabel})"
+                : "Inspect opened from Overview";
+        };
         InspectPage = new InspectPageViewModel(
             _projectionClient,
             _liveProjectionState,
             _projectionSettings
         );
+        SignalsPage = new SignalsPageViewModel(_signalFeed);
+        SignalsPage.PivotRequested += OnSignalPivotRequested;
+        _signalFeed.Changed += () =>
+        {
+            OnPropertyChanged(nameof(SignalUnreadCount));
+            OnPropertyChanged(nameof(HasSignalUnread));
+            OnPropertyChanged(nameof(SignalUnreadLabel));
+        };
         SettingsPage = new SettingsPageViewModel(
             _coreHealthService,
             _discoveryClient,
             _projectionSettings,
             _bindAddress,
             _bindAddressSource,
-            LatestCoreError
+            LatestCoreError,
+            _preferences,
+            SavePreferencesAsync
         );
+        SettingsPage.ReconnectCoreHandler = ReconnectCoreAsync;
+        SettingsPage.SignalSnapshotProvider = () => _signalFeed.Signals.ToArray();
 
         CoreStatus = new StatusIndicatorViewModel
         {
@@ -159,7 +201,18 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public InspectPageViewModel InspectPage { get; }
 
+    public SignalsPageViewModel SignalsPage { get; }
+
     public SettingsPageViewModel SettingsPage { get; }
+
+    public int SignalUnreadCount => _signalFeed.UnreadCount;
+
+    public bool HasSignalUnread => SignalUnreadCount > 0;
+
+    public string SignalUnreadLabel =>
+        SignalUnreadCount > 99 ? "99+" : SignalUnreadCount.ToString();
+
+    public SignalFeedState SignalFeed => _signalFeed;
 
     [ObservableProperty]
     private string connectionMessage = "Connecting to flowarden core...";
@@ -170,9 +223,25 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [ObservableProperty]
     private bool isRailCollapsed;
 
+    /// <summary>Compact always-on-top monitoring chrome (shared live projection).</summary>
+    [ObservableProperty]
+    private bool isThumbnailMode;
+
+    public ThumbnailViewModel? ThumbnailPage { get; private set; }
+
+    public event Action? ThumbnailModeChanged;
+
+    /// <summary>User-facing run state: loading / ready / running / paused / offline / stale / failed.</summary>
+    [ObservableProperty]
+    private string userRunState = "loading";
+
     public string HeaderSupportingText =>
         LatestCoreError?.Message
-        ?? (CoreStatus.Value == "Connected" ? CurrentPage.Description : ConnectionMessage);
+        ?? (_projectionStale
+            ? "Projection may be stale — core connection is degraded."
+            : CoreStatus.Value == "Connected"
+                ? CurrentPage.Description
+                : ConnectionMessage);
 
     public bool IsSourcePageActive => CurrentPageId == "source";
 
@@ -184,6 +253,10 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public bool IsInspectPageActive => CurrentPageId == "inspect";
 
+    public bool IsNotInspectPageActive => !IsInspectPageActive;
+
+    public bool IsSignalsPageActive => CurrentPageId == "signals";
+
     public bool IsSettingsPageActive => CurrentPageId == "settings";
 
     public bool HasLatestCoreError => LatestCoreError is not null;
@@ -191,6 +264,43 @@ public sealed partial class AppShellViewModel : ViewModelBase
     public string RailToggleLabel => IsRailCollapsed ? "Expand" : "Collapse";
 
     public double RailWidth => IsRailCollapsed ? 96 : 180;
+
+    public bool IsNotThumbnailMode => !IsThumbnailMode;
+
+    public UserPreferences Preferences => _preferences;
+
+    public UserPreferencesStore PreferencesStore => _preferencesStore;
+
+    public LiveProjectionState LiveProjection => _liveProjectionState;
+
+    partial void OnIsThumbnailModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsNotThumbnailMode));
+        if (value)
+        {
+            ThumbnailPage ??= new ThumbnailViewModel(_liveProjectionState, this);
+        }
+
+        ThumbnailModeChanged?.Invoke();
+    }
+
+    [RelayCommand]
+    private void EnterThumbnail()
+    {
+        IsThumbnailMode = true;
+    }
+
+    [RelayCommand]
+    private void ExitThumbnail()
+    {
+        IsThumbnailMode = false;
+    }
+
+    [RelayCommand]
+    private void ToggleThumbnail()
+    {
+        IsThumbnailMode = !IsThumbnailMode;
+    }
 
     partial void OnCoreStatusChanged(StatusIndicatorViewModel value)
     {
@@ -234,6 +344,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsOverviewPageActive));
         OnPropertyChanged(nameof(IsNotOverviewPageActive));
         OnPropertyChanged(nameof(IsInspectPageActive));
+        OnPropertyChanged(nameof(IsNotInspectPageActive));
+        OnPropertyChanged(nameof(IsSignalsPageActive));
         OnPropertyChanged(nameof(IsSettingsPageActive));
     }
 
@@ -253,9 +365,114 @@ public sealed partial class AppShellViewModel : ViewModelBase
         {
             "source" => "source",
             "inspect" => "inspect",
+            "signals" => "signals",
             "settings" => "settings",
             _ => "overview",
         };
+    }
+
+    private void OnLiveOverviewForSignals(OverviewSnapshotDto snapshot)
+    {
+        _signalFeed.ObserveOverview(snapshot, _preferences);
+        SettingsPage?.UpdateCaptureDiagnostics(snapshot, UserRunState);
+    }
+
+    private void OnSignalPivotRequested(SignalItemDto signal)
+    {
+        // Offline findings: Overview timeline marker + rankings, then Inspect filters.
+        var isOfflineFinding = string.Equals(
+            signal.Mode,
+            "offline",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        if (isOfflineFinding)
+        {
+            OverviewPage.ApplyForensicsFocus(
+                signal.PivotKind,
+                string.IsNullOrWhiteSpace(signal.PivotValue) ? signal.Subject : signal.PivotValue,
+                signal.Timestamp
+            );
+            // Show timeline marker first so analysts see when the finding occurred.
+            Navigate("overview");
+            _ = InspectPage.ApplySignalPivotAsync(signal.PivotKind, signal.PivotValue);
+            ConnectionMessage = signal.CanPivot
+                ? $"Replay: timeline @ {signal.Timestamp:HH:mm:ss} · focus {signal.PivotKind}={signal.PivotValue} (Inspect filters ready)"
+                : $"Replay finding on Overview timeline · {signal.Title}";
+            return;
+        }
+
+        Navigate("inspect");
+        _ = InspectPage.ApplySignalPivotAsync(signal.PivotKind, signal.PivotValue);
+        if (signal.CanPivot)
+        {
+            ConnectionMessage = $"Inspect pivot: {signal.PivotKind} = {signal.PivotValue}";
+        }
+        else
+        {
+            ConnectionMessage = $"Opened Inspect from signal: {signal.Title}";
+        }
+    }
+
+    private async Task<string> SavePreferencesAsync()
+    {
+        // SettingsPage may not be assigned yet if a property changed during its constructor.
+        if (SettingsPage is null)
+        {
+            return "Settings page not ready.";
+        }
+
+        _preferences.TopN = _projectionSettings.TopN;
+        _preferences.ShutdownCoreWhenUiCloses = SettingsPage.ShutdownCoreWhenUiCloses;
+        _preferences.DataThresholdBytes = SettingsPage.DataThresholdBytes;
+        _preferences.WatchedHosts = SettingsPageViewModel.ParseHostList(SettingsPage.WatchedHostsInput);
+        _preferences.KnownBadHosts = SettingsPageViewModel.ParseHostList(SettingsPage.KnownBadHostsInput);
+        _preferences.DesktopNotificationsEnabled = SettingsPage.DesktopNotificationsEnabled;
+        _preferences.SignalSoundEnabled = SettingsPage.SignalSoundEnabled;
+
+        try
+        {
+            _preferencesStore.Save(_preferences);
+        }
+        catch (Exception ex)
+        {
+            return $"Local save failed: {ex.Message}";
+        }
+
+        var policyResult = await PushSignalPolicyToCoreAsync();
+        var watched = _preferences.WatchedHosts.Count;
+        var bad = _preferences.KnownBadHosts.Count;
+        return
+            $"Saved · threshold={_preferences.DataThresholdBytes:N0} · watched={watched} · known-bad={bad} · topN={_preferences.TopN} · core: {policyResult}";
+    }
+
+    private async Task<string> PushSignalPolicyToCoreAsync()
+    {
+        if (_controlClient is null)
+        {
+            return "core client not wired (local only)";
+        }
+
+        try
+        {
+            var result = await _controlClient.SetSignalPolicyAsync(
+                _preferences.DataThresholdBytes,
+                _preferences.WatchedHosts,
+                _preferences.KnownBadHosts
+            );
+            if (!result.Accepted)
+            {
+                return string.IsNullOrWhiteSpace(result.Message)
+                    ? "policy rejected"
+                    : result.Message;
+            }
+
+            return string.IsNullOrWhiteSpace(result.Message) ? "policy applied" : result.Message;
+        }
+        catch (Exception ex)
+        {
+            return $"policy push failed ({ex.Message})";
+        }
     }
 
     [RelayCommand]
@@ -282,6 +499,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
             return;
         }
 
+        _coreWorkingDirectory = workingDirectory;
+        _coreBinaryPath = binaryPath;
+        _coreBindAddress = bindAddress;
         ConnectionMessage = "Checking for resident flowarden core...";
         var result = await _coreConnectionCoordinator.EnsureConnectedAsync(
             workingDirectory,
@@ -300,15 +520,22 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 Value = "Connected",
                 Tone = "good",
             };
+            var corePath = string.IsNullOrWhiteSpace(result.BinaryPath)
+                ? binaryPath
+                : result.BinaryPath;
             ConnectionMessage = result.LaunchedByUi
-                ? "flowarden core launched and connected."
-                : "Connected to an already running flowarden core.";
+                ? $"flowarden core launched: {corePath}"
+                : $"Connected to existing core (may be outdated). Preferred binary: {corePath}";
+            UserRunState = "ready";
+            _projectionStale = false;
+            await PushSignalPolicyToCoreAsync();
             await LoadSourcePageAsync();
             await LoadOverviewPageAsync();
             await LoadInspectPageAsync();
             await LoadSettingsPageAsync();
             await StartCaptureOnLaunchAsync();
             ApplyInitialPageSelection();
+            BeginHealthWatch();
             return;
         }
 
@@ -321,7 +548,72 @@ public sealed partial class AppShellViewModel : ViewModelBase
             Value = "Offline",
             Tone = "warning",
         };
+        UserRunState = "offline";
         ConnectionMessage = result.Error?.Message ?? "Failed to connect to flowarden core.";
+    }
+
+    [RelayCommand]
+    private Task ReconnectCore() => ReconnectCoreAsync();
+
+    private async Task ReconnectCoreAsync()
+    {
+        if (_coreConnectionCoordinator is null
+            || string.IsNullOrWhiteSpace(_coreWorkingDirectory)
+            || string.IsNullOrWhiteSpace(_coreBinaryPath)
+            || string.IsNullOrWhiteSpace(_coreBindAddress))
+        {
+            ConnectionMessage = "Cannot reconnect: core launch paths are not configured.";
+            UserRunState = "failed";
+            return;
+        }
+
+        UserRunState = "loading";
+        ConnectionMessage = "Reconnecting to flowarden core...";
+        // Safety default: reconnect core only — do not auto-restart capture.
+        StopOverviewStreaming();
+        StopHealthWatch();
+        var result = await _coreConnectionCoordinator.EnsureConnectedAsync(
+            _coreWorkingDirectory,
+            _coreBinaryPath,
+            _coreBindAddress
+        );
+
+        if (result.Connected && result.Health is not null)
+        {
+            if (result.LaunchedByUi)
+            {
+                _launchedCoreProcess = result.LaunchedProcess;
+                _launchedCoreByUi = true;
+                SettingsPage?.NoteCoreRelaunch();
+            }
+
+            LatestCoreError = null;
+            _projectionStale = false;
+            CoreStatus = new StatusIndicatorViewModel
+            {
+                Label = "Core",
+                Value = "Connected",
+                Tone = "good",
+            };
+            UserRunState = "ready";
+            ConnectionMessage = result.LaunchedByUi
+                ? "flowarden core relaunched. Start capture again when ready."
+                : "Reconnected to flowarden core. Start capture again when ready.";
+            OnPropertyChanged(nameof(HeaderSupportingText));
+            BeginHealthWatch();
+            return;
+        }
+
+        LatestCoreError = result.Error;
+        UserRunState = "offline";
+        CoreStatus = new StatusIndicatorViewModel
+        {
+            Label = "Core",
+            Value = "Offline",
+            Tone = "warning",
+        };
+        ConnectionMessage = result.Error?.Message ?? "Failed to reconnect to flowarden core.";
+        OnPropertyChanged(nameof(HeaderSupportingText));
     }
 
     public async Task HandleUiExitAsync(CancellationToken cancellationToken = default)
@@ -438,6 +730,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         {
             "starting" => ("Starting", "warning"),
             "running" => ("Running", "good"),
+            "paused" => ("Paused", "warning"),
             "stopping" => ("Stopping", "warning"),
             "armed" => ("Armed", "warning"),
             _ => ("Idle", "neutral"),
@@ -468,18 +761,30 @@ public sealed partial class AppShellViewModel : ViewModelBase
         if (status == "starting")
         {
             StopOverviewStreaming();
+            // New capture session: clear prior signal feed so offline findings don't mix with live.
+            _signalFeed.Clear();
+            OverviewPage.ClearForensicsFocus();
             ResetProjectionForSession(session);
             return;
         }
 
-        if (status == "running")
+        if (status is "running" or "paused")
         {
+            // Keep the shared live projection stream while paused so Overview /
+            // Inspect stay on the frozen last snapshot without re-subscribing.
             BeginOverviewStreaming();
+            UserRunState = status;
         }
 
         if (status == "stopping")
         {
             StopOverviewStreaming();
+            UserRunState = "stopping";
+        }
+
+        if (status == "idle" && CoreStatus.Value == "Connected")
+        {
+            UserRunState = "ready";
         }
     }
 
@@ -574,20 +879,65 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         var cancellationToken = streamCts.Token;
+        var attempts = 0;
         try
         {
-            await foreach (
-                var snapshot in _projectionClient.StreamOverviewAsync(
-                    _projectionSettings.TopN,
-                    cancellationToken
-                )
-            )
+            while (!cancellationToken.IsCancellationRequested)
             {
-                _liveProjectionState.UpdateOverview(snapshot);
-                ApplyCaptureStatusFromOverview(snapshot);
+                try
+                {
+                    await foreach (
+                        var snapshot in _projectionClient.StreamOverviewAsync(
+                            _projectionSettings.TopN,
+                            cancellationToken
+                        )
+                    )
+                    {
+                        attempts = 0;
+                        _projectionStale = false;
+                        _liveProjectionState.UpdateOverview(snapshot);
+                        ApplyCaptureStatusFromOverview(snapshot);
+                    }
+
+                    // Stream completed without cancel — try reconnect while capture is active.
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception)
+                {
+                    // fall through to reconnect / degrade
+                }
+
+                attempts++;
+                if (attempts > StreamReconnectMaxAttempts)
+                {
+                    _projectionStale = true;
+                    UserRunState = "stale";
+                    ConnectionMessage =
+                        "Live projection stream lost after repeated reconnect attempts. Showing last snapshot.";
+                    OnPropertyChanged(nameof(HeaderSupportingText));
+                    await TryPollLatestOverviewAsync(cancellationToken);
+                    break;
+                }
+
+                ConnectionMessage =
+                    $"Live projection interrupted; reconnecting ({attempts}/{StreamReconnectMaxAttempts})...";
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(400 * attempts), cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
         }
-        catch (OperationCanceledException) { }
         finally
         {
             if (ReferenceEquals(_liveOverviewCts, streamCts))
@@ -597,6 +947,110 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
             streamCts.Dispose();
         }
+    }
+
+    private async Task TryPollLatestOverviewAsync(CancellationToken cancellationToken)
+    {
+        if (_projectionClient is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var snapshot = await _projectionClient.GetLatestOverviewAsync(
+                _projectionSettings.TopN,
+                cancellationToken
+            );
+            _liveProjectionState.UpdateOverview(snapshot);
+        }
+        catch
+        {
+            // Keep last known projection.
+        }
+    }
+
+    private void BeginHealthWatch()
+    {
+        if (_coreHealthService is null || _healthWatchCts is not null)
+        {
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _healthWatchCts = cts;
+        _ = WatchCoreHealthAsync(cts.Token);
+    }
+
+    private void StopHealthWatch()
+    {
+        _healthWatchCts?.Cancel();
+        _healthWatchCts = null;
+    }
+
+    private async Task WatchCoreHealthAsync(CancellationToken cancellationToken)
+    {
+        if (_coreHealthService is null)
+        {
+            return;
+        }
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(HealthPollInterval, cancellationToken);
+                var health = await _coreHealthService.GetHealthAsync(cancellationToken);
+                if (health is null)
+                {
+                    MarkCoreOffline("Resident core stopped responding to health checks.");
+                    continue;
+                }
+
+                if (CoreStatus.Value != "Connected")
+                {
+                    CoreStatus = new StatusIndicatorViewModel
+                    {
+                        Label = "Core",
+                        Value = "Connected",
+                        Tone = "good",
+                    };
+                    if (_projectionStale)
+                    {
+                        ConnectionMessage = "Core is reachable again. Reconnect live projection if capture is active.";
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch
+            {
+                MarkCoreOffline("Lost connection to the resident flowarden core.");
+            }
+        }
+    }
+
+    private void MarkCoreOffline(string message)
+    {
+        CoreStatus = new StatusIndicatorViewModel
+        {
+            Label = "Core",
+            Value = "Offline",
+            Tone = "warning",
+        };
+        UserRunState = "offline";
+        _projectionStale = true;
+        ConnectionMessage = message;
+        LatestCoreError = new CoreErrorDto
+        {
+            Source = "CoreHealth",
+            Reason = "RuntimeDisconnect",
+            Message = message,
+        };
+        StopOverviewStreaming();
+        OnPropertyChanged(nameof(HeaderSupportingText));
     }
 
     private void ApplyCaptureStatusFromOverview(OverviewSnapshotDto snapshot)
@@ -628,6 +1082,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     private void OnProjectionTopNChanged(uint topN)
     {
+        _preferences.TopN = topN;
+        _preferencesStore.Save(_preferences);
+
         if (_liveOverviewCts is not null)
         {
             StopOverviewStreaming();

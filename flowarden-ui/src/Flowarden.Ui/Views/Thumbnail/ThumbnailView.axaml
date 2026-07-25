@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
+             x:Class="Flowarden.Ui.Views.Thumbnail.ThumbnailView"
+             x:DataType="vm:ThumbnailViewModel">
+  <Border Background="{StaticResource TfcBackgroundBrush}"
+          BorderBrush="{StaticResource TfcBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="6"
+          Padding="12"
+          DoubleTapped="OnDoubleTapped">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="tfc-label" Text="FLOWARDEN" />
+          <TextBlock Classes="muted-text"
+                     FontSize="11"
+                     Text="{Binding SourceLabel}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Border Background="{StaticResource TfcSurfaceBrush}"
+                  BorderBrush="{StaticResource TfcBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="10"
+                  Padding="8,2"
+                  IsVisible="{Binding HasUnreadSignals}">
+            <TextBlock Classes="tfc-data" FontSize="11" Text="{Binding UnreadSignalsLabel}" />
+          </Border>
+          <Border Background="{StaticResource TfcSurfaceBrush}"
+                  BorderBrush="{StaticResource TfcBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="8,2">
+            <TextBlock Classes="tfc-label" Text="{Binding CaptureStatusLabel}" />
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+        <StackPanel>
+          <TextBlock Classes="tfc-label" Text="PKTS" />
+          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding PacketsLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1">
+          <TextBlock Classes="tfc-label" Text="BYTES" />
+          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding BytesLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+          <TextBlock Classes="tfc-label" Text="IN" />
+          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding InboundLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Column="3">
+          <TextBlock Classes="tfc-label" Text="OUT" />
+          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding OutboundLabel}" />
+        </StackPanel>
+      </Grid>
+
+      <Border Grid.Row="2"
+              Background="{StaticResource TfcSurfaceBrush}"
+              BorderBrush="{StaticResource TfcBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="4"
+              ClipToBounds="True"
+              MinHeight="56">
+        <Viewbox Stretch="Fill" Margin="4">
+          <Canvas Width="640" Height="84">
+            <shapes:Path Stroke="{StaticResource TfcPrimaryBrush}"
+                         StrokeThickness="1.5"
+                         Data="{Binding SparklinePath}" />
+          </Canvas>
+        </Viewbox>
+      </Border>
+
+      <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+        <Button Classes="tools-button"
+                Content="Pause"
+                Command="{Binding PauseCommand}"
+                IsVisible="{Binding CanPause}" />
+        <Button Classes="tools-button"
+                Content="Resume"
+                Command="{Binding ResumeCommand}"
+                IsVisible="{Binding CanResume}" />
+        <Button Classes="danger-button"
+                Content="Stop"
+                Command="{Binding StopCommand}"
+                IsVisible="{Binding CanStop}" />
+        <Button Classes="mode-button"
+                Content="Expand"
+                Command="{Binding ExpandCommand}" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>
