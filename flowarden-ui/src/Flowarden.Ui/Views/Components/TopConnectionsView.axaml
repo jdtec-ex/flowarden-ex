@@ -20,17 +20,17 @@
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8" VerticalAlignment="Center">
                   <TextBlock Classes="tfc-data"
-                             Foreground="{StaticResource TfcTrafficCyanBrush}"
+                             Foreground="{StaticResource TfcTextBrush}"
                              Text="{Binding SourceAddress}"
                              TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="1" Classes="muted-text" Text="->" />
                   <TextBlock Grid.Column="2"
                              Classes="tfc-data"
-                             Foreground="{StaticResource TfcTrafficPurpleBrush}"
+                             Foreground="{StaticResource TfcTextBrush}"
                              Text="{Binding DestinationAddress}"
                              TextTrimming="CharacterEllipsis" />
                 </Grid>
-                  <TextBlock Grid.Column="1" Classes="tfc-data" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding VolumeLabel}" />
+                  <TextBlock Grid.Column="1" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding VolumeLabel}" />
                 </Grid>
               </Border>
             </DataTemplate>

@@ -330,6 +330,27 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         SessionStateChanged?.Invoke(CurrentSession, value);
     }
 
+    public void SetProjectionCaptureStatus(string captureStatus, string statusMessage)
+    {
+        CurrentSession = new CaptureSessionStateDto
+        {
+            SourceKind = CurrentSession.SourceKind,
+            SourceDisplayName = CurrentSession.SourceDisplayName,
+            CaptureStatus = captureStatus,
+            Mode = CurrentSession.Mode,
+            Bpf = CurrentSession.Bpf,
+        };
+        StatusMessage = statusMessage;
+        SetPreviewState(
+            string.Equals(captureStatus, "error", StringComparison.OrdinalIgnoreCase)
+                ? "Offline replay failed"
+                : "Offline replay completed",
+            statusMessage,
+            isWarning: false,
+            isError: string.Equals(captureStatus, "error", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
     [RelayCommand]
     private void SelectDevice(SourceDeviceItemViewModel? item)
     {

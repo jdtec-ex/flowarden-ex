@@ -38,7 +38,7 @@
                 ToolTip.Tip="Refresh preview">
           <PathIcon Width="13"
                     Height="13"
-                    Data="{StaticResource SemiIconRefresh}"
+                    Data="{StaticResource IconRefresh}"
                     Foreground="{StaticResource TfcPrimaryBrush}" />
         </Button>
         
@@ -70,7 +70,7 @@
                   ToolTip.Tip="Flows">
             <PathIcon Width="10"
                       Height="10"
-                      Data="{StaticResource SemiIconGridSquare}"
+                      Data="{StaticResource IconGridSquare}"
                       Foreground="{Binding InspectPage.FlowModeForeground}" />
           </Button>
           <Button Background="{Binding InspectPage.TcpModeBackground}"
@@ -83,7 +83,7 @@
                   ToolTip.Tip="TCP Connections">
             <PathIcon Width="10"
                       Height="10"
-                      Data="{StaticResource SemiIconGridView}"
+                      Data="{StaticResource IconGridView}"
                       Foreground="{Binding InspectPage.TcpModeForeground}" />
           </Button>
         </StackPanel>

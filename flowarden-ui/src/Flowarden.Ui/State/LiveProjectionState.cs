@@ -32,6 +32,7 @@ public sealed class LiveProjectionState
             SourceLabel = "Live source · not started",
             FilterLabel = "Filter · none",
             MetricMode = "bytes",
+            CaptureStatus = "idle",
         };
     }
 }

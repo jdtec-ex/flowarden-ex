@@ -389,6 +389,18 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     {
         if (CurrentMode == InspectMode.TcpConnections)
         {
+            if (IsEmptyProjectionSnapshot(snapshot))
+            {
+                _allTcpRows = Array.Empty<TcpConnectionRowDto>();
+                ReplaceTcpRows(_allTcpRows);
+                Summary = BuildTcpSummary(_allTcpRows);
+                ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
+                ActiveFilterSummary = BuildFilterSummary();
+                ReplaceActiveFilterChips(BuildFilterChips(Filter));
+                NotifyResultSummaryChanged();
+                return;
+            }
+
             _ = RefreshTcpConnectionsFromProjectionAsync();
             return;
         }
@@ -402,11 +414,31 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         var filteredRows = _allRows.Where(MatchesFilter).ToArray();
         ReplaceRows(filteredRows);
         Summary = BuildSummary(filteredRows);
-        ProjectionStateLabel = string.Equals(snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase)
-            ? "Offline projection"
-            : "Live projection";
+        ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
         ActiveFilterSummary = BuildFilterSummary();
         ReplaceActiveFilterChips(BuildFilterChips(Filter));
+        NotifyResultSummaryChanged();
+    }
+
+    private static bool IsEmptyProjectionSnapshot(OverviewSnapshotDto snapshot)
+    {
+        return snapshot.Totals.Packets == 0
+            && snapshot.TopConnections.Count == 0
+            && snapshot.TopHosts.Count == 0
+            && snapshot.TopServices.Count == 0
+            && snapshot.TopDestinations.Count == 0
+            && snapshot.LastPacketTimestamp is null;
+    }
+
+    private static string ProjectionLabelForSnapshot(OverviewSnapshotDto snapshot)
+    {
+        return string.Equals(snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            ? "Offline projection"
+            : "Live projection";
+    }
+
+    private void NotifyResultSummaryChanged()
+    {
         OnPropertyChanged(nameof(ResultCountLabel));
         OnPropertyChanged(nameof(TotalBytesLabel));
         OnPropertyChanged(nameof(TotalPacketsLabel));

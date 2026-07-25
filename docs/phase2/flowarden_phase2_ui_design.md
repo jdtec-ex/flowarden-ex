@@ -25,6 +25,12 @@
 
 只有这两件事先冻结，后续基于 Stitch 重做 layout 和风格时，才不会把关键监控信息丢掉。
 
+### 1.3 当前实现口径
+
+当前实现已经切换到 `docs/phase2/stitch_flowarden_network_monitoring_*` 四个 Stitch 原型目录，运行截图以 `docs/phase2/tfc_runtime_screenshots/overview_after4.png`、`source_after7.png`、`inspect_topbar_square_semi_icons.png`、`settings_after4.png` 为准。
+
+Semi.Avalonia 只作为控件底座使用，最终外观由当前 `Technical Forensic Console` token 覆盖。本文保留为设计基线说明，落地进度以 `flowarden_phase2_semi_avalonia_ui_tracking.md` 为准。
+
 ### 1.2 参考图中的领域实体
 
 从 `overview / inspect / notifications / thumbnail` 四类画面看，原图实际在展示的不是“页面组件集合”，而是一组稳定的流量监控实体：

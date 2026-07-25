@@ -101,6 +101,7 @@ public sealed class ProjectionClient
                 {
                     Label = destination.Label,
                     CountryLabel = destination.CountryLabel,
+                    CountryCode = destination.CountryCode,
                     Bytes = destination.Bytes,
                     Ratio = destination.Ratio,
                 })
@@ -114,6 +115,9 @@ public sealed class ProjectionClient
             MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
                 ? "bytes"
                 : response.MetricMode,
+            CaptureStatus = string.IsNullOrWhiteSpace(response.CaptureStatus)
+                ? "idle"
+                : response.CaptureStatus,
             TimelinePoints = response.TimelinePoints
                 .Select(point => new TimelinePointDto
                 {
@@ -220,6 +224,7 @@ public sealed class ProjectionClient
                     {
                         Label = destination.Label,
                         CountryLabel = destination.CountryLabel,
+                        CountryCode = destination.CountryCode,
                         Bytes = destination.Bytes,
                         Ratio = destination.Ratio,
                     })
@@ -233,6 +238,9 @@ public sealed class ProjectionClient
                 MetricMode = string.IsNullOrWhiteSpace(response.MetricMode)
                     ? "bytes"
                     : response.MetricMode,
+                CaptureStatus = string.IsNullOrWhiteSpace(response.CaptureStatus)
+                    ? "idle"
+                    : response.CaptureStatus,
                 TimelinePoints = response.TimelinePoints
                     .Select(point => new TimelinePointDto
                     {

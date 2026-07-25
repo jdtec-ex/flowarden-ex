@@ -3,6 +3,7 @@
              xmlns:shapes="using:Avalonia.Controls.Shapes"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.DestinationWorkbenchView"
+             x:Name="Root"
              x:DataType="vm:OverviewPageViewModel">
   <Grid RowDefinitions="200,*" RowSpacing="16">
     <Border Classes="tfc-panel" ClipToBounds="True">
@@ -12,16 +13,42 @@
         </Border>
         <Border Grid.Row="1" Margin="10" Background="{StaticResource TfcBackgroundBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
           <Grid>
-            <Canvas Width="360" Height="170" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-              <shapes:Path Stroke="{StaticResource TfcTrafficCyanBrush}" StrokeThickness="0.8" Opacity="0.45" Fill="Transparent"
-                           Data="M 24 72 C 60 42 108 38 142 58 C 190 86 230 48 322 64 M 48 122 C 90 96 134 118 178 105 C 220 92 258 114 328 98 M 72 38 C 98 70 120 84 154 91 M 225 38 C 215 68 218 92 244 124" />
-              <shapes:Ellipse Width="8" Height="8" Fill="{StaticResource TfcTrafficCyanBrush}" Canvas.Left="88" Canvas.Top="78" />
-              <shapes:Ellipse Width="8" Height="8" Fill="{StaticResource TfcTrafficPurpleBrush}" Canvas.Left="230" Canvas.Top="65" />
-              <shapes:Ellipse Width="5" Height="5" Fill="{StaticResource TfcTrafficCyanBrush}" Opacity="0.7" Canvas.Left="302" Canvas.Top="104" />
-            </Canvas>
+            <Viewbox Stretch="Uniform" Margin="8">
+              <Canvas Width="360" Height="170">
+                <shapes:Path Fill="{StaticResource TfcMapLandBrush}"
+                             Stroke="{StaticResource TfcMapStrokeBrush}"
+                             StrokeThickness="0.6"
+                             Opacity="0.92"
+                             Data="{Binding WorldMapPathData}" />
+                <Grid DataContext="{Binding PrimaryRegionMarker}"
+                      Width="{Binding Size}"
+                      Height="{Binding Size}"
+                      Canvas.Left="{Binding X}"
+                      Canvas.Top="{Binding Y}">
+                  <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
+                  <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
+                </Grid>
+                <Grid DataContext="{Binding SecondaryRegionMarker}"
+                      Width="{Binding Size}"
+                      Height="{Binding Size}"
+                      Canvas.Left="{Binding X}"
+                      Canvas.Top="{Binding Y}">
+                  <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
+                  <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
+                </Grid>
+                <Grid DataContext="{Binding TertiaryRegionMarker}"
+                      Width="{Binding Size}"
+                      Height="{Binding Size}"
+                      Canvas.Left="{Binding X}"
+                      Canvas.Top="{Binding Y}">
+                  <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
+                  <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
+                </Grid>
+              </Canvas>
+            </Viewbox>
             <StackPanel VerticalAlignment="Bottom" Margin="14" Spacing="4">
-              <TextBlock Classes="tfc-label" Text="{Binding DestinationPlaceholderState}" />
-              <TextBlock Classes="muted-text" FontSize="12" Text="Reserved destination projection visual" />
+              <TextBlock Classes="tfc-label" Text="REGION MARKERS" />
+              <TextBlock Classes="muted-text" FontSize="12" Text="Top destination regions from resolved public traffic" />
             </StackPanel>
           </Grid>
         </Border>

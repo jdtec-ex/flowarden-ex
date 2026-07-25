@@ -11,11 +11,11 @@
           <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Traffic Throughput" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Border Width="14" Height="2" Background="{StaticResource TfcTrafficCyanBrush}" VerticalAlignment="Center" />
+              <Border Width="14" Height="2" Background="{StaticResource TfcInboundBrush}" VerticalAlignment="Center" />
               <TextBlock Classes="tfc-label" Text="INBOUND" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Border Width="14" Height="2" Background="{StaticResource TfcTrafficPurpleBrush}" VerticalAlignment="Center" />
+              <Border Width="14" Height="2" Background="{StaticResource TfcOutboundBrush}" VerticalAlignment="Center" />
               <TextBlock Classes="tfc-label" Text="OUTBOUND" />
             </StackPanel>
           </StackPanel>
@@ -51,14 +51,14 @@
                 <Canvas Width="640" Height="260" ClipToBounds="True">
                   <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="260"
                                StrokeThickness="1.6"
-                               Stroke="{StaticResource TfcTrafficCyanBrush}"
+                               Stroke="{StaticResource TfcInboundBrush}"
                                Fill="Transparent"
                                Data="{Binding InboundPathData}"
                                IsVisible="{Binding HasTimeline}"
                                Stretch="Fill" />
                   <shapes:Path Canvas.Left="0" Canvas.Top="0" Width="640" Height="260"
                                StrokeThickness="1.6"
-                               Stroke="{StaticResource TfcTrafficPurpleBrush}"
+                               Stroke="{StaticResource TfcOutboundBrush}"
                                Fill="Transparent"
                                Data="{Binding OutboundPathData}"
                                IsVisible="{Binding HasTimeline}"
@@ -87,9 +87,9 @@
                                Foreground="{StaticResource TfcDimTextBrush}"
                                Text="{Binding ThroughputHoverTimeLabel}" />
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="18">
-                      <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcTrafficCyanBrush}" Text="IN" />
+                      <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcInboundBrush}" Text="IN" />
                       <TextBlock Grid.Column="1" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding ThroughputHoverInboundLabel}" />
-                      <TextBlock Grid.Row="1" Classes="tfc-data" Foreground="{StaticResource TfcTrafficPurpleBrush}" Text="OUT" />
+                      <TextBlock Grid.Row="1" Classes="tfc-data" Foreground="{StaticResource TfcOutboundBrush}" Text="OUT" />
                       <TextBlock Grid.Row="1" Grid.Column="1" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding ThroughputHoverOutboundLabel}" />
                     </Grid>
                   </StackPanel>

@@ -8,6 +8,9 @@
         x:Class="Flowarden.Ui.Views.MainWindow"
         x:DataType="vm:AppShellViewModel"
         Icon="/Assets/flowarden.ico"
+        Width="1440"
+        Height="900"
+        WindowStartupLocation="CenterScreen"
         Title="Flowarden">
 
     <Design.DataContext>

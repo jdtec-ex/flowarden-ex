@@ -13,18 +13,23 @@
     <Folder Include="State\" />
     <Folder Include="Styles\" />
     <Folder Include="Views\Components\" />
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\flowarden.ico" />
+    <AvaloniaResource Include="Assets\world-map-110m-equal-earth.path" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\health.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\discovery.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\control.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
     <Protobuf Include="..\..\..\flowarden\proto\flowarden\projection.proto" GrpcServices="Client" ProtoRoot="..\..\..\flowarden\proto" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.12" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
@@ -37,6 +42,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Semi.Avalonia" Version="11.3.7.2" />
   </ItemGroup>
 </Project>

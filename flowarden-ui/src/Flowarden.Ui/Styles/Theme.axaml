@@ -14,8 +14,14 @@
     <Color x:Key="TfcDimTextColor">#948E9C</Color>
     <Color x:Key="TfcPrimaryColor">#CFBCFF</Color>
     <Color x:Key="TfcPrimaryOnColor">#381E72</Color>
-    <Color x:Key="TfcTrafficCyanColor">#00F0FF</Color>
-    <Color x:Key="TfcTrafficPurpleColor">#B026FF</Color>
+    <Color x:Key="TfcInboundColor">#00CFEA</Color>
+    <Color x:Key="TfcOutboundColor">#A970FF</Color>
+    <Color x:Key="TfcDataAccentColor">#D9A84E</Color>
+    <Color x:Key="TfcDataTrackColor">#3A3540</Color>
+    <Color x:Key="TfcMapLandColor">#24212A</Color>
+    <Color x:Key="TfcMapStrokeColor">#5B5665</Color>
+    <Color x:Key="TfcTrafficCyanColor">#00CFEA</Color>
+    <Color x:Key="TfcTrafficPurpleColor">#A970FF</Color>
     <Color x:Key="TfcGoodColor">#10B981</Color>
     <Color x:Key="TfcWarningColor">#F59E0B</Color>
     <Color x:Key="TfcErrorColor">#EF4444</Color>
@@ -33,6 +39,12 @@
     <SolidColorBrush x:Key="TfcDimTextBrush" Color="{StaticResource TfcDimTextColor}" />
     <SolidColorBrush x:Key="TfcPrimaryBrush" Color="{StaticResource TfcPrimaryColor}" />
     <SolidColorBrush x:Key="TfcPrimaryOnBrush" Color="{StaticResource TfcPrimaryOnColor}" />
+    <SolidColorBrush x:Key="TfcInboundBrush" Color="{StaticResource TfcInboundColor}" />
+    <SolidColorBrush x:Key="TfcOutboundBrush" Color="{StaticResource TfcOutboundColor}" />
+    <SolidColorBrush x:Key="TfcDataAccentBrush" Color="{StaticResource TfcDataAccentColor}" />
+    <SolidColorBrush x:Key="TfcDataTrackBrush" Color="{StaticResource TfcDataTrackColor}" />
+    <SolidColorBrush x:Key="TfcMapLandBrush" Color="{StaticResource TfcMapLandColor}" />
+    <SolidColorBrush x:Key="TfcMapStrokeBrush" Color="{StaticResource TfcMapStrokeColor}" />
     <SolidColorBrush x:Key="TfcTrafficCyanBrush" Color="{StaticResource TfcTrafficCyanColor}" />
     <SolidColorBrush x:Key="TfcTrafficPurpleBrush" Color="{StaticResource TfcTrafficPurpleColor}" />
     <SolidColorBrush x:Key="TfcGoodBrush" Color="{StaticResource TfcGoodColor}" />

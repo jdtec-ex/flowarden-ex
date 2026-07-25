@@ -12,6 +12,12 @@
 
 本文只做差距分析和修改方案，不代表本轮已经完成 UI 修正。
 
+## 0. 当前实现状态
+
+当前 UI 已按 `docs/phase2/stitch_flowarden_network_monitoring_*` 四个 Stitch 原型和 `docs/phase2/tfc_runtime_screenshots/*_after*.png` 的最新运行截图推进到现阶段收口。Shell、Source、Overview、Inspect、Settings 的主结构已经落地，当前剩余工作主要是固定尺寸复核、人工签收和文档同步，不再是核心功能实现。
+
+本文件保留历史差距分析视角，最新落地状态以 `flowarden_phase2_semi_avalonia_ui_tracking.md` 为准。
+
 ## 2. 对照基线
 
 本次差距判断以两类基线为准：

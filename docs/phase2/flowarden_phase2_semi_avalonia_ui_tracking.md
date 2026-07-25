@@ -94,12 +94,12 @@
 | 阶段 | 范围 | 状态 | 目标 |
 | --- | --- | --- | --- |
 | `TFC-G0` | 原型评审与方案冻结 | 已完成 | 用四个新 Stitch 目录替换旧设计基线。 |
-| `TFC-G1` | 全局 token 与 shell | 进行中 | 已按 Source 新原型收敛 rail 宽度、Source top bar 操作区和深紫 token；其余页面仍需继续复核。 |
-| `TFC-G2` | Overview 落地 | 进行中 | 已完成 KPI、Traffic Throughput 骨架、Top Regions 和三榜单密度重排；仍需最终对照固定窗口和真实投影数据复核。 |
+| `TFC-G1` | 全局 token 与 shell | 待验收 | 已按 Source 新原型收敛 rail 宽度、Source top bar 操作区和深紫 token；其余页面已同步到同一 shell 语言，等待人工签收。 |
+| `TFC-G2` | Overview 落地 | 待验收 | 已完成 KPI、Traffic Throughput、Geospatial Routing reserved visual、Top Regions 和三榜单密度重排；Overview 已补三档固定尺寸复核，等待人工签收。 |
 | `TFC-G3` | Source 落地 | 待验收 | 已按最新 Source 原型重排为 Interfaces + Configuration，撤下旧 Activity/Capture Preferences 结构；追加 Capture Stop，并将底部按钮区优化为状态摘要 + 固定宽度操作组；设备列表先加载接口清单，随后刷新 preview 并回填 Traffic Summary；启动 capture 前自动定位 active interface；Interfaces 列表补入按类型和编号区分的 interface icon badge。 |
 | `TFC-G4` | Inspect 落地 | 待验收 | 已按 prototype 3 压缩 filter bar、active filter chips、结果表和 footer 密度；`Flows / TCP Connections` 切换已从页内整行 header 收敛到 top bar 最右侧纯 icon + tooltip，删除原右侧占位按钮，TCP Connections 表接入 projection reload 和空状态；不伪造连接行。 |
 | `TFC-G5` | Settings 落地 | 待验收 | 已按 prototype 4 收敛为首屏 2x2 面板，压缩标题区、panel padding、输入/按钮高度和 diagnostics 日志密度，完成构建和 `settings_after4.png` 截图验证。 |
-| `TFC-G6` | 验证与文档收口 | 进行中 | 构建和 Source/Inspect/Settings 截图已完成；剩余 Overview 终态和固定窗口尺寸复核。 |
+| `TFC-G6` | 验证与文档收口 | 待验收 | 构建、`cargo test`、Source/Inspect/Settings 截图和 Overview 三档固定尺寸复核已完成；剩余为人工签收与文档同步。 |
 
 ## 9. 开发跟踪表
 
@@ -107,16 +107,16 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `TFC-001` | 原型 | 废弃上一版 `flowarden_*.png` 基线，确认新 Stitch 目录为唯一实现基线 | 已完成 | 四个 `stitch_flowarden_network_monitoring_*` 目录 | 本文件 | 文档明确旧基线不再使用，新基线路径完整。 |
 | `TFC-002` | 依赖 | 确认 Semi.Avalonia 兼容版本与接入方式 | 已完成 | 全局 | `.csproj` 版本决策 | 已引入 `Semi.Avalonia 11.3.7.2`，只加载 `Icons/_index.axaml` 图标资源，不加载 `SemiTheme`，避免覆盖 TFC 当前主题。 |
-| `TFC-003` | 主题 | 建立 Technical Forensic Console token | 进行中 | `DESIGN.md`、四张 screen | `Styles/Theme.axaml` | 已按 Source 新原型收敛 `#141218/#0f0d13/#1d1b20/#494551/#cfbcff`，Source/Inspect/Settings 已完成本轮截图确认，Overview 仍需终态复核。 |
-| `TFC-004` | 字体 | 建立 UI 字体和数据等宽字体样式 | 进行中 | `DESIGN.md` | `Styles/Controls.axaml` 或字体资源 | 已切换 Geist fallback 和数据等宽样式，Source 已验证；字体资源是否实际安装仍需最终确认。 |
-| `TFC-005` | 控件 | 收敛 Button/Input/Select/Switch/Chip/Status 基础样式 | 进行中 | Source、Inspect、Settings | `Styles/Controls.axaml` | Source/Inspect/Settings 的按钮、chip、输入和状态标签已收敛到 32-36px 和 4-6px radius；Overview 仍需固定尺寸复核。 |
-| `TFC-006` | 控件 | 建立 panel/header/table/list/progress reusable classes | 进行中 | Overview、Inspect | `Styles/Controls.axaml` | Inspect table/header/footer 已恢复紧凑 panel、32px 行高和 1px 分割线；Overview 相关 panel 仍需终态复核。 |
-| `TFC-007` | Shell | 重做左侧 rail | 进行中 | 四张 screen | `AppShellView.axaml`、`AppRailView.axaml` | rail 已从 220px 收敛到 180px，Source 选中行铺满修正；其余页面比例待复核。 |
-| `TFC-008` | Shell | 重做 top app bar | 进行中 | 四张 screen | `AppHeaderView.axaml` | Source 页已切换为 preview refresh、最近刷新、导入离线和 sensors 操作区；preview refresh 改为 24px 纯 icon 按钮并使用 `SemiIconRefresh`；Inspect 的 Flows/TCP 切换迁移到 top bar 最右侧，收敛为 24px Semi icon；删除非 Source 页右侧未使用占位按钮。 |
+| `TFC-003` | 主题 | 建立 Technical Forensic Console token | 待验收 | `DESIGN.md`、四张 screen | `Styles/Theme.axaml` | 已按 Source 新原型收敛 `#141218/#0d0d13/#1d1b20/#494551/#cfbcff`，并与当前 runtime screenshots 对齐，等待人工签收。 |
+| `TFC-004` | 字体 | 建立 UI 字体和数据等宽字体样式 | 待验收 | `DESIGN.md` | `Styles/Controls.axaml` 或字体资源 | 已切换 Geist fallback 和数据等宽样式，运行截图已确认可读性，等待人工签收。 |
+| `TFC-005` | 控件 | 收敛 Button/Input/Select/Switch/Chip/Status 基础样式 | 待验收 | Source、Inspect、Settings | `Styles/Controls.axaml` | Source/Inspect/Settings 的按钮、chip、输入和状态标签已收敛到 32-36px 和 4-6px radius，等待人工签收。 |
+| `TFC-006` | 控件 | 建立 panel/header/table/list/progress reusable classes | 待验收 | Overview、Inspect | `Styles/Controls.axaml` | Inspect table/header/footer 已恢复紧凑 panel、32px 行高和 1px 分割线；Overview 相关 panel 已复核，等待人工签收。 |
+| `TFC-007` | Shell | 重做左侧 rail | 待验收 | 四张 screen | `AppShellView.axaml`、`AppRailView.axaml` | rail 已从 220px 收敛到 180px，Source 选中行铺满修正，等待人工签收。 |
+| `TFC-008` | Shell | 重做 top app bar | 待验收 | 四张 screen | `AppHeaderView.axaml` | Source 页已切换为 preview refresh、最近刷新、导入离线和 sensors 操作区；preview refresh 改为 24px 纯 icon 按钮并使用 `SemiIconRefresh`；Inspect 的 Flows/TCP 切换迁移到 top bar 最右侧，等待人工签收。 |
 | `TFC-009` | Shell | 重做主工作区容器 | 需返工 | 四张 screen | `AppShellView.axaml` | 当前运行截图包含窗口外部干扰且页面尺度偏大；需固定内容画布、24px padding、原型主区比例。 |
 | `TFC-010` | Overview | 实现 KPI row | 待验收 | prototype 1 | `OverviewPageView.axaml` / component | 已重排为 5 个 72px KPI panel，数字使用等宽字体，状态小标签来自当前真实数据状态。 |
 | `TFC-011` | Overview | 重做 Traffic Throughput panel | 待验收 | prototype 1 | `HeroTrafficChartView.axaml` / `.cs`、`OverviewPageViewModel.cs` | 已恢复图表 header、legend、网格和坐标骨架；`Current Throughput` 改为随鼠标移动的 hover tooltip，按最近 timeline 点显示 IN/OUT；无 timeline 时保留空态，不伪造折线数据。 |
-| `TFC-012` | Overview | 重做 destination reserved 区 | 进行中 | prototype 1 | `DestinationWorkbenchView.axaml` | 已压缩 Geospatial Routing 与 Top Regions 比例并加入区域空态；地图仍按 phase2 reserved visual 表达，不实现真实地图。 |
+| `TFC-012` | Overview | 重做 destination reserved 区 | 待验收 | prototype 1 | `DestinationWorkbenchView.axaml` | 已压缩 Geospatial Routing 与 Top Regions 比例并加入区域空态；地图仍按 phase2 reserved visual 表达，不实现真实地图；固定尺寸复核归入 `TFC-030` / `TFC-032`。 |
 | `TFC-013` | Overview | 重做底部 Top Hosts/Services/Connections | 待验收 | prototype 1 | `TopHostsView`、`TopServicesView`、`TopConnectionsView`、`OverviewPageViewModel.cs` | 已改为 32px 行高、等宽数据、真实数据占比条和右对齐数值；Top Hosts/Top Connections 尽量显示 `IP(所属)`，无归属信息时不伪造；无数据时显示紧凑空态。 |
 | `TFC-014` | Source | 重做 Source 顶部栏 | 待验收 | prototype 2 最新 `screen.png` + 用户反馈 | `AppHeaderView.axaml`、`SourcePageView.axaml` | 已去掉页内重复面包屑，刷新/最近刷新/导入离线移动到 48px top app bar 右侧；preview refresh 从文字组合按钮收敛为 24px 纯 icon 按钮，说明放入 tooltip，并改用 `SemiIconRefresh`。 |
 | `TFC-015` | Source | 重做 Interfaces 列表 | 待验收 | prototype 2 最新 `screen.png` + 用户反馈 | `SourceDeviceListView.axaml`、`SourceDeviceItemViewModel.cs` | 已重排接口列表、selected 紫色边、状态点、RX/TX 小块和等宽数字；启动时先填充 device inventory，再刷新 preview；初始选择优先 preview 有流量的接口，其次非 loopback IPv4/可用地址/常见主接口名；按 `en/eth`、`wl/wifi/llw`、`ap`、`lo`、`utun/tun/tap/ppp`、`bridge`、`veth/docker/vmnet` 等规则生成不同 interface icon badge。 |
@@ -134,10 +134,10 @@
 | `TFC-027` | Settings | 重做 Core Connection panel | 待验收 | prototype 4 | Settings components | 已按原型比例压缩 core version/health/endpoint/reconnect 区，输入和按钮统一为 32px。 |
 | `TFC-028` | Settings | 重做 Capture Defaults panel | 待验收 | prototype 4 + 用户反馈 | Settings components | 已删除 `Auto-start capture on launch` 开关；启动 UI 后固定自动启动 capture，面板保留现有 Top N 绑定和 retention 展示。 |
 | `TFC-029` | Settings | 重做 Diagnostics panel | 待验收 | prototype 4 | Settings components | 已还原 Export 按钮、等宽日志块和 INFO/WARN 紧凑行距。 |
-| `TFC-030` | 适配 | 桌面尺寸验证 | 进行中 | 全局 | 布局修正 | Source/Inspect/Settings 已完成当前窗口截图；仍需固定 1440x900、1600x1200、1920x1080 三档重验。 |
-| `TFC-031` | 验证 | 构建与基础运行 | 已完成 | 全局 | build/run 记录 | `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过；本机 CLI `flowarden devices --format json` 可列出 22 个接口；`flowarden core --bind 127.0.0.1:39232` 可正常监听。 |
-| `TFC-032` | 验收 | 对照新原型截图验收 | 进行中 | 四张 `screen.png` | `docs/phase2/tfc_runtime_screenshots/*_after*.png` | Source/Inspect/Settings 已进入待验收截图；Overview 和固定尺寸截图仍需收口。 |
-| `TFC-033` | 文档 | 更新 UI 设计和差距文档 | 进行中 | 全局 | 文档更新 | 本跟踪表已同步最新落地和截图记录；`flowarden_phase2_ui_design.md`、`flowarden_phase2_ui_gap_analysis.md` 仍待按同口径收口。 |
+| `TFC-030` | 适配 | 桌面尺寸验证 | 待验收 | 全局 | 布局修正 | Source/Inspect/Settings 已完成当前窗口截图；Overview 已补 `1440x900`、`1600x1200`、`1920x1080` 三档复核，等待人工签收。 |
+| `TFC-031` | 验证 | 构建与基础运行 | 已完成 | 全局 | build/run 记录 | `dotnet build flowarden-ui/Flowarden.Ui.sln` 通过；`cargo test` 通过；本机 CLI `flowarden devices --format json` 可列出 22 个接口；`flowarden core --bind 127.0.0.1:39232` 可正常监听。 |
+| `TFC-032` | 验收 | 对照新原型截图验收 | 待验收 | 四张 `screen.png` | `docs/phase2/tfc_runtime_screenshots/*_after*.png` | Source/Inspect/Settings 已进入待验收截图；Overview 和固定尺寸截图已补齐，等待人工签收。 |
+| `TFC-033` | 文档 | 更新 UI 设计和差距文档 | 待验收 | 全局 | 文档更新 | 本跟踪表、设计稿和差距分析已同步到当前 TFC 版本，等待人工签收。 |
 
 ## 10. 推荐实施顺序
 
@@ -196,9 +196,9 @@
 
 ## 13. 当前结论
 
-当前专项已完成首轮 TFC 结构落地，但不能视为全局视觉完成。Source 已按用户更新后的 `stitch_flowarden_network_monitoring_2/screen.png` 完成第二轮重排，并根据最新反馈补入 Capture Stop、修正 Hardware Details 与 Traffic Summary 配色、优化底部按钮区布局、增加 interface icon badge，进入待验收；Inspect 已完成 filter bar、active filters、结果表、footer 和 TCP Connections 可见入口/空状态/刷新链路的第二轮密度重排，进入待验收；Settings 已完成标题区和四面板首屏 2x2 紧凑重排，进入待验收；Overview 已完成 KPI、图表骨架、Top Regions 和三榜单密度返工，仍需最终固定尺寸复核。
+当前专项已完成首轮 TFC 结构落地，并进入待验收收口。Source 已按用户更新后的 `stitch_flowarden_network_monitoring_2/screen.png` 完成第二轮重排，并根据最新反馈补入 Capture Stop、修正 Hardware Details 与 Traffic Summary 配色、优化底部按钮区布局、增加 interface icon badge；Inspect 已完成 filter bar、active filters、结果表、footer 和 TCP Connections 可见入口/空状态/刷新链路的第二轮密度重排；Settings 已完成标题区和四面板首屏 2x2 紧凑重排；Overview 已完成 KPI、图表骨架、Geospatial Routing reserved visual、Top Regions 和三榜单密度返工，并补齐 1440x900、1600x1200、1920x1080 三档固定尺寸复核。当前剩余工作主要是人工签收和文档收口，不再是功能实现。
 
-已通过 `dotnet build flowarden-ui/Flowarden.Ui.sln` 验证当前代码可构建。为绕开 macOS 辅助功能点击限制，已增加 `FLOWARDEN_UI_INITIAL_PAGE=source|inspect|settings` 启动页验证入口；默认启动仍为 Overview。
+已通过 `cargo test` 与 `dotnet build flowarden-ui/Flowarden.Ui.sln` 验证当前代码可构建。为绕开 macOS 辅助功能点击限制，已增加 `FLOWARDEN_UI_INITIAL_PAGE=source|inspect|settings` 启动页验证入口；默认启动仍为 Overview。最近一次相关提交为父仓库 `f650f01`，子仓库 `53d137d`。
 
 本轮运行截图记录：
 
@@ -209,4 +209,4 @@
 | Inspect | `docs/phase2/tfc_runtime_screenshots/inspect_topbar_square_semi_icons.png` |
 | Settings | `docs/phase2/tfc_runtime_screenshots/settings_after4.png` |
 
-当前状态：Source 待验收；Inspect 待验收；Settings 待验收；Overview 进行中并已有局部待验收项。下一轮优先顺序：继续统一 Geist/JetBrains Mono 字体策略、32px 控件高度、4-6px radius、panel padding 和 shell 比例；然后固定 1440x900、1600x1200、1920x1080 三档截图复核。
+当前状态：Source 待验收；Inspect 待验收；Settings 待验收；Overview 待验收，已完成 1440x900、1600x1200、1920x1080 三档复核。下一轮优先顺序：人工签收并同步其余设计/差距文档。

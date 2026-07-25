@@ -35,6 +35,8 @@ public sealed class OverviewSnapshotDto
 
     public string MetricMode { get; init; } = "bytes";
 
+    public string CaptureStatus { get; init; } = "idle";
+
     public IReadOnlyList<TimelinePointDto> TimelinePoints { get; init; } = Array.Empty<TimelinePointDto>();
 }
 
@@ -82,6 +84,8 @@ public sealed class DestinationSummaryDto
     public string Label { get; init; } = string.Empty;
 
     public string CountryLabel { get; init; } = string.Empty;
+
+    public string CountryCode { get; init; } = string.Empty;
 
     public ulong Bytes { get; init; }
 

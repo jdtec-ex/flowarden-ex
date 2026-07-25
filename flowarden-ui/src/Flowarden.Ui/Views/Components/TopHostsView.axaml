@@ -16,7 +16,7 @@
               <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0">
                 <Grid ColumnDefinitions="150,*,64" ColumnSpacing="10">
                   <SelectableTextBlock Classes="tfc-data" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                  <Border Grid.Column="1" Height="6" Background="{StaticResource TfcBorderBrush}" VerticalAlignment="Center">
+                  <Border Grid.Column="1" Height="6" Background="{StaticResource TfcDataTrackBrush}" VerticalAlignment="Center">
                     <Border Background="{Binding AccentBrush}" Width="{Binding BarWidth}" HorizontalAlignment="Left" />
                   </Border>
                   <SelectableTextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding ValueLabel}" />

@@ -148,15 +148,15 @@ public partial class App : Application
     private static string LocateCoreBinaryPath()
     {
         var executableName = OperatingSystem.IsWindows() ? "flowarden.exe" : "flowarden";
-        var searchRoots = new[]
-        {
-            AppContext.BaseDirectory,
-            Directory.GetCurrentDirectory(),
-        };
-
-        foreach (var root in searchRoots)
+        foreach (var root in GetCoreBinarySearchRoots())
         {
             var directory = new DirectoryInfo(Path.GetFullPath(root));
+
+            var bundledCandidate = Path.Combine(directory.FullName, executableName);
+            if (File.Exists(bundledCandidate))
+            {
+                return bundledCandidate;
+            }
 
             while (directory is not null)
             {
@@ -184,6 +184,36 @@ public partial class App : Application
             "debug",
             executableName
         );
+    }
+
+    private static string[] GetCoreBinarySearchRoots()
+    {
+        var roots = new[]
+        {
+            AppContext.BaseDirectory,
+            Directory.GetCurrentDirectory(),
+        };
+
+        if (!OperatingSystem.IsMacOS())
+        {
+            return roots;
+        }
+
+        var baseDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+        if (baseDirectory.Parent?.Parent?.Parent is not { } appBundleRoot)
+        {
+            return roots;
+        }
+
+        var macOsDirectory = Path.Combine(appBundleRoot.FullName, "MacOS");
+        var resourcesDirectory = Path.Combine(appBundleRoot.FullName, "Resources");
+        return
+        [
+            AppContext.BaseDirectory,
+            macOsDirectory,
+            resourcesDirectory,
+            Directory.GetCurrentDirectory(),
+        ];
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

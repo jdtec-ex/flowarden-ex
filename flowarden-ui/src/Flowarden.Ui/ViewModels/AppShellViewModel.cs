@@ -465,12 +465,19 @@ public sealed partial class AppShellViewModel : ViewModelBase
             _ = RefreshProjectionAfterStopAsync();
         }
 
+        if (status == "starting")
+        {
+            StopOverviewStreaming();
+            ResetProjectionForSession(session);
+            return;
+        }
+
         if (status == "running")
         {
             BeginOverviewStreaming();
         }
 
-        if (status == "starting" || status == "stopping")
+        if (status == "stopping")
         {
             StopOverviewStreaming();
         }
@@ -518,6 +525,20 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         var session = SourcePage.CurrentSession;
+        ResetProjectionForSession(session);
+
+        var streamCts = new CancellationTokenSource();
+        _liveOverviewCts = streamCts;
+        _ = ConsumeOverviewStreamAsync(streamCts);
+    }
+
+    private void ResetProjectionForSession(CaptureSessionStateDto? session)
+    {
+        if (session is null)
+        {
+            return;
+        }
+
         var mode = string.Equals(session.Mode, "offline", StringComparison.OrdinalIgnoreCase)
             ? "offline"
             : "live";
@@ -534,12 +555,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
                     ? "Filter · none"
                     : $"Filter · {session.Bpf}",
                 MetricMode = "bytes",
+                CaptureStatus = session.CaptureStatus,
             }
         );
-
-        var streamCts = new CancellationTokenSource();
-        _liveOverviewCts = streamCts;
-        _ = ConsumeOverviewStreamAsync(streamCts);
     }
 
     private void StopOverviewStreaming()
@@ -566,6 +584,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             )
             {
                 _liveProjectionState.UpdateOverview(snapshot);
+                ApplyCaptureStatusFromOverview(snapshot);
             }
         }
         catch (OperationCanceledException) { }
@@ -578,6 +597,33 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
             streamCts.Dispose();
         }
+    }
+
+    private void ApplyCaptureStatusFromOverview(OverviewSnapshotDto snapshot)
+    {
+        if (!string.Equals(snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var status = snapshot.CaptureStatus.Trim().ToLowerInvariant();
+        if (status is not ("idle" or "error"))
+        {
+            return;
+        }
+
+        var current = SourcePage.CurrentSession;
+        if (!string.Equals(current.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(current.CaptureStatus, "running", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SourcePage.SetProjectionCaptureStatus(
+            status,
+            status == "error" ? "Offline replay failed." : "Offline replay completed."
+        );
+        StopOverviewStreaming();
     }
 
     private void OnProjectionTopNChanged(uint topN)

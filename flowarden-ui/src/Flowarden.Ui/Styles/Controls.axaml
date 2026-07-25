@@ -3,7 +3,7 @@
   <Style Selector="Window">
     <Setter Property="Background" Value="{StaticResource TfcBackgroundBrush}" />
     <Setter Property="Foreground" Value="{StaticResource TfcTextBrush}" />
-    <Setter Property="FontFamily" Value="Geist, Inter, Segoe UI, Helvetica Neue, Arial" />
+    <Setter Property="FontFamily" Value="Geist, Segoe UI, Helvetica Neue, Arial" />
   </Style>
 
   <Style Selector="TextBlock">
