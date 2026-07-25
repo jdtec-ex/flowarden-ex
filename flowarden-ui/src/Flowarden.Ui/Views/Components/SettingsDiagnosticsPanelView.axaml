@@ -3,30 +3,82 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsDiagnosticsPanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="tfc-panel" Padding="20,18">
-    <Grid RowDefinitions="Auto,*" RowSpacing="14">
+  <Border Classes="tfc-panel" Padding="14,12">
+    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Classes="section-title" Text="Diagnostics" />
-        <Button Grid.Column="1" Classes="mode-button" Height="32" Padding="14,5" Content="Export" />
+        <TextBlock Classes="section-title" Text="Diagnostics" VerticalAlignment="Center" />
+        <Button Grid.Column="1"
+                Classes="mode-button"
+                Height="28"
+                Padding="10,0"
+                Content="Export"
+                Command="{Binding ExportDiagnosticsCommand}" />
       </Grid>
 
-      <Border Grid.Row="1" Classes="tfc-panel-low" Padding="12">
-        <StackPanel Spacing="6">
-          <ItemsControl ItemsSource="{Binding Diagnostics}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Grid ColumnDefinitions="82,*" ColumnSpacing="10" Margin="0,0,0,6">
-                  <TextBlock Classes="tfc-data" FontSize="12" Foreground="{StaticResource TfcWarningBrush}" Text="{Binding Reason, StringFormat=[{0}]}" />
-                  <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="12" Text="{Binding Message}" TextWrapping="Wrap" />
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <Grid ColumnDefinitions="82,*" ColumnSpacing="10">
-            <TextBlock Classes="tfc-data" FontSize="12" Foreground="{StaticResource TfcGoodBrush}" Text="[INFO]" />
-            <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="12" Text="UI diagnostics panel ready." />
-          </Grid>
+      <!-- Capture quality metrics -->
+      <Grid Grid.Row="1"
+            ColumnDefinitions="*,*,*"
+            RowDefinitions="Auto,Auto,Auto,Auto"
+            RowSpacing="6"
+            ColumnSpacing="10">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="DROPPED" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding DroppedPacketsLabel}" />
         </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="LAST PACKET AGE" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding LastPacketAgeLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="STREAM" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding StreamStateLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="CORE UPTIME" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding CoreUptimeLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="CORE RESTARTS" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding CoreRestartCountLabel}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="2" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="10" Text="PROCESS LOOKUP" />
+          <TextBlock Classes="tfc-data" FontSize="12" Text="{Binding ProcessLookupLabel}" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="3"
+                   Classes="muted-text"
+                   FontSize="11"
+                   Text="{Binding CaptureQualitySummary}"
+                   TextWrapping="Wrap" />
+        <TextBlock Grid.Row="3"
+                   Grid.ColumnSpan="3"
+                   Classes="muted-text"
+                   FontSize="10"
+                   Text="{Binding GeoDataLabel}"
+                   TextWrapping="Wrap" />
+      </Grid>
+
+      <Border Grid.Row="2" Classes="tfc-panel-low" Padding="10" MaxHeight="110">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="muted-text" FontSize="11" Text="{Binding DiagnosticsExportStatus}" TextWrapping="Wrap" />
+            <ItemsControl ItemsSource="{Binding Diagnostics}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="82,*" ColumnSpacing="8" Margin="0,0,0,4">
+                    <TextBlock Classes="tfc-data" FontSize="11" Foreground="{StaticResource TfcWarningBrush}" Text="{Binding Reason, StringFormat=[{0}]}" />
+                    <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="11" Text="{Binding Message}" TextWrapping="Wrap" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="82,*" ColumnSpacing="8">
+              <TextBlock Classes="tfc-data" FontSize="11" Foreground="{StaticResource TfcGoodBrush}" Text="[INFO]" />
+              <TextBlock Grid.Column="1" Classes="tfc-data" FontSize="11" Text="Export → JSON snapshot; metrics refresh with live overview." />
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
       </Border>
     </Grid>
   </Border>

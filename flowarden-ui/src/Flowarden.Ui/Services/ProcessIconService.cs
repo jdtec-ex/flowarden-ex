@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace Flowarden.Ui.Services;
 
@@ -36,7 +41,8 @@ public readonly record struct ProcessIconKey(string Path, string BundleId, strin
     {
         get
         {
-            var hue = Math.Abs(StringComparer.Ordinal.GetHashCode(Name)) % 360;
+            var seed = string.IsNullOrWhiteSpace(Name) ? "?" : Name;
+            var hue = Math.Abs(StringComparer.Ordinal.GetHashCode(seed)) % 360;
             return new SolidColorBrush(HsvToColor(hue / 360.0, 0.42, 0.70));
         }
     }
@@ -63,12 +69,11 @@ public readonly record struct ProcessIconKey(string Path, string BundleId, strin
 }
 
 /// <summary>
-/// Resolves process icons asynchronously. Bitmap extraction is best-effort;
-/// monogram metadata is always available via <see cref="ProcessIconKey"/>.
+/// Resolves process icons asynchronously with LRU cache.
+/// Returns OS bitmaps when available; UI should monogram when null.
 /// </summary>
 public interface IProcessIconService
 {
-    /// <summary>Returns a bitmap when OS extraction succeeds; otherwise null (use monogram).</summary>
     Task<IImage?> GetIconAsync(ProcessIconKey key, CancellationToken cancellationToken = default);
 }
 
@@ -104,14 +109,7 @@ public sealed class ProcessIconService : IProcessIconService
             () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                // Platform bitmap extraction is optional. Path presence is recorded for future
-                // native loaders; monogram UI covers macOS/Windows/Linux consistently for v1.
-                IImage? image = null;
-                if (!string.IsNullOrWhiteSpace(key.Path) && File.Exists(key.Path))
-                {
-                    image = null; // Reserved for OS-specific extractors without stream pollution.
-                }
-
+                var image = TryLoadPlatformIcon(key);
                 lock (_gate)
                 {
                     if (_cache.TryGetValue(cacheKey, out var existing))
@@ -160,4 +158,168 @@ public sealed class ProcessIconService : IProcessIconService
 
         return $"name:{key.Name}|{key.Pid}";
     }
+
+    private static IImage? TryLoadPlatformIcon(ProcessIconKey key)
+    {
+        var path = ResolveIconPath(key);
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path) && !Directory.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return TryLoadWindowsIcon(path);
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return TryLoadMacIcon(path);
+            }
+        }
+        catch
+        {
+            // Fall back to monogram in UI.
+        }
+
+        return null;
+    }
+
+    private static string ResolveIconPath(ProcessIconKey key)
+    {
+        if (!string.IsNullOrWhiteSpace(key.Path))
+        {
+            // Prefer enclosing .app bundle on macOS for better icons.
+            var path = key.Path;
+            var appIdx = path.IndexOf(".app/", StringComparison.OrdinalIgnoreCase);
+            if (appIdx > 0)
+            {
+                return path[..(appIdx + 4)];
+            }
+
+            return path;
+        }
+
+        return string.Empty;
+    }
+
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    private static IImage? TryLoadWindowsIcon(string path)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+            if (icon is null)
+            {
+                return null;
+            }
+
+            using var bitmap = icon.ToBitmap();
+            using var stream = new MemoryStream();
+            bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            stream.Position = 0;
+            return new Bitmap(stream);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static IImage? TryLoadMacIcon(string path)
+    {
+        // Use Quick Look thumbnail generation (built into macOS). Cached by path key.
+        var tempDir = Path.Combine(Path.GetTempPath(), "flowarden-icons");
+        Directory.CreateDirectory(tempDir);
+        var safeName = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(path)
+            )
+        )[..16];
+        var expectedPng = Path.Combine(tempDir, safeName + ".png");
+        if (File.Exists(expectedPng))
+        {
+            return LoadBitmap(expectedPng);
+        }
+
+        // qlmanage names output after the input basename, so work in a private folder.
+        var workDir = Path.Combine(tempDir, safeName);
+        Directory.CreateDirectory(workDir);
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "/usr/bin/qlmanage",
+                ArgumentList = { "-t", "-s", "64", "-o", workDir, path },
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            using var process = Process.Start(psi);
+            if (process is null)
+            {
+                return null;
+            }
+
+            if (!process.WaitForExit(2500))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                return null;
+            }
+
+            var produced = Directory.GetFiles(workDir, "*.png");
+            if (produced.Length == 0)
+            {
+                return null;
+            }
+
+            File.Copy(produced[0], expectedPng, overwrite: true);
+            return LoadBitmap(expectedPng);
+        }
+        catch
+        {
+            return null;
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(workDir, recursive: true);
+            }
+            catch
+            {
+                // ignore cleanup failures
+            }
+        }
+    }
+
+    private static IImage? LoadBitmap(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return new Bitmap(stream);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
 }

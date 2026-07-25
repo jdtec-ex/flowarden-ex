@@ -100,6 +100,12 @@ public sealed class DestinationSummaryDto
 
     public string CountryCode { get; init; } = string.Empty;
 
+    public uint AsnNumber { get; init; }
+
+    public string AsnOrganization { get; init; } = string.Empty;
+
+    public string AsnLabel { get; init; } = string.Empty;
+
     public ulong Bytes { get; init; }
 
     public double Ratio { get; init; }

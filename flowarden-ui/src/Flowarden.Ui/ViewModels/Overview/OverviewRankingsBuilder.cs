@@ -64,11 +64,20 @@ internal static class OverviewRankingsBuilder
     )
     {
         return rows
-            .Select(row => new OverviewRegionRowViewModel(
-                string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label,
-                row.Ratio.ToString("P0", CultureInfo.InvariantCulture),
-                DataAccentBrush
-            ))
+            .Select(row =>
+            {
+                var label = string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label;
+                if (!string.IsNullOrWhiteSpace(row.AsnLabel))
+                {
+                    label = $"{label} · {row.AsnLabel}";
+                }
+
+                return new OverviewRegionRowViewModel(
+                    label,
+                    row.Ratio.ToString("P0", CultureInfo.InvariantCulture),
+                    DataAccentBrush
+                );
+            })
             .ToArray();
     }
 

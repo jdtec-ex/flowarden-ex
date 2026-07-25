@@ -1,8 +1,12 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Avalonia.Media;
+using Flowarden.Ui.Services;
 
 namespace Flowarden.Ui.Models;
 
-public sealed class ConnectionRowDto
+public sealed class ConnectionRowDto : INotifyPropertyChanged
 {
     public string SourceAddress { get; init; } = string.Empty;
 
@@ -54,10 +58,42 @@ public sealed class ConnectionRowDto
                 ? ProcessName
                 : $"{ProcessName} · {ProcessPid}";
 
-    public string ProcessMonogram =>
-        string.IsNullOrWhiteSpace(ProcessName)
-            ? "·"
-            : char.ToUpperInvariant(ProcessName.Trim()[0]).ToString();
+    public string ProcessMonogram
+    {
+        get
+        {
+            var key = IconKey;
+            return key.IsEmpty ? "·" : key.Monogram;
+        }
+    }
+
+    public IBrush ProcessMonogramBrush => IconKey.MonogramBrush;
+
+    public bool HasProcessIcon => ProcessIcon is not null;
+
+    public bool ShowProcessMonogram => !HasProcessIcon;
+
+    private IImage? _processIcon;
+
+    public IImage? ProcessIcon
+    {
+        get => _processIcon;
+        set
+        {
+            if (ReferenceEquals(_processIcon, value))
+            {
+                return;
+            }
+
+            _processIcon = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasProcessIcon));
+            OnPropertyChanged(nameof(ShowProcessMonogram));
+        }
+    }
+
+    public ProcessIconKey IconKey =>
+        ProcessIconKey.FromConnection(ProcessPath, ProcessBundleId, ProcessName, ProcessPid);
 
     public string ProcessTooltip
     {
@@ -69,9 +105,18 @@ public sealed class ConnectionRowDto
             }
 
             var path = string.IsNullOrWhiteSpace(ProcessPath) ? "path unknown" : ProcessPath;
-            var asn = string.IsNullOrWhiteSpace(RemoteAsnLabel) ? string.Empty : $"\nRemote ASN: {RemoteAsnLabel}";
+            var asn = string.IsNullOrWhiteSpace(RemoteAsnLabel)
+                ? string.Empty
+                : $"\nRemote ASN: {RemoteAsnLabel}";
             return $"{ProcessLabel}\n{path}{asn}";
         }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public string SniLabel => string.IsNullOrWhiteSpace(Sni) ? "—" : Sni.Trim();

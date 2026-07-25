@@ -181,6 +181,10 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     private string processLookupLabel = "—";
 
     [ObservableProperty]
+    private string geoDataLabel =
+        "GeoLite2 Country + ASN (bundled). This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com.";
+
+    [ObservableProperty]
     private string captureQualitySummary = "Waiting for capture metrics…";
 
     [ObservableProperty]

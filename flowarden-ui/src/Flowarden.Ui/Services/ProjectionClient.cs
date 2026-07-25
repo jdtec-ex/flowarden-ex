@@ -121,6 +121,9 @@ public sealed class ProjectionClient
                     Label = destination.Label,
                     CountryLabel = destination.CountryLabel,
                     CountryCode = destination.CountryCode,
+                    AsnNumber = destination.AsnNumber,
+                    AsnOrganization = destination.AsnOrganization ?? string.Empty,
+                    AsnLabel = destination.AsnLabel ?? string.Empty,
                     Bytes = destination.Bytes,
                     Ratio = destination.Ratio,
                 })

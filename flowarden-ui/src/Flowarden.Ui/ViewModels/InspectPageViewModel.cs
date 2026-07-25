@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
 using Flowarden.Ui.Services;
 using Flowarden.Ui.State;
+// ProcessIconService loads OS icons off the UI thread for Inspect rows.
 
 namespace Flowarden.Ui.ViewModels;
 
@@ -417,6 +418,32 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         }
 
         OnPropertyChanged(nameof(FlowModeLabel));
+        _ = LoadProcessIconsAsync(Rows.ToArray());
+    }
+
+    private async Task LoadProcessIconsAsync(IReadOnlyList<ConnectionRowDto> rows)
+    {
+        var iconService = new ProcessIconService();
+        foreach (var row in rows)
+        {
+            if (row.IconKey.IsEmpty)
+            {
+                continue;
+            }
+
+            try
+            {
+                var icon = await iconService.GetIconAsync(row.IconKey);
+                if (icon is not null)
+                {
+                    row.ProcessIcon = icon;
+                }
+            }
+            catch
+            {
+                // Keep monogram fallback.
+            }
+        }
     }
 
     private void ReplaceTcpRows(IEnumerable<TcpConnectionRowDto> rows)
