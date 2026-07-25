@@ -8,8 +8,7 @@
           BorderBrush="{StaticResource TfcBorderBrush}"
           BorderThickness="1"
           CornerRadius="6"
-          Padding="12"
-          DoubleTapped="OnDoubleTapped">
+          Padding="12">
     <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
       <Grid ColumnDefinitions="*,Auto">
         <StackPanel Spacing="2">
@@ -41,19 +40,19 @@
       <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
         <StackPanel>
           <TextBlock Classes="tfc-label" Text="PKTS" />
-          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding PacketsLabel}" />
+          <TextBlock Classes="tfc-data" FontSize="16" FontWeight="SemiBold" Text="{Binding PacketsLabel}" />
         </StackPanel>
         <StackPanel Grid.Column="1">
           <TextBlock Classes="tfc-label" Text="BYTES" />
-          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding BytesLabel}" />
+          <TextBlock Classes="tfc-data" FontSize="16" FontWeight="SemiBold" Text="{Binding BytesLabel}" />
         </StackPanel>
         <StackPanel Grid.Column="2">
           <TextBlock Classes="tfc-label" Text="IN" />
-          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding InboundLabel}" />
+          <TextBlock Classes="tfc-data" FontSize="16" FontWeight="SemiBold" Text="{Binding InboundLabel}" />
         </StackPanel>
         <StackPanel Grid.Column="3">
           <TextBlock Classes="tfc-label" Text="OUT" />
-          <TextBlock Classes="tfc-data" FontSize="14" Text="{Binding OutboundLabel}" />
+          <TextBlock Classes="tfc-data" FontSize="16" FontWeight="SemiBold" Text="{Binding OutboundLabel}" />
         </StackPanel>
       </Grid>
 
@@ -68,6 +67,7 @@
           <Canvas Width="640" Height="84">
             <shapes:Path Stroke="{StaticResource TfcPrimaryBrush}"
                          StrokeThickness="1.5"
+                         Fill="Transparent"
                          Data="{Binding SparklinePath}" />
           </Canvas>
         </Viewbox>

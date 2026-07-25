@@ -7,6 +7,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800"
         x:Class="Flowarden.Ui.Views.MainWindow"
+        x:Name="RootWindow"
         x:DataType="vm:AppShellViewModel"
         Icon="/Assets/flowarden.ico"
         Width="1440"
@@ -20,9 +21,14 @@
     </Design.DataContext>
 
     <Panel>
+      <!-- Full console -->
       <views:AppShellView IsVisible="{Binding IsNotThumbnailMode}" />
-      <Panel IsVisible="{Binding IsThumbnailMode}">
+
+      <!-- Compact chrome: keep DataContext on shell so IsThumbnailMode visibility is stable;
+           only the child binds to ThumbnailPage. -->
+      <Border IsVisible="{Binding IsThumbnailMode}"
+              Background="{StaticResource TfcBackgroundBrush}">
         <thumb:ThumbnailView DataContext="{Binding ThumbnailPage}" />
-      </Panel>
+      </Border>
     </Panel>
 </Window>

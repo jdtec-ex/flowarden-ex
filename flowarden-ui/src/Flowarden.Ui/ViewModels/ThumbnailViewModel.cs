@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flowarden.Ui.Models;
@@ -29,10 +28,10 @@ public sealed partial class ThumbnailViewModel : ViewModelBase
     private string bytesLabel = "0 B";
 
     [ObservableProperty]
-    private string inboundLabel = "0 B/s";
+    private string inboundLabel = "0 B";
 
     [ObservableProperty]
-    private string outboundLabel = "0 B/s";
+    private string outboundLabel = "0 B";
 
     [ObservableProperty]
     private string captureStatusLabel = "Idle";
@@ -63,28 +62,48 @@ public sealed partial class ThumbnailViewModel : ViewModelBase
 
     public bool CanStop => _shell.SourcePage.CanStopFormalCapture;
 
-    private void OnOverviewUpdated(OverviewSnapshotDto snapshot) => ApplySnapshot(snapshot);
+    public void RefreshFromCurrentProjection()
+    {
+        ApplySnapshot(_liveProjectionState.CurrentOverview);
+    }
+
+    private void OnOverviewUpdated(OverviewSnapshotDto snapshot)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ApplySnapshot(snapshot);
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() => ApplySnapshot(snapshot));
+    }
 
     private void ApplySnapshot(OverviewSnapshotDto snapshot)
     {
+        // Totals are cumulative session counters (not per-second rates).
         PacketsLabel = OverviewFormatting.FormatCount(snapshot.Totals.Packets);
         BytesLabel = OverviewFormatting.FormatBytes(snapshot.Totals.Bytes);
-        InboundLabel = OverviewFormatting.FormatByteRate(snapshot.Totals.BytesIn);
-        OutboundLabel = OverviewFormatting.FormatByteRate(snapshot.Totals.BytesOut);
+        InboundLabel = OverviewFormatting.FormatBytes(snapshot.Totals.BytesIn);
+        OutboundLabel = OverviewFormatting.FormatBytes(snapshot.Totals.BytesOut);
         CaptureStatusLabel = string.IsNullOrWhiteSpace(snapshot.CaptureStatus)
             ? "idle"
             : snapshot.CaptureStatus;
         SourceLabel = snapshot.SourceLabel
             .Replace("Live source · ", string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("Offline source · ", string.Empty, StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(SourceLabel))
+        {
+            SourceLabel = "not started";
+        }
+
         var max = OverviewChartPaths.CalculateMaxTimelineValue(snapshot.TimelinePoints);
         SparklinePath = OverviewChartPaths.BuildTimelinePath(
             snapshot.TimelinePoints,
             max,
             selectOutbound: true
         );
-        UnreadSignalsLabel = _shell.SignalsPage.UnreadCount.ToString();
-        HasUnreadSignals = _shell.SignalsPage.UnreadCount > 0;
+        UnreadSignalsLabel = _shell.SignalUnreadCount.ToString();
+        HasUnreadSignals = _shell.HasSignalUnread;
         OnPropertyChanged(nameof(CanPause));
         OnPropertyChanged(nameof(CanResume));
         OnPropertyChanged(nameof(CanStop));

@@ -2,6 +2,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 using Flowarden.Ui.ViewModels;
 
 namespace Flowarden.Ui.Views;
@@ -9,6 +10,7 @@ namespace Flowarden.Ui.Views;
 public partial class MainWindow : Window
 {
     private bool _applyingGeometry;
+    private bool _modeTransitionArmed;
     private PixelPoint? _normalPosition;
 
     public MainWindow()
@@ -23,10 +25,12 @@ public partial class MainWindow : Window
     {
         if (DataContext is AppShellViewModel shell)
         {
+            shell.ThumbnailModeChanged -= OnThumbnailModeChanged;
             shell.ThumbnailModeChanged += OnThumbnailModeChanged;
             if (shell.Preferences.StartInThumbnail)
             {
-                shell.EnterThumbnailCommand.Execute(null);
+                // Defer so the first layout pass completes before resizing.
+                Dispatcher.UIThread.Post(() => shell.EnterThumbnailCommand.Execute(null));
             }
         }
     }
@@ -39,6 +43,7 @@ public partial class MainWindow : Window
         }
 
         _applyingGeometry = true;
+        _modeTransitionArmed = true;
         try
         {
             if (shell.IsThumbnailMode)
@@ -49,14 +54,15 @@ public partial class MainWindow : Window
 
                 Topmost = true;
                 CanResize = true;
-                var width = FiniteOr(shell.Preferences.ThumbnailWidth, 360, 320, 520);
-                var height = FiniteOr(shell.Preferences.ThumbnailHeight, 220, 180, 360);
-                Width = width;
-                Height = height;
+                Width = FiniteOr(shell.Preferences.ThumbnailWidth, 360, 320, 520);
+                Height = FiniteOr(shell.Preferences.ThumbnailHeight, 220, 180, 360);
                 if (shell.Preferences.ThumbnailX is { } x && shell.Preferences.ThumbnailY is { } y)
                 {
                     Position = new PixelPoint((int)x, (int)y);
                 }
+
+                // Ensure metrics bind against the latest projection after chrome swap.
+                shell.ThumbnailPage.RefreshFromCurrentProjection();
             }
             else
             {
@@ -75,25 +81,45 @@ public partial class MainWindow : Window
         finally
         {
             _applyingGeometry = false;
+            // Ignore geometry events that fire as a side-effect of the transition for a short window.
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    _modeTransitionArmed = false;
+                },
+                DispatcherPriority.Background
+            );
         }
     }
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs e)
     {
+        if (_applyingGeometry || _modeTransitionArmed)
+        {
+            return;
+        }
+
         PersistGeometry();
     }
 
     private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == WidthProperty || e.Property == HeightProperty)
+        if (e.Property != WidthProperty && e.Property != HeightProperty)
         {
-            PersistGeometry();
+            return;
         }
+
+        if (_applyingGeometry || _modeTransitionArmed)
+        {
+            return;
+        }
+
+        PersistGeometry();
     }
 
     private void PersistGeometry()
     {
-        if (_applyingGeometry || DataContext is not AppShellViewModel shell)
+        if (DataContext is not AppShellViewModel shell)
         {
             return;
         }

@@ -160,6 +160,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         );
         SettingsPage.ReconnectCoreHandler = ReconnectCoreAsync;
         SettingsPage.SignalSnapshotProvider = () => _signalFeed.Signals.ToArray();
+        ThumbnailPage = new ThumbnailViewModel(_liveProjectionState, this);
 
         CoreStatus = new StatusIndicatorViewModel
         {
@@ -227,7 +228,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [ObservableProperty]
     private bool isThumbnailMode;
 
-    public ThumbnailViewModel? ThumbnailPage { get; private set; }
+    /// <summary>Always created with the shell so thumbnail bindings never see a null DataContext.</summary>
+    public ThumbnailViewModel ThumbnailPage { get; }
 
     public event Action? ThumbnailModeChanged;
 
@@ -276,9 +278,10 @@ public sealed partial class AppShellViewModel : ViewModelBase
     partial void OnIsThumbnailModeChanged(bool value)
     {
         OnPropertyChanged(nameof(IsNotThumbnailMode));
+        // Refresh compact metrics immediately when entering thumbnail chrome.
         if (value)
         {
-            ThumbnailPage ??= new ThumbnailViewModel(_liveProjectionState, this);
+            ThumbnailPage.RefreshFromCurrentProjection();
         }
 
         ThumbnailModeChanged?.Invoke();
@@ -287,13 +290,19 @@ public sealed partial class AppShellViewModel : ViewModelBase
     [RelayCommand]
     private void EnterThumbnail()
     {
-        IsThumbnailMode = true;
+        if (!IsThumbnailMode)
+        {
+            IsThumbnailMode = true;
+        }
     }
 
     [RelayCommand]
     private void ExitThumbnail()
     {
-        IsThumbnailMode = false;
+        if (IsThumbnailMode)
+        {
+            IsThumbnailMode = false;
+        }
     }
 
     [RelayCommand]
