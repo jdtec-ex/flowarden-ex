@@ -1,204 +1,161 @@
-# Flowarden 第二阶段 Resident Snapshot Retention 提案
+# Flowarden 第二阶段 Resident Snapshot Retention
+
+**状态：Accepted / Implemented**
+
+- 决策日期：2026-07-25
+- 实现提交：
+  - 子仓 `flowarden`：`6de4daf` Add resident bounded aggregation mode for long-lived captures
+  - 父仓：`a97117f` Point flowarden submodule at resident bounded aggregation
+- 关联文档：`flowarden_phase2_live_timeline_window_proposal.md`（live timeline rolling window）
+
+---
 
 ## 1. 文档目的
 
-本文用于明确 resident core 在运行中和停止后的数据保留策略，避免：
+明确 resident core 在运行中和停止后的数据保留策略，避免：
 
 1. `Overview` / `Inspect` 运行越久，resident core 内存持续线性增长；
 2. UI 常驻运行态承担了原本只适合 CLI / 导出路径承担的完整历史数据。
 
----
-
-## 2. 当前问题
-
-当前 resident core 的运行态和停止后结果中，存在两类容易无限增长的数据：
-
-1. live timeline 历史
-2. 最终完整 snapshot / tick 历史
-
-同时，最终 `FinalSnapshot.aggregate_summary` 中的：
-
-1. `top_connections`
-2. `top_hosts`
-3. `top_services`
-4. `tcp_connections`
-
-也直接来自底层完整全局聚合，随着会话规模增长而增长。
+本文从提案收敛为 **已接受实现说明**。
 
 ---
 
-## 3. 推荐原则
+## 2. 已接受原则
 
-建议区分两类保留对象：
+### 2.1 双模式分离
 
-### 3.1 resident core 面向 UI 的投影
+| 模式 | 入口 | 职责 |
+| --- | --- | --- |
+| **Forensic** | `flowarden capture`（CLI） | 完整聚合与完整 tick 历史，服务导出 / golden / 取证 |
+| **Resident** | `flowarden core`（UI 宿主） | 有界运行态投影，服务长时间 live 监控 |
 
-resident core 的职责应是：
+### 2.2 数据类型分离
 
-1. 提供有界的运行态 projection
-2. 提供当前查询所需的数据面
+1. **累计标量（精确）**：`totals.packets` / `totals.bytes` / dropped 等 —— 全程精确累计，O(1)
+2. **排名结构（有界、近似 top-K）**：flows / hosts / services / tcp —— Resident soft-cap
+3. **时间序列（有界）**：live timeline —— 最近 30 tick；offline report 仍保留全量 ticks 供压缩时间线
 
-而不是长期保留完整历史分析资产。
+### 2.3 Inspect 语义（已拍板）
 
-### 3.2 CLI capture / 导出路径
+Resident 路径 **接受有界 Inspect 视图**：
 
-完整最终结果：
-
-1. `tick_snapshots`
-2. `final_snapshot`
-3. 完整整轮 capture 结果
-
-更适合保留在：
-
-1. `flowarden capture`
-2. 文件导出
-3. 后续 replay / forensics 路径
+1. Inspect / TCP Connections 基于有界全局表 + summary 截断后的投影
+2. 不是完整取证明细；完整明细走 CLI / 导出路径
+3. 这是刻意的产品边界，不是临时缺陷
 
 ---
 
-## 4. 建议策略
+## 3. 实现映射
 
-### 4.1 Overview 类投影按 top N 保留
+### 3.1 代码入口
 
-resident core 面向 `Overview` 的数据应只保留有界投影：
+| 概念 | 位置 |
+| --- | --- |
+| `AggregatorMode::{Forensic, Resident}` | `flowarden-core/src/flow/aggregator.rs` |
+| `ResidentBounds` 默认 CAP | 同上 |
+| soft-cap + replace-min | `upsert_*` / `insert_or_replace_min_by_bytes` / `update_tcp_tracker(..., cap)` |
+| `TickHistoryMode::{Full, Windowed(n)}` | `flowarden-core/src/capture/runtime.rs` |
+| CLI = Forensic + Full ticks | `flowarden/src/main.rs` |
+| Core = Resident + Windowed(30) live ticks | `flowarden/src/service.rs` |
+| Geo cache 20_000 半淘汰 | `flowarden/src/geo.rs` |
 
-1. `top_connections`
-2. `top_hosts`
-3. `top_services`
-4. `top_destinations`
+### 3.2 Resident 默认 CAP
 
-建议全部按 `top N` 输出与保留，而不是持有整轮完整结果。
+| 资源 | 默认值 | 说明 |
+| --- | --- | --- |
+| `max_flows` | **30_000** | 全局五元组 soft-cap |
+| `max_hosts` | **15_000** | 全局主机 soft-cap |
+| `max_tcp_connections` | **30_000** | 全局 TCP 连接 soft-cap |
+| `max_services` | **512** | 服务名基数通常很小 |
+| `summary_limit` | **100** | finish / progress 摘要行数上限（对齐 `PROJECTION_MAX_TOP_N`） |
+| live tick window | **30** | `PROJECTION_TICK_WINDOW`；约 30 秒 |
+| offline UI timeline 点数 | **160** | `OFFLINE_TIMELINE_POINTS` 下采样展示 |
+| geo cache | **20_000** | 满则丢弃约一半条目 |
 
-`N` 的具体数值可以沿用当前 UI 展示需求，例如：
+### 3.3 soft-cap 策略（replace-min）
 
-- `N = 20`
+对新 key：
 
-重点是：
+1. map 未满 → 直接插入
+2. map 已满 → 找当前 **bytes 最小** 的条目
+3. 仅当候选 entry 的 bytes **严格大于** 最小条目时替换
+4. 否则丢弃候选（不再进入全局排名表）
 
-1. resident core 的 Overview projection 是有界的；
-2. 不需要为 UI 长期保存整轮所有连接/主机/服务历史。
+对已存在 key：始终更新 counters（热路径不受 cap 阻挡）。
 
-### 4.2 live timeline 使用 rolling window
+**精确性保证：**
 
-resident core 的 live timeline 只保留最近固定数量 tick：
+- `global_totals` 对每个观测包仍精确累计
+- 被淘汰 / 未入选的 flow **不影响** packets/bytes 总量
 
-1. 建议先与 Sniffnet 对齐：`30 tick`
-2. UI 只消费这 30 个 timeline point
+**近似性说明：**
 
-### 4.3 resident core 不长期保存完整 final snapshot
+- Overview top-N、Inspect 行集、TCP 页均为 cap 内近似排名
+- 高流量桌面场景通常与真 top-N 一致；极端“海量低频唯一流”下为近似
 
-建议：
+### 3.4 Tick 历史
 
-1. resident core 在 UI 常驻运行态中，不保留完整最终 `tick_snapshots`
-2. resident core 停止后，UI 继续看到的是“最终有界投影”
-3. 完整 `final_snapshot` / 完整 tick 历史仅保留在：
-   - `flowarden capture`
-   - 导出文件
+| 场景 | 行为 |
+| --- | --- |
+| CLI / Forensic | `TickHistoryMode::Full` |
+| Resident **Live** | `TickHistoryMode::Windowed(30)`，运行中与报告均有界 |
+| Resident **Offline** | 报告侧仍 Full（gap 压缩后的 tick），UI timeline 再压到 ≤160 点 |
 
----
+### 3.5 投影层截断（既有）
 
-## 5. Inspect / TCP Connections 的注意点
+gRPC / OverviewRuntimeSnapshot 侧仍保留：
 
-这里需要特别区分：
+1. overview lists `take(PROJECTION_MAX_TOP_N)`（100）
+2. UI 默认 top-N 可配置，默认 10
 
-### 5.1 不建议直接把底层聚合也裁成 top N
-
-如果把 resident core 底层：
-
-1. `global_flows`
-2. `global_hosts`
-3. `global_services`
-4. `global_tcp_connections`
-
-也直接裁成 `top N`，那么：
-
-1. `Inspect` 将只能看到 `top N flows`
-2. `TCP Connections` 将只能看到 `top N tcp connections`
-
-这会破坏它们作为查询/明细视图的语义。
-
-### 5.2 推荐做法
-
-先把 `top N` 限制作用于：
-
-1. `Overview` 投影层
-
-而不是立刻作用于：
-
-1. `Inspect` 查询层
-2. `TCP Connections` 查询层
-
-也就是说：
-
-1. resident core 的 **Overview projection** 有界；
-2. resident core 的 **query surface** 暂时继续基于完整聚合；
-3. 后续如果 query 面也需要有界化，再单独设计策略。
+底层 Resident maps 的 cap **远大于** 投影 top-N，避免“底层只留 10 条导致 Inspect 几乎不可用”。
 
 ---
 
-## 6. CLI 模式的保留策略
+## 4. 与早期提案差异
 
-`flowarden capture` 应继续保留完整结果：
+早期草案曾建议：
 
-1. `RuntimeReport.tick_snapshots`
-2. `RuntimeReport.final_snapshot`
+1. 仅 Overview 投影有界
+2. Inspect / TCP 暂时基于完整全局聚合
 
-因为 CLI 模式的职责就是：
+**最终决策（1A）改为：**
 
-1. 一次性 capture
-2. 输出完整最终分析结果
+1. Resident 全局聚合表本身 soft-cap
+2. Inspect / TCP 接受有界视图
+3. Forensic CLI 保持完整
 
-这里不建议为了 resident core 的内存收敛，反向削弱 CLI 的结果完整性。
-
----
-
-## 7. 建议实施顺序
-
-### 第一步
-
-resident core `Overview` live projection 改成：
-
-1. rolling timeline window
-2. `top N` overview lists
-
-### 第二步
-
-resident core stop 后不再保留完整 `final_snapshot` 给 UI；
-改为保留最终有界 projection。
-
-### 第三步
-
-CLI `flowarden capture` 保持完整最终结果不变。
-
-### 第四步
-
-后续再单独评估：
-
-1. `Inspect`
-2. `TCP Connections`
-
-是否也要进一步做查询面收敛。
+原因：长时间 live 的主内存增长源是 `global_*` maps；只裁投影层无法止血。
 
 ---
 
-## 8. 验收口径
+## 5. 非目标（本轮不做）
 
-完成后应满足：
-
-1. resident core live `Overview` 投影是有界的；
-2. `top_connections / top_hosts / top_services / top_destinations` 只保留 `top N`；
-3. resident core live timeline 只保留最近固定数量 tick；
-4. resident core 停止后，UI 不再依赖完整 final snapshot；
-5. `flowarden capture` CLI 仍保留完整最终结果；
-6. `Inspect` 和 `TCP Connections` 当前查询能力不被误伤。
+1. Resident 磁盘 spill / 外部索引
+2. 精确 heavy-hitters 结构（count-min 等）
+3. Pause/Resume 会话状态持久化
+4. 改变 gRPC 契约字段
+5. 削弱 CLI golden / 导出完整性
 
 ---
 
-## 9. 推荐结论
+## 6. 验收口径（已满足）
 
-推荐按以下口径推进：
+1. Resident live Overview 投影有界（timeline ≤ 30，lists ≤ top-N/100）
+2. Resident `global_flows/hosts/tcp/services` 长度不超过默认 CAP
+3. `totals.packets/bytes` 在有界模式下仍精确
+4. `flowarden capture`（Forensic）仍保留完整最终结果；golden 通过
+5. `cargo test` / `cargo clippy -D warnings` 通过
+6. 单测覆盖：
+   - `resident_mode_soft_caps_global_flows_and_keeps_heavier_entries`
+   - `forensic_mode_keeps_all_flows`
 
-1. resident core 只保留 **有界 UI 投影**
-2. `top N` 先作用于 `Overview` 投影层
-3. 完整 final snapshot 只保留在 `CLI capture` 模式
-4. resident core 查询面是否也需要收敛，后续再单独设计
+---
+
+## 7. 推荐结论（冻结）
+
+1. Resident core 只服务 **有界 UI 投影 + 有界查询面**
+2. Forensic CLI 保留完整分析资产
+3. 默认 CAP 如上表；后续若需调参，优先通过 `ResidentBounds` / 配置扩展，不改模式语义
+4. Inspect 完整性需求若升级为“全量取证”，应新开设计（外部存储 / 分页），不回退 Resident 无界 maps

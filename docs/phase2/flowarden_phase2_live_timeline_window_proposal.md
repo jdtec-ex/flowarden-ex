@@ -1,8 +1,14 @@
-# Flowarden 第二阶段 Live Timeline Rolling Window 提案
+# Flowarden 第二阶段 Live Timeline Rolling Window
+
+**状态：Accepted / Implemented**
+
+- 默认窗口：`PROJECTION_TICK_WINDOW = 30`
+- 实现：`TickHistoryMode::Windowed(30)`（Resident Live）+ progress `tick_observer_window`
+- 关联：`flowarden_phase2_resident_snapshot_retention_proposal.md`（全局有界聚合，Accepted）
 
 ## 1. 文档目的
 
-本文用于记录 resident core 动态刷新过程中，`Overview` live timeline 的保留窗口如何收敛，以避免运行时间越长、内存和流式消息体越大的问题。
+本文记录 resident core 动态刷新过程中，`Overview` live timeline 的保留窗口如何收敛，以避免运行时间越长、内存和流式消息体越大的问题。
 
 目标是参考 Sniffnet 的实时图表思路，在不破坏当前 phase2 已有：
 
@@ -14,20 +20,20 @@
 
 ---
 
-## 2. 当前问题
+## 2. 历史问题（已解决）
 
-当前 Flowarden 的 resident core live projection 里：
+实现前，resident core live projection 存在：
 
-1. `latest_overview.tick_snapshots` 会随着 capture 持续累计整轮 tick 历史；
-2. `StreamOverview` 每次推送都会带上整轮 timeline；
-3. UI timeline 也基于这整轮 tick 历史重绘。
+1. `tick_snapshots` 随 capture 累计整轮 tick 历史；
+2. `StreamOverview` 每帧携带整轮 timeline；
+3. UI timeline 基于整轮历史重绘。
 
-这会导致：
+结果：
 
-1. capture 跑得越久，resident core 内存中保留的 timeline 越长；
-2. gRPC `StreamOverview` 每帧消息越来越大；
-3. UI 重绘成本越来越高；
-4. 该行为与 Sniffnet 的 live 图表窗口策略不一致。
+1. 运行越久，resident core timeline 内存越大；
+2. gRPC 帧体越大；
+3. UI 重绘越重；
+4. 与 Sniffnet live 图表窗口策略不一致。
 
 ---
 
@@ -125,19 +131,14 @@ UI 只消费 resident core 已裁剪过的最近 N 个点，保持：
 
 ## 6. CLI 与最终结果的关系
 
-这次 rolling window 只针对 resident core 的 live projection。
+rolling window 只作用于 **Resident Live** 路径。
 
-不应影响：
+冻结语义：
 
-1. `flowarden capture` CLI 最终输出
-2. `RuntimeReport.tick_snapshots`
-3. `FinalSnapshot`
-
-也就是说：
-
-1. CLI 仍可以保留完整 tick history 作为最终结果；
-2. resident core live stream 只保留最近 N tick；
-3. stop 后最终 `Overview / Inspect` 仍然从完整最终结果收尾。
+1. **CLI Forensic**：完整 `tick_snapshots` + 完整 `FinalSnapshot` 聚合（maps 无界）
+2. **Resident Live**：运行中与 stop 后 report ticks 均为最近 30；全局 maps 另见 retention 文档的 soft-cap
+3. **Resident Offline**：report ticks 仍 Full（配合 gap 压缩）；UI 展示再下采样到 ≤160 点
+4. stop 后 Overview / Inspect 消费的是 **有界 Resident 投影**，不是 CLI 级完整取证结果
 
 ---
 
@@ -164,18 +165,23 @@ UI 只消费 resident core 已裁剪过的最近 N 个点，保持：
 
 ---
 
-## 8. 验收口径
-
-完成后应满足：
+## 8. 验收口径（已满足）
 
 1. resident core live `Overview` timeline 只保留最近固定数量 tick；
 2. 默认窗口为最近 30 tick；
-3. live capture 运行越久，stream 消息大小不会持续线性增长；
-4. `Overview / Inspect Flows` 动态刷新语义不变；
-5. `Stop` 后最终 snapshot/inspect 仍使用完整最终聚合结果；
-6. `flowarden capture` CLI 不回归。
+3. live capture 运行越久，timeline 相关 stream 体积不随时间线性增长；
+4. `Overview / Inspect Flows` 仍基于共享 live projection；
+5. `Stop` 后 live 路径继续使用有界 projection（非 CLI 全量 ticks）；
+6. `flowarden capture` CLI 完整 tick/聚合语义不回归。
 
 ---
+
+## 9. 推荐结论（冻结）
+
+1. Live timeline 默认窗口 = **30 tick**
+2. 由 core 侧裁剪，不由 UI 二次裁剪
+3. 与 Resident 有界聚合策略一并生效；详见 retention 文档
+
 
 ## 9. 推荐结论
 
