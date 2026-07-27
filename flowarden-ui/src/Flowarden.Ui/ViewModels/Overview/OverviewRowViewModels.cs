@@ -1,3 +1,7 @@
+using System.ComponentModel;
+using Avalonia.Media;
+using Flowarden.Ui.Services;
+
 namespace Flowarden.Ui.ViewModels;
 
 public sealed class OverviewStatusCardViewModel
@@ -104,19 +108,23 @@ public sealed class OverviewRegionMarkerViewModel
     public string AccentBrush { get; }
 }
 
-public sealed class OverviewConnectionRowViewModel
+public sealed class OverviewConnectionRowViewModel : INotifyPropertyChanged
 {
+    private IImage? _processIcon;
+
     public OverviewConnectionRowViewModel(
         string sourceAddress,
         string destinationAddress,
         string volumeLabel,
-        string processLabel = "—"
+        string processLabel = "—",
+        ProcessIconKey iconKey = default
     )
     {
         SourceAddress = sourceAddress;
         DestinationAddress = destinationAddress;
         VolumeLabel = volumeLabel;
         ProcessLabel = string.IsNullOrWhiteSpace(processLabel) ? "—" : processLabel;
+        IconKey = iconKey;
     }
 
     public string SourceAddress { get; }
@@ -126,4 +134,33 @@ public sealed class OverviewConnectionRowViewModel
     public string VolumeLabel { get; }
 
     public string ProcessLabel { get; }
+
+    public ProcessIconKey IconKey { get; }
+
+    public string ProcessMonogram => IconKey.IsEmpty ? "·" : IconKey.Monogram;
+
+    public IBrush ProcessMonogramBrush => IconKey.MonogramBrush;
+
+    public bool HasProcessIcon => ProcessIcon is not null;
+
+    public bool ShowProcessMonogram => !HasProcessIcon;
+
+    public IImage? ProcessIcon
+    {
+        get => _processIcon;
+        set
+        {
+            if (ReferenceEquals(_processIcon, value))
+            {
+                return;
+            }
+
+            _processIcon = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProcessIcon)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasProcessIcon)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowProcessMonogram)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }

@@ -416,6 +416,38 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         );
     }
 
+    private async Task LoadTopConnectionProcessIconsAsync(
+        IReadOnlyList<OverviewConnectionRowViewModel> rows
+    )
+    {
+        if (rows.Count == 0)
+        {
+            return;
+        }
+
+        var iconService = new ProcessIconService();
+        foreach (var row in rows)
+        {
+            if (row.IconKey.IsEmpty)
+            {
+                continue;
+            }
+
+            try
+            {
+                var icon = await iconService.GetIconAsync(row.IconKey);
+                if (icon is not null)
+                {
+                    row.ProcessIcon = icon;
+                }
+            }
+            catch
+            {
+                // Keep monogram fallback.
+            }
+        }
+    }
+
     private void RebuildSnapshotDerivedState(OverviewSnapshotDto snapshot)
     {
         _topHostRows = OverviewRankingsBuilder.BuildTopHostRows(snapshot.TopHosts);
@@ -429,6 +461,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             snapshot.TopConnections,
             snapshot.TopHosts
         );
+        _ = LoadTopConnectionProcessIconsAsync(_topConnectionRows);
         _maxTimelineValue = OverviewChartPaths.CalculateMaxTimelineValue(snapshot.TimelinePoints);
         _outboundPathData = OverviewChartPaths.BuildTimelinePath(
             snapshot.TimelinePoints,

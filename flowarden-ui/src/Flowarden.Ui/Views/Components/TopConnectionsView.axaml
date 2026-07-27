@@ -30,14 +30,39 @@
                                Text="{Binding DestinationAddress}"
                                TextTrimming="CharacterEllipsis" />
                   </Grid>
-                  <TextBlock Grid.Column="1"
-                             Classes="muted-text"
-                             FontSize="11"
-                             VerticalAlignment="Center"
-                             MaxWidth="96"
-                             Text="{Binding ProcessLabel}"
-                             TextTrimming="CharacterEllipsis"
-                             ToolTip.Tip="{Binding ProcessLabel}" />
+                  <StackPanel Grid.Column="1"
+                              Orientation="Horizontal"
+                              Spacing="6"
+                              VerticalAlignment="Center"
+                              MaxWidth="120">
+                    <Border Width="16"
+                            Height="16"
+                            CornerRadius="3"
+                            ClipToBounds="True"
+                            Background="{StaticResource TfcSurfaceBrush}"
+                            BorderBrush="{StaticResource TfcBorderBrush}"
+                            BorderThickness="1"
+                            VerticalAlignment="Center">
+                      <Panel>
+                        <Image Source="{Binding ProcessIcon}"
+                               Stretch="Uniform"
+                               IsVisible="{Binding HasProcessIcon}" />
+                        <TextBlock FontSize="9"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding ProcessMonogram}"
+                                   Foreground="{Binding ProcessMonogramBrush}"
+                                   IsVisible="{Binding ShowProcessMonogram}" />
+                      </Panel>
+                    </Border>
+                    <TextBlock Classes="muted-text"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               Text="{Binding ProcessLabel}"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding ProcessLabel}" />
+                  </StackPanel>
                   <TextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding VolumeLabel}" />
                 </Grid>
               </Border>

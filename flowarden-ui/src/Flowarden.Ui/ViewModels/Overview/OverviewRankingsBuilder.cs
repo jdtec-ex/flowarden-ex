@@ -101,7 +101,8 @@ internal static class OverviewRankingsBuilder
                         : string.Empty
                 ),
                 OverviewFormatting.FormatBytes(row.Bytes),
-                row.ProcessLabel
+                row.ProcessLabel,
+                row.IconKey
             ))
             .ToArray();
     }
