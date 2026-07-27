@@ -295,3 +295,5 @@
 详细清单见：
 
 - `flowarden_phase2_followup_enhancements.md`
+- `flowarden_phase2_parity_and_surpass_plan.md`（相对 Sniffnet 的补齐 L0/L1 与反超 L2 总纲）
+- `flowarden_phase2_parity_and_surpass_backlog.md`（`M2E-*` / `M2X-*` 可执行 backlog）

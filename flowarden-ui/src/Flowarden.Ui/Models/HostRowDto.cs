@@ -11,13 +11,6 @@ public sealed class HostRowDto
     /// TLS SNI when observed for traffic involving this host.
     public string Sni { get; init; } = string.Empty;
 
-    public uint AsnNumber { get; init; }
-
-    public string AsnOrganization { get; init; } = string.Empty;
-
-    /// Preformatted "AS15169 · Google LLC"; empty if unknown.
-    public string AsnLabel { get; init; } = string.Empty;
-
     /// Best display name: SNI > rDNS > empty.
     public string PreferredName =>
         !string.IsNullOrWhiteSpace(Sni)

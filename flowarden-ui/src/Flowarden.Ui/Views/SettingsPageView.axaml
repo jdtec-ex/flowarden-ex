@@ -4,21 +4,27 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.SettingsPageView"
              x:DataType="vm:SettingsPageViewModel">
-  <Grid RowDefinitions="Auto,*" RowSpacing="16">
-    <StackPanel Spacing="4">
+  <Grid RowDefinitions="Auto,*" RowSpacing="12">
+    <StackPanel Spacing="2">
       <TextBlock Classes="page-title" Text="Settings &amp; Diagnostics" />
-      <TextBlock Classes="muted-text" FontSize="13" Text="Configure core connectivity, runtime defaults, and system health." />
+      <TextBlock Classes="muted-text"
+                 FontSize="12"
+                 Text="Core connectivity, capture defaults, and diagnostics. Use Apply to push signal policy to core." />
     </StackPanel>
 
-    <Grid Grid.Row="1"
-          RowDefinitions="*,*"
-          ColumnDefinitions="*,*"
-          RowSpacing="16"
-          ColumnSpacing="16">
-      <components:SettingsRuntimePanelView DataContext="{Binding}" />
-      <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
-      <components:SettingsCaptureDefaultsPanelView Grid.Row="1" DataContext="{Binding}" />
-      <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.Column="1" DataContext="{Binding}" />
-    </Grid>
+    <!-- Auto rows + scroll: panels keep natural height instead of being clipped by */* halves. -->
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+      <Grid ColumnDefinitions="*,*"
+            RowDefinitions="Auto,Auto"
+            RowSpacing="12"
+            ColumnSpacing="12">
+        <components:SettingsRuntimePanelView DataContext="{Binding}" />
+        <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
+        <components:SettingsCaptureDefaultsPanelView Grid.Row="1" DataContext="{Binding}" />
+        <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.Column="1" DataContext="{Binding}" />
+      </Grid>
+    </ScrollViewer>
   </Grid>
 </UserControl>

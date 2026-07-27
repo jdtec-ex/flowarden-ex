@@ -90,6 +90,46 @@
           </Button>
 
           <Button Command="{Binding NavigateCommand}"
+                  CommandParameter="signals"
+                  Classes="nav-button">
+            <Grid ColumnDefinitions="3,Auto,*" ColumnSpacing="12">
+              <Border Grid.ColumnSpan="3"
+                      Background="{StaticResource TfcRaisedBrush}"
+                      IsVisible="{Binding IsSignalsPageActive}" />
+              <Border Background="{StaticResource TfcPrimaryBrush}"
+                      IsVisible="{Binding IsSignalsPageActive}" />
+              <Viewbox Grid.Column="1" Width="18" Height="18">
+                <Canvas Width="24" Height="24">
+                  <shapes:Path Stroke="{StaticResource TfcMutedTextBrush}"
+                               StrokeThickness="1.7"
+                               Data="M 5 19 L 5 9 L 9 5 L 12 10 L 15 7 L 19 12 L 19 19" />
+                  <shapes:Line StartPoint="5,19" EndPoint="19,19"
+                               Stroke="{StaticResource TfcMutedTextBrush}" StrokeThickness="1.7" />
+                </Canvas>
+              </Viewbox>
+              <Grid Grid.Column="2" ColumnDefinitions="*,Auto">
+                <TextBlock Text="Signals" VerticalAlignment="Center" />
+                <Border Grid.Column="1"
+                        Background="{StaticResource TfcPrimaryBrush}"
+                        CornerRadius="8"
+                        MinWidth="18"
+                        Height="18"
+                        Padding="4,0"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding HasSignalUnread}">
+                  <TextBlock Text="{Binding SignalUnreadLabel}"
+                             FontSize="10"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource TfcPrimaryOnBrush}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+                </Border>
+              </Grid>
+            </Grid>
+          </Button>
+
+          <Button Command="{Binding NavigateCommand}"
                   CommandParameter="settings"
                   Classes="nav-button">
             <Grid ColumnDefinitions="3,Auto,*" ColumnSpacing="12">

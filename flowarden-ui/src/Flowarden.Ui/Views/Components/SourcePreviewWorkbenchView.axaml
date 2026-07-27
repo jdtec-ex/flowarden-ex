@@ -114,16 +114,34 @@
                        TextTrimming="CharacterEllipsis" />
           </StackPanel>
 
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-            <Button Classes="danger-button"
-                    Width="144"
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Button Classes="tools-button"
+                    MinWidth="88"
                     Height="36"
-                    Content="Capture Stop"
+                    Padding="12,0"
+                    Content="Pause"
+                    Command="{Binding PauseFormalCaptureCommand}"
+                    IsEnabled="{Binding CanPauseFormalCapture}"
+                    IsVisible="{Binding ShowPauseCaptureAction}" />
+            <Button Classes="mode-button"
+                    MinWidth="88"
+                    Height="36"
+                    Padding="12,0"
+                    Content="Resume"
+                    Command="{Binding ResumeFormalCaptureCommand}"
+                    IsEnabled="{Binding CanResumeFormalCapture}"
+                    IsVisible="{Binding ShowResumeCaptureAction}" />
+            <Button Classes="danger-button"
+                    MinWidth="108"
+                    Height="36"
+                    Padding="12,0"
+                    Content="Stop"
                     Command="{Binding StopFormalCaptureCommand}"
                     IsEnabled="{Binding CanStopFormalCapture}" />
             <Button Classes="mode-button"
-                    Width="220"
+                    MinWidth="160"
                     Height="36"
+                    Padding="14,0"
                     Content="Start Live Capture"
                     Command="{Binding StartFormalCaptureCommand}"
                     IsEnabled="{Binding CanStartFormalCapture}" />

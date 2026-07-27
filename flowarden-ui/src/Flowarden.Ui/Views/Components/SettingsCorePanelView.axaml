@@ -3,36 +3,41 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsCorePanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="tfc-panel" Padding="20,18">
-    <Grid RowDefinitions="Auto,Auto,1,Auto,Auto" RowSpacing="14">
+  <Border Classes="tfc-panel" Padding="14,12">
+    <Grid RowDefinitions="Auto,Auto,1,Auto,Auto" RowSpacing="8">
       <TextBlock Classes="section-title" Text="Core Connection" />
       <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-        <StackPanel>
-          <TextBlock Classes="muted-text" FontSize="13" Text="Core Version" />
-          <TextBlock Classes="tfc-data" Text="{Binding CoreVersion}" />
+        <StackPanel Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" Text="Core Version" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding CoreVersion}" />
         </StackPanel>
-        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-          <TextBlock Classes="muted-text" FontSize="13" HorizontalAlignment="Right" Text="Health" />
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Border Width="8" Height="8" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
-            <TextBlock Foreground="{StaticResource TfcGoodBrush}" Text="{Binding CoreHealth.Status}" />
+        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" HorizontalAlignment="Right" Text="Health" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Border Width="7" Height="7" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
+            <TextBlock FontSize="13" Foreground="{StaticResource TfcGoodBrush}" Text="{Binding CoreHealth.Status}" />
           </StackPanel>
         </StackPanel>
       </Grid>
 
       <Border Grid.Row="2" Height="1" Background="{StaticResource TfcBorderBrush}" />
 
-      <StackPanel Grid.Row="3" Spacing="8">
-        <TextBlock Classes="tfc-label" Text="DAEMON ENDPOINT" />
-        <Grid ColumnDefinitions="*,136" ColumnSpacing="10">
-          <Border Classes="tfc-panel-low" Height="32" Padding="10,0">
-            <SelectableTextBlock Classes="tfc-data" Text="{Binding CoreEndpoint}" />
+      <StackPanel Grid.Row="3" Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="DAEMON ENDPOINT" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <Border Classes="tfc-panel-low" Height="28" Padding="8,0">
+            <SelectableTextBlock Classes="tfc-data" FontSize="12" Text="{Binding CoreEndpoint}" VerticalAlignment="Center" />
           </Border>
-          <Button Grid.Column="1" Classes="tools-button" Height="32" Content="Reconnect" />
+          <Button Grid.Column="1"
+                  Classes="tools-button"
+                  Height="28"
+                  Padding="10,0"
+                  Content="Reconnect"
+                  Command="{Binding ReconnectCoreCommand}" />
         </Grid>
       </StackPanel>
 
-      <TextBlock Grid.Row="4" Classes="muted-text" FontSize="13" Text="{Binding CoreEndpointSource}" />
+      <TextBlock Grid.Row="4" Classes="muted-text" FontSize="11" Text="{Binding CoreEndpointSource}" TextWrapping="Wrap" />
     </Grid>
   </Border>
 </UserControl>

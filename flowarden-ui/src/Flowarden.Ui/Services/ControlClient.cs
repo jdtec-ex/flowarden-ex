@@ -107,6 +107,48 @@ public sealed class ControlClient
         );
     }
 
+    public async Task<ControlActionResult> PauseCaptureAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await ExecuteAsync(
+            async () =>
+                await _client.PauseCaptureAsync(
+                    new PauseCaptureRequest(),
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
+    public async Task<ControlActionResult> ResumeCaptureAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await ExecuteAsync(
+            async () =>
+                await _client.ResumeCaptureAsync(
+                    new ResumeCaptureRequest(),
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
+    public async Task<ControlActionResult> SetSignalPolicyAsync(
+        ulong dataThresholdBytes,
+        System.Collections.Generic.IEnumerable<string> watchedHosts,
+        System.Collections.Generic.IEnumerable<string> knownBadHosts,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var request = new SetSignalPolicyRequest { DataThresholdBytes = dataThresholdBytes };
+        request.WatchedHosts.AddRange(watchedHosts);
+        request.KnownBadHosts.AddRange(knownBadHosts);
+        return await ExecuteAsync(
+            async () =>
+                await _client.SetSignalPolicyAsync(request, cancellationToken: cancellationToken)
+        );
+    }
+
     public async Task<ControlActionResult> ShutdownCoreAsync(
         CancellationToken cancellationToken = default
     )

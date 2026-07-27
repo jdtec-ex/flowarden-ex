@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             xmlns:models="using:Flowarden.Ui.Models"
+             x:Class="Flowarden.Ui.Views.SignalsPageView"
+             x:DataType="vm:SignalsPageViewModel">
+  <Border Classes="tfc-panel" Margin="0" ClipToBounds="True">
+    <Grid RowDefinitions="Auto,*">
+      <Border Classes="tfc-panel-header" Padding="20,14">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Signals" />
+            <TextBlock Classes="muted-text" FontSize="12" Text="{Binding SummaryLabel}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+            <Button Classes="tools-button" Height="32" Padding="12,0" Content="Mark read" Command="{Binding MarkAllReadCommand}" />
+            <Button Classes="danger-button" Height="32" Padding="12,0" Content="Clear" Command="{Binding ClearSignalsCommand}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ItemsControl Margin="16" ItemsSource="{Binding Signals}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="models:SignalItemDto">
+              <Button Classes="tools-button"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Margin="0,0,0,10"
+                      Padding="0"
+                      Command="{Binding $parent[ItemsControl].((vm:SignalsPageViewModel)DataContext).OpenSignalCommand}"
+                      CommandParameter="{Binding}">
+                <Border Classes="tfc-panel-low" Padding="14,12" CornerRadius="4">
+                  <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
+                    <TextBlock Classes="tfc-data"
+                               FontSize="12"
+                               Foreground="{StaticResource TfcPrimaryBrush}"
+                               Text="{Binding UnreadMarker}"
+                               VerticalAlignment="Top"
+                               Width="12" />
+                    <StackPanel Grid.Column="1" Spacing="4" Width="88">
+                      <TextBlock Classes="tfc-label" Text="{Binding TimestampLabel}" />
+                      <TextBlock Classes="tfc-data" FontSize="11" Foreground="{StaticResource TfcPrimaryBrush}" Text="{Binding Kind}" TextWrapping="Wrap" />
+                      <TextBlock Classes="muted-text" FontSize="10" Text="{Binding ModeStatusLabel}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                      <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding Title}" />
+                      <TextBlock Classes="muted-text" FontSize="12" Text="{Binding Detail}" TextWrapping="Wrap" />
+                      <TextBlock Classes="tfc-data" FontSize="12" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Classes="muted-text"
+                                 FontSize="11"
+                                 Text="Click to open in Inspect"
+                                 IsVisible="{Binding CanPivot}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl>

@@ -19,13 +19,17 @@
 1. `M2-001` 到 `M2-009`
 2. `M2-101`
 
-但以下增强项仍未完成：
+以下三项在 **2026-07-25 L0 落地** 中已按 parity backlog 收口（详见 `flowarden_phase2_parity_and_surpass_progress.md`）：
 
-1. `ControlService` 真正控制面
-2. `Overview` 实时 projection stream
-3. core 异常退出后的 UI 可恢复状态
+1. `ControlService` 真正控制面（含 Pause/Resume）→ `M2E-001`
+2. `Overview` 实时 projection stream 健壮化 + 统一 live 态 → `M2E-002` / `M2E-003`
+3. core 异常退出后的 UI 可恢复状态 → `M2E-004` / `M2E-005`
 
-这些项不阻塞 phase2 backlog 封板，但若要进一步对齐初始总方案中的更强闭环要求，应作为后续增强独立推进。
+**更新（2026-07-25）**：parity / surpass 主线 **L0 + L1 + L2（Milestone C）已落地**。  
+详见 `flowarden_phase2_parity_and_surpass_progress.md` 与手测清单  
+`flowarden_phase2_l2_regression_checklist.md`。
+
+下列 §3 历史「当前状态」段落保留作考古，**不再表示未完成**；控制面 / stream / recovery 已由 M2E-001～005 收口。
 
 ---
 
@@ -151,3 +155,30 @@
 推荐后续统一使用以下表述：
 
 > 第二阶段 backlog 已完成；当前剩余项属于 phase2 后续增强，主要包括 control plane、实时 projection stream 和 core 异常恢复。
+
+---
+
+## 6. 升级为「补齐与反超」总纲
+
+上述三项是 phase2 封板后的**最小后续增强**。更完整的相对 Sniffnet **补齐（L0/L1）与反超（L2）**方案已独立成文，后续排期与验收以总纲和 backlog 为准：
+
+| 文档 | 作用 |
+| --- | --- |
+| `flowarden_phase2_parity_and_surpass_plan.md` | 补齐与反超总纲（L0/L1/L2、里程碑、边界） |
+| `flowarden_phase2_parity_and_surpass_backlog.md` | 可执行 backlog（`M2E-*` / `M2X-*`） |
+
+映射关系：
+
+| 本文增强项 | Backlog 编号 | 层级 |
+| --- | --- | --- |
+| Control plane | `M2E-001` | L0 |
+| Real-time projection stream 后续 | `M2E-002` + `M2E-003` | L0 |
+| Core failure recovery | `M2E-004` | L0 |
+| （运行态 UI 语义，承接 UI gap） | `M2E-005` | L0 |
+
+说明：
+
+1. 本文继续保留为 phase2 封板后的**最小缺口清单**。  
+2. 进程归属、rDNS、通知、地图、行为信号等 **Sniffnet 对等与反超** 内容不再扩写进本文，统一写入 parity/surpass 文档。  
+3. 起始推荐任务：`M2E-001` Control plane 真闭环。  
+4. 全量 phase2.x 任务统一接受补充硬约束：**代码高质量**；**UI 风格保持一致且高质量**（见 parity 总纲 §4.3、backlog §1.1）。功能完成但质量门禁未过，不得标完成。

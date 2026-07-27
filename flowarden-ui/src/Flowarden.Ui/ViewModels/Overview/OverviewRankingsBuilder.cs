@@ -26,10 +26,6 @@ internal static class OverviewRankingsBuilder
                     row.Hostname,
                     row.Sni
                 );
-                if (!string.IsNullOrWhiteSpace(row.AsnLabel))
-                {
-                    label = $"{label} · {row.AsnLabel}";
-                }
 
                 return new OverviewMetricRowViewModel(
                     label,
@@ -67,11 +63,6 @@ internal static class OverviewRankingsBuilder
             .Select(row =>
             {
                 var label = string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label;
-                if (!string.IsNullOrWhiteSpace(row.AsnLabel))
-                {
-                    label = $"{label} · {row.AsnLabel}";
-                }
-
                 return new OverviewRegionRowViewModel(
                     label,
                     row.Ratio.ToString("P0", CultureInfo.InvariantCulture),

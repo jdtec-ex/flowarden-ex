@@ -65,7 +65,8 @@
           <ItemsControl Margin="10,8" ItemsSource="{Binding TopRegionRows}" IsVisible="{Binding HasTopRegionRows}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:OverviewRegionRowViewModel">
-                <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0">
+                <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0"
+                        ToolTip.Tip="{Binding Tooltip}">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                     <SelectableTextBlock Classes="tfc-data" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                     <SelectableTextBlock Grid.Column="1"

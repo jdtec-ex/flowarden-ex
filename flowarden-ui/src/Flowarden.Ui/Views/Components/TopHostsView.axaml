@@ -13,9 +13,13 @@
         <ItemsControl Margin="10,8" ItemsSource="{Binding TopHostRows}" IsVisible="{Binding HasTopHostRows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:OverviewMetricRowViewModel">
-              <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0">
-                <Grid ColumnDefinitions="150,*,64" ColumnSpacing="10">
-                  <SelectableTextBlock Classes="tfc-data" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+              <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0"
+                      ToolTip.Tip="{Binding Tooltip}">
+                <Grid ColumnDefinitions="1.4*,*,64" ColumnSpacing="10">
+                  <SelectableTextBlock Classes="tfc-data"
+                                       Text="{Binding Label}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
                   <Border Grid.Column="1" Height="6" Background="{StaticResource TfcDataTrackBrush}" VerticalAlignment="Center">
                     <Border Background="{Binding AccentBrush}" Width="{Binding BarWidth}" HorizontalAlignment="Left" />
                   </Border>

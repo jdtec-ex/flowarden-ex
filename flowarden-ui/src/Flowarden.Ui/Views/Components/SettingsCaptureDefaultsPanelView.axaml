@@ -3,25 +3,70 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsCaptureDefaultsPanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="tfc-panel" Padding="20,18">
-    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
-      <TextBlock Classes="section-title" Text="Capture Defaults" />
+  <Border Classes="tfc-panel" Padding="14,12">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBlock Classes="section-title" Text="Capture Defaults" VerticalAlignment="Center" />
+        <Button Grid.Column="1"
+                Classes="mode-button"
+                Height="28"
+                Padding="12,0"
+                Content="Apply"
+                Command="{Binding SaveWatchlistsCommand}" />
+      </Grid>
 
-      <StackPanel Grid.Row="1" Spacing="8">
-        <TextBlock Classes="tfc-label" Text="TOP N RESULTS" />
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-          <TextBox Height="32" Text="{Binding TopNInput}" />
-          <Button Grid.Column="1" Classes="tools-button" Height="32" Content="Apply" Command="{Binding ApplyTopNCommand}" />
-        </Grid>
-        <TextBlock Classes="muted-text" FontSize="13" Text="{Binding TopNStatus}" />
+      <!-- Top N + Threshold on one row -->
+      <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="tfc-label" FontSize="11" Text="TOP N" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+            <TextBox Height="28"
+                     Text="{Binding TopNInput, Mode=TwoWay}" />
+            <Button Grid.Column="1"
+                    Classes="tools-button"
+                    Height="28"
+                    Padding="10,0"
+                    Content="Set"
+                    Command="{Binding ApplyTopNCommand}" />
+          </Grid>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <TextBlock Classes="tfc-label" FontSize="11" Text="DATA THRESHOLD (BYTES)" />
+          <TextBox Height="28"
+                   Text="{Binding DataThresholdInput, Mode=TwoWay}"
+                   Watermark="50000000" />
+        </StackPanel>
+      </Grid>
+
+      <StackPanel Grid.Row="2" Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="WATCHED (host, service:, process:, sni:)" />
+        <TextBox Height="28"
+                 Text="{Binding WatchedHostsInput, Mode=TwoWay}"
+                 Watermark="1.1.1.1, service:https, process:Edge, sni:github.com" />
       </StackPanel>
 
-      <StackPanel Grid.Row="2" Spacing="8">
-        <TextBlock Classes="tfc-label" Text="RETENTION PERIOD (HOURS)" />
-        <Border Classes="tfc-panel-low" Height="32" Padding="10,0">
-          <TextBlock Classes="tfc-data" Text="72" VerticalAlignment="Center" />
-        </Border>
+      <StackPanel Grid.Row="3" Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="KNOWN-BAD (host, service:, process:, sni:)" />
+        <TextBox Height="28"
+                 Text="{Binding KnownBadHostsInput, Mode=TwoWay}"
+                 Watermark="host, service:name, process:name" />
       </StackPanel>
+
+      <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="10">
+        <CheckBox Content="In-app toast"
+                  FontSize="12"
+                  IsChecked="{Binding DesktopNotificationsEnabled, Mode=TwoWay}" />
+        <CheckBox Grid.Column="1"
+                  Content="Alert sound"
+                  FontSize="12"
+                  IsChecked="{Binding SignalSoundEnabled, Mode=TwoWay}" />
+      </Grid>
+
+      <TextBlock Grid.Row="5"
+                 Classes="muted-text"
+                 FontSize="11"
+                 Text="{Binding ListsStatus}"
+                 TextWrapping="Wrap" />
     </Grid>
   </Border>
 </UserControl>

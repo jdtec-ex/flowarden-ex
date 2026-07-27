@@ -79,6 +79,43 @@ public partial class App : Application
 
                 return files.Count == 0 ? null : files[0].TryGetLocalPath();
             };
+            shellViewModel.SettingsPage.SaveDiagnosticsFileHandler = async (suggestedName, payload) =>
+            {
+                var file = await mainWindow.StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
+                    {
+                        Title = "Export Flowarden diagnostics",
+                        SuggestedFileName = suggestedName,
+                        DefaultExtension = "json",
+                        FileTypeChoices =
+                        [
+                            new FilePickerFileType("JSON")
+                            {
+                                Patterns = ["*.json"],
+                                MimeTypes = ["application/json"],
+                            },
+                        ],
+                    }
+                );
+
+                if (file is null)
+                {
+                    return null;
+                }
+
+                var path = file.TryGetLocalPath();
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    // Some platforms only give a stream; write via StorageFile.
+                    await using var stream = await file.OpenWriteAsync();
+                    await using var writer = new StreamWriter(stream);
+                    await writer.WriteAsync(payload);
+                    return file.Name;
+                }
+
+                await File.WriteAllTextAsync(path, payload);
+                return path;
+            };
             desktop.ShutdownRequested += (_, eventArgs) =>
             {
                 if (_allowShutdown)
@@ -90,6 +127,24 @@ public partial class App : Application
                 _ = HandleDesktopShutdownAsync(desktop, shellViewModel);
             };
             desktop.MainWindow = mainWindow;
+            // Wire toasts after window exists so WindowNotificationManager has a host.
+            mainWindow.Opened += (_, _) =>
+            {
+                var livePrefs = new State.UserPreferences
+                {
+                    DesktopNotificationsEnabled = shellViewModel.SettingsPage.DesktopNotificationsEnabled,
+                    SignalSoundEnabled = shellViewModel.SettingsPage.SignalSoundEnabled,
+                };
+                var alerts = new SignalAlertService(livePrefs);
+                alerts.Attach(mainWindow);
+                shellViewModel.SignalFeed.NewSignalRaised += signal =>
+                {
+                    livePrefs.DesktopNotificationsEnabled =
+                        shellViewModel.SettingsPage.DesktopNotificationsEnabled;
+                    livePrefs.SignalSoundEnabled = shellViewModel.SettingsPage.SignalSoundEnabled;
+                    alerts.OnNewSignal(signal);
+                };
+            };
             _ = InitializeCoreConnectionAsync(shellViewModel);
         }
 

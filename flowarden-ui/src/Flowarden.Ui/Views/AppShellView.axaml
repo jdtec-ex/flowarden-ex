@@ -23,6 +23,9 @@
           <views:InspectPageView DataContext="{Binding InspectPage}"
                                  IsVisible="{Binding DataContext.IsInspectPageActive, ElementName=ShellRoot}" />
 
+          <views:SignalsPageView DataContext="{Binding SignalsPage}"
+                                 IsVisible="{Binding DataContext.IsSignalsPageActive, ElementName=ShellRoot}" />
+
           <views:SettingsPageView DataContext="{Binding SettingsPage}"
                                   IsVisible="{Binding DataContext.IsSettingsPageActive, ElementName=ShellRoot}" />
         </Grid>

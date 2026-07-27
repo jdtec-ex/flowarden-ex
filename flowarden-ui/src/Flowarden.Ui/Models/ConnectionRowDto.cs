@@ -49,8 +49,6 @@ public sealed class ConnectionRowDto : INotifyPropertyChanged
 
     public string ProcessBundleId { get; init; } = string.Empty;
 
-    public string RemoteAsnLabel { get; init; } = string.Empty;
-
     public string ProcessLabel =>
         string.IsNullOrWhiteSpace(ProcessName)
             ? "—"
@@ -105,10 +103,7 @@ public sealed class ConnectionRowDto : INotifyPropertyChanged
             }
 
             var path = string.IsNullOrWhiteSpace(ProcessPath) ? "path unknown" : ProcessPath;
-            var asn = string.IsNullOrWhiteSpace(RemoteAsnLabel)
-                ? string.Empty
-                : $"\nRemote ASN: {RemoteAsnLabel}";
-            return $"{ProcessLabel}\n{path}{asn}";
+            return $"{ProcessLabel}\n{path}";
         }
     }
 
@@ -120,9 +115,6 @@ public sealed class ConnectionRowDto : INotifyPropertyChanged
     }
 
     public string SniLabel => string.IsNullOrWhiteSpace(Sni) ? "—" : Sni.Trim();
-
-    public string RemoteAsnDisplay =>
-        string.IsNullOrWhiteSpace(RemoteAsnLabel) ? "—" : RemoteAsnLabel.Trim();
 
     public string ProtocolLabel => Protocol.ToUpperInvariant();
 

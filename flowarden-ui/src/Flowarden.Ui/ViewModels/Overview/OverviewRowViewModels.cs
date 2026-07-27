@@ -18,15 +18,24 @@ public sealed class OverviewStatusCardViewModel
 
 public sealed class OverviewMetricRowViewModel
 {
-    public OverviewMetricRowViewModel(string label, string valueLabel, double barWidth, string accentBrush)
+    public OverviewMetricRowViewModel(
+        string label,
+        string valueLabel,
+        double barWidth,
+        string accentBrush,
+        string tooltip = ""
+    )
     {
         Label = label;
         ValueLabel = valueLabel;
         BarWidth = barWidth;
         AccentBrush = accentBrush;
+        Tooltip = string.IsNullOrWhiteSpace(tooltip) ? label : tooltip;
     }
 
     public string Label { get; }
+
+    public string Tooltip { get; }
 
     public string ValueLabel { get; }
 
@@ -37,14 +46,22 @@ public sealed class OverviewMetricRowViewModel
 
 public sealed class OverviewRegionRowViewModel
 {
-    public OverviewRegionRowViewModel(string label, string ratioLabel, string accentBrush)
+    public OverviewRegionRowViewModel(
+        string label,
+        string ratioLabel,
+        string accentBrush,
+        string tooltip = ""
+    )
     {
         Label = label;
         RatioLabel = ratioLabel;
         AccentBrush = accentBrush;
+        Tooltip = string.IsNullOrWhiteSpace(tooltip) ? label : tooltip;
     }
 
     public string Label { get; }
+
+    public string Tooltip { get; }
 
     public string RatioLabel { get; }
 

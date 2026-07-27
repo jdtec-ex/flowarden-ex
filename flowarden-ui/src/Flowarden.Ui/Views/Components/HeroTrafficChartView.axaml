@@ -7,9 +7,22 @@
   <Border Classes="tfc-panel" ClipToBounds="True">
     <Grid RowDefinitions="32,*">
       <Border Classes="tfc-panel-header" Padding="16,0">
-        <Grid ColumnDefinitions="*,Auto" Height="32">
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto" Height="32" ColumnSpacing="10">
           <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Traffic Throughput" />
-          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+          <TextBlock Grid.Column="1"
+                     Classes="muted-text"
+                     FontSize="11"
+                     VerticalAlignment="Center"
+                     Text="{Binding TimelinePolicyLabel}" />
+          <Button Grid.Column="2"
+                  Classes="tools-button"
+                  Height="26"
+                  Padding="10,0"
+                  FontSize="11"
+                  Content="Open Inspect"
+                  IsVisible="{Binding HasForensicsFocus}"
+                  Command="{Binding OpenInspectFromForensicsCommand}" />
+          <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Border Width="14" Height="2" Background="{StaticResource TfcInboundBrush}" VerticalAlignment="Center" />
               <TextBlock Classes="tfc-label" Text="INBOUND" />
@@ -65,6 +78,30 @@
                                Stretch="Fill" />
                 </Canvas>
               </Viewbox>
+
+              <!-- Forensics finding marker (nearest second on timeline) -->
+              <Canvas HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      IsHitTestVisible="False"
+                      IsVisible="{Binding IsForensicsMarkerVisible}">
+                <Border Width="2"
+                        Height="{Binding ForensicsPlotHeight}"
+                        MinHeight="180"
+                        Background="{StaticResource TfcPrimaryBrush}"
+                        Opacity="0.9"
+                        Canvas.Left="{Binding ForensicsMarkerLeft}" />
+                <Border Classes="tfc-panel-low"
+                        Padding="8,4"
+                        Canvas.Left="{Binding ForensicsMarkerLeft}"
+                        Canvas.Top="4"
+                        Margin="6,0,0,0">
+                  <StackPanel Spacing="2">
+                    <TextBlock Classes="tfc-label" FontSize="10" Text="FINDING" />
+                    <TextBlock Classes="tfc-data" FontSize="11" Text="{Binding ForensicsMarkerTimeLabel}" />
+                    <TextBlock Classes="muted-text" FontSize="10" Text="{Binding ForensicsFocusLabel}" TextTrimming="CharacterEllipsis" MaxWidth="140" />
+                  </StackPanel>
+                </Border>
+              </Canvas>
 
               <Canvas HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"

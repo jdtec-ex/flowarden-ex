@@ -93,9 +93,7 @@ public sealed class ProjectionClient
                     CountryLabel = host.CountryLabel,
                     Hostname = host.Hostname ?? string.Empty,
                     Sni = host.Sni ?? string.Empty,
-                    AsnNumber = host.AsnNumber,
-                    AsnOrganization = host.AsnOrganization ?? string.Empty,
-                    AsnLabel = host.AsnLabel ?? string.Empty,
+
                     Packets = host.Packets,
                     Bytes = host.Bytes,
                 })
@@ -121,9 +119,7 @@ public sealed class ProjectionClient
                     Label = destination.Label,
                     CountryLabel = destination.CountryLabel,
                     CountryCode = destination.CountryCode,
-                    AsnNumber = destination.AsnNumber,
-                    AsnOrganization = destination.AsnOrganization ?? string.Empty,
-                    AsnLabel = destination.AsnLabel ?? string.Empty,
+
                     Bytes = destination.Bytes,
                     Ratio = destination.Ratio,
                 })
@@ -202,7 +198,7 @@ public sealed class ProjectionClient
             Sni = connection.Sni ?? string.Empty,
             ProcessPath = connection.ProcessPath ?? string.Empty,
             ProcessBundleId = connection.ProcessBundleId ?? string.Empty,
-            RemoteAsnLabel = connection.RemoteAsnLabel ?? string.Empty,
+
         };
     }
 

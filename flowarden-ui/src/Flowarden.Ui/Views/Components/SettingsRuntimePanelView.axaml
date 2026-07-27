@@ -3,20 +3,20 @@
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.SettingsRuntimePanelView"
              x:DataType="vm:SettingsPageViewModel">
-  <Border Classes="tfc-panel" Padding="20,18">
-    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+  <Border Classes="tfc-panel" Padding="14,12">
+    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
       <TextBlock Classes="section-title" Text="Runtime Status" />
-      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10">
-        <Border Classes="tfc-chip" Padding="10,5">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Border Width="8" Height="8" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
-            <TextBlock Classes="tfc-label" Text="CORE: ACTIVE" />
+      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+        <Border Classes="tfc-chip" Padding="8,3">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Border Width="7" Height="7" Background="{StaticResource TfcGoodBrush}" VerticalAlignment="Center" />
+            <TextBlock Classes="tfc-label" FontSize="11" Text="CORE" />
           </StackPanel>
         </Border>
-        <Border Classes="tfc-chip" Padding="10,5">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Border Width="8" Height="8" Background="{StaticResource TfcWarningBrush}" VerticalAlignment="Center" />
-            <TextBlock Classes="tfc-label" Text="{Binding RuntimeState.CaptureStatus, StringFormat=CAPTURE: {0}}" />
+        <Border Classes="tfc-chip" Padding="8,3">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Border Width="7" Height="7" Background="{StaticResource TfcWarningBrush}" VerticalAlignment="Center" />
+            <TextBlock Classes="tfc-label" FontSize="11" Text="{Binding RuntimeState.CaptureStatus, StringFormat=CAPTURE: {0}}" />
           </StackPanel>
         </Border>
       </StackPanel>
@@ -24,24 +24,23 @@
       <Grid Grid.Row="2"
             ColumnDefinitions="*,*"
             RowDefinitions="Auto,Auto"
-            RowSpacing="14"
-            ColumnSpacing="32"
-            VerticalAlignment="Center">
-        <StackPanel>
-          <TextBlock Classes="muted-text" FontSize="13" Text="Operating Mode" />
-          <TextBlock FontSize="14" Text="{Binding RuntimeState.Mode}" />
+            RowSpacing="8"
+            ColumnSpacing="16">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" Text="Mode" />
+          <TextBlock FontSize="13" Text="{Binding RuntimeState.Mode}" />
         </StackPanel>
-        <StackPanel Grid.Column="1">
-          <TextBlock Classes="muted-text" FontSize="13" Text="Current Source" />
-          <TextBlock Classes="tfc-data" Text="{Binding RuntimeState.SourceDisplayName}" />
+        <StackPanel Grid.Column="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" Text="Source" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding RuntimeState.SourceDisplayName}" />
         </StackPanel>
-        <StackPanel Grid.Row="1">
-          <TextBlock Classes="muted-text" FontSize="13" Text="BPF Filter" />
-          <TextBlock Classes="tfc-data" Text="{Binding RuntimeState.Bpf}" />
+        <StackPanel Grid.Row="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" Text="BPF" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding RuntimeState.Bpf}" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Grid.Column="1">
-          <TextBlock Classes="muted-text" FontSize="13" Text="Started At" />
-          <TextBlock Classes="tfc-data" Text="{Binding StartedAtLabel}" />
+        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
+          <TextBlock Classes="muted-text" FontSize="11" Text="Started" />
+          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding StartedAtLabel}" />
         </StackPanel>
       </Grid>
     </Grid>

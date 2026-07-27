@@ -132,4 +132,5 @@ internal static class OverviewFormatting
         code = code.Trim();
         return code.Length is >= 2 and <= 6 ? code.ToUpperInvariant() : string.Empty;
     }
+
 }
