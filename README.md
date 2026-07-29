@@ -6,6 +6,29 @@ Desktop network traffic monitor: live capture and offline pcap replay, ranked ho
 
 ---
 
+## Relation to Sniffnet
+
+Flowarden is **inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet)** — its capture-and-aggregate model, ranked views, destination map, process hints, and compact thumbnail monitoring shaped the product goals.
+
+It is **not a fork or re-skin**. Sniffnet is a polished single-process Rust desktop app (iced). Flowarden reimplements the monitoring idea with a different architecture: a headless Rust core, an Avalonia UI over local gRPC, and a CLI that shares the same projection contract.
+
+| | Sniffnet | Flowarden |
+| --- | --- | --- |
+| Form | Integrated iced GUI | Avalonia UI + resident Rust core |
+| IPC | In-process | Local gRPC (control / projection) |
+| CLI | Limited | First-class JSON/table capture output |
+| Long runs | Solid defaults | Explicit resident bounds + tick window |
+| Enrichment | Country, ASN, process, map | Country, process, **TLS SNI**, map markers; **ASN hidden in UI** (product choice) |
+| Alerts | Notifications / webhooks | Signals page + policy (threshold, watch, known-bad) |
+| Polish & packaging | Mature, easy install | Improving; dual-process setup is heavier |
+
+**Use Sniffnet** when you want a refined, all-in-one traffic glance with strong map storytelling and ASN labels.  
+**Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, or SNI/process-driven analysis on a projection pipeline.
+
+Credit to GyulyVGC and the Sniffnet community for the reference product and for proving this class of desktop monitor works well in practice.
+
+---
+
 ## Screenshots
 
 | Overview | Source |
