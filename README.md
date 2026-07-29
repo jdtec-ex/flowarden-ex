@@ -6,29 +6,6 @@ Desktop network traffic monitor: live capture and offline pcap replay, ranked ho
 
 ---
 
-## Relation to Sniffnet
-
-Flowarden is **inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet)** — its capture-and-aggregate model, ranked views, destination map, process hints, and compact thumbnail monitoring shaped the product goals.
-
-It is **not a fork or re-skin**. Sniffnet is a polished single-process Rust desktop app (iced). Flowarden reimplements the monitoring idea with a different architecture: a headless Rust core, an Avalonia UI over local gRPC, and a CLI that shares the same projection contract.
-
-| | Sniffnet | Flowarden |
-| --- | --- | --- |
-| Form | Integrated iced GUI | Avalonia UI + resident Rust core |
-| IPC | In-process | Local gRPC (control / projection) |
-| CLI | Limited | First-class JSON/table capture output |
-| Long runs | Solid defaults | Explicit resident bounds + tick window |
-| Enrichment | Country, ASN, process, map | Country, process, **TLS SNI**, map markers; **ASN hidden in UI** (product choice) |
-| Alerts | Notifications / webhooks | Signals page + policy (threshold, watch, known-bad) |
-| Polish & packaging | Mature, easy install | Improving; dual-process setup is heavier |
-
-**Use Sniffnet** when you want a refined, all-in-one traffic glance with strong map storytelling and ASN labels.  
-**Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, or SNI/process-driven analysis on a projection pipeline.
-
-Credit to GyulyVGC and the Sniffnet community for the reference product and for proving this class of desktop monitor works well in practice.
-
----
-
 ## Screenshots
 
 | Overview | Source |
@@ -84,7 +61,8 @@ Credit to GyulyVGC and the Sniffnet community for the reference product and for 
 | **Built for long runs** | Resident core, soft-capped aggregates, rolling live timeline — not an unbounded session dump. |
 | **Analyst workflow** | Filters, chips, pivots, signals, and offline forensics markers — not only charts. |
 | **Honest semantics** | Capture BPF vs Inspect filters are separate. Projection Top N is explicit. Process lookup is heuristic and non-blocking. |
-| **Practical depth** | SNI and process attribution without full DPI or IDS complexity. |
+| **Practical depth today** | Light DPI (TLS SNI) and process attribution without full IDS scope. |
+| **Room to go deeper** | The core pipeline is built to grow into broader DPI and protocol detail. |
 
 ---
 
@@ -178,6 +156,35 @@ The UI can start or attach to a local `flowarden core` resident process. Prefere
 | Inspect | Filtered connection rows (process, SNI, direction, country via host map) |
 | Control | Source, BPF store, start/stop/pause/resume, signal policy |
 | CLI JSON | Enriched tops + optional findings under the same policy knobs |
+
+---
+
+## Relation to Sniffnet
+
+Flowarden is **inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet)** — its capture-and-aggregate model, ranked views, destination map, process hints, and compact thumbnail monitoring shaped the product goals.
+
+It is **not a fork or re-skin**. Sniffnet is a polished single-process Rust desktop app (iced). Flowarden reimplements the monitoring idea with a different architecture: a headless Rust core, an Avalonia UI over local gRPC, and a CLI that shares the same projection contract.
+
+| | Sniffnet | Flowarden |
+| --- | --- | --- |
+| Form | Integrated iced GUI | Avalonia UI + resident Rust core |
+| IPC | In-process | Local gRPC (control / projection) |
+| CLI | Limited | First-class JSON/table capture output |
+| Long runs | Solid defaults | Explicit resident bounds + tick window |
+| Enrichment | Country, ASN, process, map | Country, process, **TLS SNI**, map markers; **ASN hidden in UI** (product choice) |
+| Alerts | Notifications / webhooks | Signals page + policy (threshold, watch, known-bad) |
+| Deep protocol / DPI | Out of scope for the reference product | **Planned expansion** on the core analysis path (beyond SNI) |
+
+**Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, or SNI/process-driven analysis on a projection pipeline — with a path toward richer DPI.
+
+Credit to GyulyVGC and the Sniffnet community for the reference product and for proving this class of desktop monitor works well in practice.
+
+---
+
+## Roadmap
+
+- **DPI expansion** — grow light DPI (TLS SNI today) into broader application-layer parsing and projection fields, still without turning Flowarden into a full IDS.
+- Deeper session/forensics views and continued UX polish remain secondary to a stable core + UI contract.
 
 ---
 
