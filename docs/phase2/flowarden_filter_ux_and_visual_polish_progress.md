@@ -32,3 +32,11 @@
 3. Overview Top Hosts/Services/Connections 整行点击 → Inspect pivot
 4. Source 编辑 BPF → 运行中显示 pending Start
 5. Overview 图有入出站 fill；Capture Filter 卡可见
+
+## 后续跟进（2026-07-29 续）
+
+| 项 | 状态 |
+| --- | --- |
+| Source 设备卡色 → TFC token 常量 | completed |
+| Inspect Flows 空态 EmptyStateView | completed |
+| Destination Map 叙事摘要 + 空态 | completed（地理 P2 轻量） |

@@ -11,6 +11,23 @@ namespace Flowarden.Ui.ViewModels;
 
 public sealed partial class SourceDeviceItemViewModel : ObservableObject
 {
+    // TFC token hex for brush bindings (Theme.axaml).
+    private const string TfcText = "#E6E0E9";
+    private const string TfcMuted = "#CBC4D2";
+    private const string TfcDim = "#948E9C";
+    private const string TfcPrimary = "#CFBCFF";
+    private const string TfcRaised = "#1D1B20";
+    private const string TfcRaisedHigh = "#2B292F";
+    private const string TfcBorder = "#494551";
+    private const string TfcInbound = "#00CFEA";
+    private const string TfcOutbound = "#A970FF";
+    private const string TfcDataAccent = "#D9A84E";
+    private const string TfcGood = "#10B981";
+    private const string TfcWarning = "#F59E0B";
+    private const string TfcError = "#EF4444";
+    private const string TfcPanelLow = "#141218";
+    private const string TfcShell = "#0F0D13";
+
     public required DeviceSummaryDto Device { get; init; }
 
     public required DevicePreviewDto Preview { get; init; }
@@ -61,28 +78,28 @@ public sealed partial class SourceDeviceItemViewModel : ObservableObject
         "Selection allowed, but preview is currently unavailable.";
 
     public string StatusBackground =>
-        Preview.Unsupported ? "#4A3521" :
-        string.IsNullOrWhiteSpace(Preview.Error) ? "#20372F" :
-        "#4A2A31";
+        Preview.Unsupported ? TfcRaised :
+        string.IsNullOrWhiteSpace(Preview.Error) ? TfcShell :
+        TfcRaised;
 
     public string StatusForeground =>
-        Preview.Unsupported ? "#CBC4D2" :
-        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "#E6E0E9" : "#E7C365" :
-        "#FFB4AB";
+        Preview.Unsupported ? TfcDim :
+        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? TfcText : TfcDataAccent :
+        TfcError;
 
     public string StatusDotBrush =>
-        Preview.Unsupported ? "#948E9C" :
-        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "#CFBCFF" : "#E7C365" :
-        "#F59E0B";
+        Preview.Unsupported ? TfcDim :
+        string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? TfcPrimary : TfcGood :
+        TfcWarning;
 
     public string ShortStatusLabel =>
         Preview.Unsupported ? "IDLE" :
         string.IsNullOrWhiteSpace(Preview.Error) ? IsSelected ? "PRIMARY / READY" : "READY" :
         "READY";
 
-    public string CardBackground => IsSelected ? "#2B292F" : "#1D1B20";
+    public string CardBackground => IsSelected ? TfcRaisedHigh : TfcRaised;
 
-    public string CardBorderBrush => IsSelected ? "#CFBCFF" : "#494551";
+    public string CardBorderBrush => IsSelected ? TfcPrimary : TfcBorder;
 
     public Thickness CardBorderThickness => IsSelected ? new Thickness(3, 1, 1, 1) : new Thickness(0, 0, 0, 1);
 
@@ -108,42 +125,43 @@ public sealed partial class SourceDeviceItemViewModel : ObservableObject
     {
         var normalized = NormalizeName(name);
 
+        // Interface accents stay on the TFC semantic palette (no ad-hoc non-theme colors).
         if (StartsWithAny(normalized, "wlan", "wifi", "wi", "wl", "llw", "awdl"))
         {
-            return new InterfaceVisual("Wi-Fi", "#7DD3FC", "#132A34", "W");
+            return new InterfaceVisual("Wi-Fi", TfcInbound, TfcShell, "W");
         }
 
         if (StartsWithAny(normalized, "ap"))
         {
-            return new InterfaceVisual("Access Point", "#FDE68A", "#342B14", "A");
+            return new InterfaceVisual("Access Point", TfcDataAccent, TfcShell, "A");
         }
 
         if (StartsWithAny(normalized, "lo", "loopback"))
         {
-            return new InterfaceVisual("Loopback", "#C4B5FD", "#28213A", "L");
+            return new InterfaceVisual("Loopback", TfcPrimary, TfcShell, "L");
         }
 
         if (StartsWithAny(normalized, "utun", "tun", "tap", "ppp", "ipsec"))
         {
-            return new InterfaceVisual("Tunnel", "#F9A8D4", "#36202E", "T");
+            return new InterfaceVisual("Tunnel", TfcOutbound, TfcShell, "T");
         }
 
         if (StartsWithAny(normalized, "bridge", "br"))
         {
-            return new InterfaceVisual("Bridge", "#FDA4AF", "#351F25", "B");
+            return new InterfaceVisual("Bridge", TfcError, TfcShell, "B");
         }
 
         if (StartsWithAny(normalized, "veth", "docker", "vmnet", "vbox", "virtual"))
         {
-            return new InterfaceVisual("Virtual", "#93C5FD", "#1C2638", "V");
+            return new InterfaceVisual("Virtual", TfcInbound, TfcPanelLow, "V");
         }
 
         if (StartsWithAny(normalized, "en", "eth"))
         {
-            return new InterfaceVisual("Ethernet", "#A7F3D0", "#173126", "E");
+            return new InterfaceVisual("Ethernet", TfcGood, TfcShell, "E");
         }
 
-        return new InterfaceVisual("Interface", "#CBD5E1", "#242A32", "N");
+        return new InterfaceVisual("Interface", TfcMuted, TfcShell, "N");
     }
 
     private static string BuildInterfaceIconText(string name)

@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.InspectResultsTableView"
              x:DataType="vm:InspectPageViewModel">
@@ -21,65 +22,73 @@
         </Grid>
       </Border>
 
-      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <ItemsControl ItemsSource="{Binding Rows}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
-                <Grid ColumnDefinitions="1.1*,0.5*,1.1*,0.5*,0.5*,0.65*,0.9*,0.9*,0.45*,0.65*,0.65*" ColumnSpacing="8">
-                  <TextBlock Classes="tfc-data" Text="{Binding SourceAddress}" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="1" Classes="tfc-data" Text="{Binding SourcePort}" />
-                  <TextBlock Grid.Column="2" Classes="tfc-data" Text="{Binding DestinationAddress}" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="3" Classes="tfc-data" Text="{Binding DestinationPort}" />
-                  <Border Grid.Column="4" Classes="tfc-chip" Padding="6,2" HorizontalAlignment="Left">
-                    <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcPrimaryBrush}" FontSize="11" Text="{Binding ProtocolLabel}" />
-                  </Border>
-                  <TextBlock Grid.Column="5" Classes="muted-text" FontSize="13" Text="{Binding ServiceName}" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="6"
-                             Classes="muted-text"
-                             FontSize="12"
-                             Foreground="{StaticResource TfcPrimaryBrush}"
-                             Text="{Binding SniLabel}"
-                             TextTrimming="CharacterEllipsis"
-                             ToolTip.Tip="{Binding SniLabel}" />
-                  <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="6">
-                    <Border Width="16"
-                            Height="16"
-                            CornerRadius="3"
-                            ClipToBounds="True"
-                            Background="{StaticResource TfcSurfaceBrush}"
-                            BorderBrush="{StaticResource TfcBorderBrush}"
-                            BorderThickness="1"
-                            VerticalAlignment="Center">
-                      <Panel>
-                        <Image Source="{Binding ProcessIcon}"
-                               Stretch="Uniform"
-                               IsVisible="{Binding HasProcessIcon}" />
-                        <TextBlock FontSize="9"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="{Binding ProcessMonogram}"
-                                   Foreground="{Binding ProcessMonogramBrush}"
-                                   IsVisible="{Binding ShowProcessMonogram}" />
-                      </Panel>
+      <Grid Grid.Row="1">
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      IsVisible="{Binding HasFlowRows}">
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="tfc-table-row" Padding="14,5" MinHeight="32">
+                  <Grid ColumnDefinitions="1.1*,0.5*,1.1*,0.5*,0.5*,0.65*,0.9*,0.9*,0.45*,0.65*,0.65*" ColumnSpacing="8">
+                    <TextBlock Classes="tfc-data" Text="{Binding SourceAddress}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1" Classes="tfc-data" Text="{Binding SourcePort}" />
+                    <TextBlock Grid.Column="2" Classes="tfc-data" Text="{Binding DestinationAddress}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="3" Classes="tfc-data" Text="{Binding DestinationPort}" />
+                    <Border Grid.Column="4" Classes="tfc-chip" Padding="6,2" HorizontalAlignment="Left">
+                      <TextBlock Classes="tfc-data" Foreground="{StaticResource TfcPrimaryBrush}" FontSize="11" Text="{Binding ProtocolLabel}" />
                     </Border>
-                    <TextBlock Classes="muted-text"
+                    <TextBlock Grid.Column="5" Classes="muted-text" FontSize="13" Text="{Binding ServiceName}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="6"
+                               Classes="muted-text"
                                FontSize="12"
-                               Text="{Binding ProcessLabel}"
+                               Foreground="{StaticResource TfcPrimaryBrush}"
+                               Text="{Binding SniLabel}"
                                TextTrimming="CharacterEllipsis"
-                               ToolTip.Tip="{Binding ProcessTooltip}"
-                               VerticalAlignment="Center" />
-                  </StackPanel>
-                  <TextBlock Grid.Column="8" Foreground="{StaticResource TfcWarningBrush}" HorizontalAlignment="Center" Text="{Binding DirectionGlyph}" />
-                  <TextBlock Grid.Column="9" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
-                  <TextBlock Grid.Column="10" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
+                               ToolTip.Tip="{Binding SniLabel}" />
+                    <StackPanel Grid.Column="7" Orientation="Horizontal" Spacing="6">
+                      <Border Width="16"
+                              Height="16"
+                              CornerRadius="3"
+                              ClipToBounds="True"
+                              Background="{StaticResource TfcPanelBrush}"
+                              BorderBrush="{StaticResource TfcBorderBrush}"
+                              BorderThickness="1"
+                              VerticalAlignment="Center">
+                        <Panel>
+                          <Image Source="{Binding ProcessIcon}"
+                                 Stretch="Uniform"
+                                 IsVisible="{Binding HasProcessIcon}" />
+                          <TextBlock FontSize="9"
+                                     FontWeight="SemiBold"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Text="{Binding ProcessMonogram}"
+                                     Foreground="{Binding ProcessMonogramBrush}"
+                                     IsVisible="{Binding ShowProcessMonogram}" />
+                        </Panel>
+                      </Border>
+                      <TextBlock Classes="muted-text"
+                                 FontSize="12"
+                                 Text="{Binding ProcessLabel}"
+                                 TextTrimming="CharacterEllipsis"
+                                 ToolTip.Tip="{Binding ProcessTooltip}"
+                                 VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="8" Foreground="{StaticResource TfcWarningBrush}" HorizontalAlignment="Center" Text="{Binding DirectionGlyph}" />
+                    <TextBlock Grid.Column="9" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding BytesLabel}" />
+                    <TextBlock Grid.Column="10" Classes="tfc-data" HorizontalAlignment="Right" Text="{Binding PacketsLabel}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <components:EmptyStateView IsVisible="{Binding HasNoFlowRows}"
+                                   Title="{Binding FlowEmptyStateTitle}"
+                                   Detail="{Binding FlowEmptyStateDetail}" />
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

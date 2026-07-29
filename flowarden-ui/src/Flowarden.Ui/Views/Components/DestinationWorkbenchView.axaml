@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shapes="using:Avalonia.Controls.Shapes"
+             xmlns:components="using:Flowarden.Ui.Views.Components"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.DestinationWorkbenchView"
              x:Name="Root"
@@ -9,7 +10,13 @@
     <Border Classes="tfc-panel" ClipToBounds="True">
       <Grid RowDefinitions="32,*">
         <Border Classes="tfc-panel-header" Padding="16,0">
-          <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Geospatial Routing" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Destination Map" />
+            <TextBlock Grid.Column="1"
+                       Classes="tfc-label"
+                       VerticalAlignment="Center"
+                       Text="COUNTRY · PUBLIC" />
+          </Grid>
         </Border>
         <Border Grid.Row="1" Margin="10" Background="{StaticResource TfcBackgroundBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" ClipToBounds="True">
           <Grid>
@@ -24,7 +31,9 @@
                       Width="{Binding Size}"
                       Height="{Binding Size}"
                       Canvas.Left="{Binding X}"
-                      Canvas.Top="{Binding Y}">
+                      Canvas.Top="{Binding Y}"
+                      IsVisible="{Binding #Root.((vm:OverviewPageViewModel)DataContext).HasPrimaryRegionMarker}"
+                      ToolTip.Tip="{Binding Label}">
                   <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
                   <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
                 </Grid>
@@ -32,7 +41,9 @@
                       Width="{Binding Size}"
                       Height="{Binding Size}"
                       Canvas.Left="{Binding X}"
-                      Canvas.Top="{Binding Y}">
+                      Canvas.Top="{Binding Y}"
+                      IsVisible="{Binding #Root.((vm:OverviewPageViewModel)DataContext).HasSecondaryRegionMarker}"
+                      ToolTip.Tip="{Binding Label}">
                   <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
                   <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
                 </Grid>
@@ -40,15 +51,24 @@
                       Width="{Binding Size}"
                       Height="{Binding Size}"
                       Canvas.Left="{Binding X}"
-                      Canvas.Top="{Binding Y}">
+                      Canvas.Top="{Binding Y}"
+                      IsVisible="{Binding #Root.((vm:OverviewPageViewModel)DataContext).HasTertiaryRegionMarker}"
+                      ToolTip.Tip="{Binding Label}">
                   <Ellipse Fill="{Binding AccentBrush}" Opacity="0.22" />
                   <Ellipse Margin="3" Fill="{Binding AccentBrush}" Stroke="{StaticResource TfcBackgroundBrush}" StrokeThickness="1" />
                 </Grid>
               </Canvas>
             </Viewbox>
             <StackPanel VerticalAlignment="Bottom" Margin="14" Spacing="4">
-              <TextBlock Classes="tfc-label" Text="REGION MARKERS" />
-              <TextBlock Classes="muted-text" FontSize="12" Text="Top destination regions from resolved public traffic" />
+              <TextBlock Classes="tfc-label" Text="DESTINATION STORY" />
+              <TextBlock Classes="tfc-data"
+                         FontSize="12"
+                         Text="{Binding DestinationNarrativeSummary}"
+                         TextWrapping="Wrap" />
+              <TextBlock Classes="muted-text"
+                         FontSize="11"
+                         Text="{Binding DestinationMapFootnote}"
+                         TextWrapping="Wrap" />
             </StackPanel>
           </Grid>
         </Border>
@@ -58,20 +78,26 @@
     <Border Grid.Row="1" Classes="tfc-panel" ClipToBounds="True">
       <Grid RowDefinitions="32,*">
         <Border Classes="tfc-panel-header" Padding="16,0">
-          <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Top Regions" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="Top Regions" />
+            <TextBlock Grid.Column="1" Classes="tfc-label" VerticalAlignment="Center" Text="SHARE" />
+          </Grid>
         </Border>
         <Grid Grid.Row="1">
-          <TextBlock Classes="muted-text" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Text="No region data yet" IsVisible="{Binding HasNoTopRegionRows}" />
+          <components:EmptyStateView IsVisible="{Binding HasNoTopRegionRows}"
+                                     Title="No region data yet"
+                                     Detail="Public destination countries appear here once projection resolves outbound traffic." />
           <ItemsControl Margin="10,8" ItemsSource="{Binding TopRegionRows}" IsVisible="{Binding HasTopRegionRows}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:OverviewRegionRowViewModel">
                 <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0"
                         ToolTip.Tip="{Binding Tooltip}">
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <SelectableTextBlock Classes="tfc-data" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                    <SelectableTextBlock Grid.Column="1"
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Border Width="7" Height="7" Background="{Binding AccentBrush}" VerticalAlignment="Center" />
+                    <SelectableTextBlock Grid.Column="1" Classes="tfc-data" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <SelectableTextBlock Grid.Column="2"
                                          Classes="tfc-data"
-                                         Foreground="{Binding AccentBrush}"
+                                         Foreground="{StaticResource TfcDataAccentBrush}"
                                          HorizontalAlignment="Right"
                                          VerticalAlignment="Center"
                                          Text="{Binding RatioLabel}" />

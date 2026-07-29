@@ -325,6 +325,30 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public bool HasTopRegionMarkers => TopRegionMarkers.Count > 0;
 
+    /// <summary>One-line destination story for the map workbench (no ASN).</summary>
+    public string DestinationNarrativeSummary
+    {
+        get
+        {
+            if (!HasTopRegionRows)
+            {
+                return string.Equals(Snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase)
+                    ? "No public destination regions in this offline window."
+                    : "Waiting for public destination traffic to map regions.";
+            }
+
+            var lead = TopRegionRows[0];
+            var count = TopRegionRows.Count;
+            var extra = count > 1 ? $" · {count} regions in view" : string.Empty;
+            return $"Lead destination · {lead.Label} ({lead.RatioLabel}){extra}";
+        }
+    }
+
+    public string DestinationMapFootnote =>
+        HasTopRegionMarkers
+            ? "Markers sized by share of public destination bytes (country-level)."
+            : "Markers appear when Top Destinations resolve to public countries.";
+
     public OverviewRegionMarkerViewModel? PrimaryRegionMarker => _primaryRegionMarker;
 
     public OverviewRegionMarkerViewModel? SecondaryRegionMarker => _secondaryRegionMarker;
@@ -568,6 +592,8 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasNoTopRegionRows));
         OnPropertyChanged(nameof(TopRegionMarkers));
         OnPropertyChanged(nameof(HasTopRegionMarkers));
+        OnPropertyChanged(nameof(DestinationNarrativeSummary));
+        OnPropertyChanged(nameof(DestinationMapFootnote));
         OnPropertyChanged(nameof(PrimaryRegionMarker));
         OnPropertyChanged(nameof(SecondaryRegionMarker));
         OnPropertyChanged(nameof(TertiaryRegionMarker));
