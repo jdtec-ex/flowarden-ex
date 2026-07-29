@@ -247,8 +247,11 @@ public sealed class ProjectionClient
                 ServiceName = filter.ServiceName ?? string.Empty,
                 Protocol = filter.Protocol ?? string.Empty,
                 Direction = filter.Direction ?? string.Empty,
-                Bpf = filter.Bpf ?? string.Empty,
+                // Inspect Bpf field deprecated; capture BPF is session-level only.
+                Bpf = string.Empty,
                 TopN = topN,
+                ProcessName = filter.ProcessName ?? string.Empty,
+                Sni = filter.Sni ?? string.Empty,
             },
             cancellationToken: cancellationToken
         );

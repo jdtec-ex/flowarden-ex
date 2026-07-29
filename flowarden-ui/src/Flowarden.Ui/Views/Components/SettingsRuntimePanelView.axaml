@@ -36,7 +36,8 @@
         </StackPanel>
         <StackPanel Grid.Row="1" Spacing="2">
           <TextBlock Classes="muted-text" FontSize="11" Text="BPF" />
-          <TextBlock Classes="tfc-data" FontSize="13" Text="{Binding RuntimeState.Bpf}" />
+          <TextBlock Classes="tfc-data" FontSize="13"
+                     Text="{Binding RuntimeState.Bpf, StringFormat=Capture BPF: {0}}" />
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
           <TextBlock Classes="muted-text" FontSize="11" Text="Started" />

@@ -233,4 +233,63 @@
     <Setter Property="Padding" Value="12,7" />
     <Setter Property="MinHeight" Value="32" />
   </Style>
+
+  <Style Selector="Border.tfc-table-row:pointerover">
+    <Setter Property="Background" Value="{StaticResource TfcRaisedBrush}" />
+  </Style>
+
+  <Style Selector="Button.mode-toggle">
+    <Setter Property="Background" Value="{StaticResource TfcRaisedBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TfcTextBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource TfcBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontSize" Value="13" />
+  </Style>
+
+  <Style Selector="Button.mode-toggle.active">
+    <Setter Property="Background" Value="{StaticResource TfcPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TfcPrimaryOnBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource TfcPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.chip-remove">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{StaticResource TfcPrimaryBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="2,0" />
+    <Setter Property="MinHeight" Value="18" />
+    <Setter Property="MinWidth" Value="18" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="Button.chip-remove:pointerover">
+    <Setter Property="Foreground" Value="{StaticResource TfcTextBrush}" />
+  </Style>
+
+  <Style Selector="Border.tfc-chip.pivot-chip">
+    <Setter Property="BorderBrush" Value="{StaticResource TfcPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.ranking-row">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="BorderBrush" Value="{StaticResource TfcBorderBrush}" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="2,2" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="Button.ranking-row:pointerover">
+    <Setter Property="Background" Value="{StaticResource TfcRaisedBrush}" />
+  </Style>
+
+  <Style Selector="Button.ranking-row:pressed">
+    <Setter Property="Background" Value="{StaticResource TfcRaisedHighBrush}" />
+  </Style>
 </Styles>

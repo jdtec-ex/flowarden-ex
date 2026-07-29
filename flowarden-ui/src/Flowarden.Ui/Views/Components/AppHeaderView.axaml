@@ -76,10 +76,9 @@
               VerticalAlignment="Center"
               IsVisible="{Binding IsInspectPageActive}">
         <StackPanel Orientation="Horizontal" Spacing="3">
-          <Button Background="{Binding InspectPage.FlowModeBackground}"
-                  BorderBrush="{Binding InspectPage.FlowModeBorderBrush}"
-                  BorderThickness="1"
-                  Width="24"
+          <Button Classes="mode-toggle"
+                  Classes.active="{Binding InspectPage.IsFlowsMode}"
+                  Width="28"
                   Height="24"
                   Padding="0"
                   Command="{Binding InspectPage.SwitchToFlowsCommand}"
@@ -87,12 +86,11 @@
             <PathIcon Width="10"
                       Height="10"
                       Data="{StaticResource IconGridSquare}"
-                      Foreground="{Binding InspectPage.FlowModeForeground}" />
+                      Foreground="{Binding $parent[Button].Foreground}" />
           </Button>
-          <Button Background="{Binding InspectPage.TcpModeBackground}"
-                  BorderBrush="{Binding InspectPage.TcpModeBorderBrush}"
-                  BorderThickness="1"
-                  Width="24"
+          <Button Classes="mode-toggle"
+                  Classes.active="{Binding InspectPage.IsTcpConnectionsMode}"
+                  Width="28"
                   Height="24"
                   Padding="0"
                   Command="{Binding InspectPage.SwitchToTcpConnectionsCommand}"
@@ -100,7 +98,7 @@
             <PathIcon Width="10"
                       Height="10"
                       Data="{StaticResource IconGridView}"
-                      Foreground="{Binding InspectPage.TcpModeForeground}" />
+                      Foreground="{Binding $parent[Button].Foreground}" />
           </Button>
         </StackPanel>
       </Border>

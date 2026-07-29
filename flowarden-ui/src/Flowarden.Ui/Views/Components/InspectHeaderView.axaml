@@ -28,18 +28,14 @@
               Padding="3"
               VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Background="{Binding FlowModeBackground}"
-                  BorderBrush="{Binding FlowModeBorderBrush}"
-                  BorderThickness="1"
-                  Foreground="{Binding FlowModeForeground}"
+          <Button Classes="mode-toggle"
+                  Classes.active="{Binding IsFlowsMode}"
                   MinWidth="72"
                   Padding="10,5"
                   Command="{Binding SwitchToFlowsCommand}"
                   Content="{Binding FlowModeLabel}" />
-          <Button Background="{Binding TcpModeBackground}"
-                  BorderBrush="{Binding TcpModeBorderBrush}"
-                  BorderThickness="1"
-                  Foreground="{Binding TcpModeForeground}"
+          <Button Classes="mode-toggle"
+                  Classes.active="{Binding IsTcpConnectionsMode}"
                   MinWidth="136"
                   Padding="10,5"
                   Command="{Binding SwitchToTcpConnectionsCommand}"

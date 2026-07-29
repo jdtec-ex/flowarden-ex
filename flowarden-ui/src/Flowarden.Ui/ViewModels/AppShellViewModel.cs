@@ -135,6 +135,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 ? $"Inspect opened from forensics focus ({OverviewPage.ForensicsFocusLabel})"
                 : "Inspect opened from Overview";
         };
+        OverviewPage.RankingPivotRequested += OnOverviewRankingPivot;
         InspectPage = new InspectPageViewModel(
             _projectionClient,
             _liveProjectionState,
@@ -386,6 +387,13 @@ public sealed partial class AppShellViewModel : ViewModelBase
         SettingsPage?.UpdateCaptureDiagnostics(snapshot, UserRunState);
     }
 
+    private void OnOverviewRankingPivot(string pivotKind, string pivotValue)
+    {
+        Navigate("inspect");
+        _ = InspectPage.ApplyPivotAsync(pivotKind, pivotValue);
+        ConnectionMessage = $"Inspect pivot: {pivotKind} = {pivotValue}";
+    }
+
     private void OnSignalPivotRequested(SignalItemDto signal)
     {
         // Offline findings: Overview timeline marker + rankings, then Inspect filters.
@@ -404,7 +412,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
             );
             // Show timeline marker first so analysts see when the finding occurred.
             Navigate("overview");
-            _ = InspectPage.ApplySignalPivotAsync(signal.PivotKind, signal.PivotValue);
+            _ = InspectPage.ApplyPivotAsync(signal.PivotKind, signal.PivotValue);
             ConnectionMessage = signal.CanPivot
                 ? $"Replay: timeline @ {signal.Timestamp:HH:mm:ss} · focus {signal.PivotKind}={signal.PivotValue} (Inspect filters ready)"
                 : $"Replay finding on Overview timeline · {signal.Title}";
@@ -412,7 +420,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         Navigate("inspect");
-        _ = InspectPage.ApplySignalPivotAsync(signal.PivotKind, signal.PivotValue);
+        _ = InspectPage.ApplyPivotAsync(signal.PivotKind, signal.PivotValue);
         if (signal.CanPivot)
         {
             ConnectionMessage = $"Inspect pivot: {signal.PivotKind} = {signal.PivotValue}";

@@ -7,7 +7,7 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled">
     <Grid RowDefinitions="Auto,400,300" RowSpacing="16">
-      <Grid MinHeight="72" ColumnDefinitions="2*,2*,2*,3*,3*" ColumnSpacing="16">
+      <Grid MinHeight="72" ColumnDefinitions="2*,2*,2*,2.5*,2.5*,3*" ColumnSpacing="12">
         <Border Classes="tfc-panel" Padding="14,10">
           <StackPanel>
             <TextBlock Classes="tfc-label" Text="PACKETS" />
@@ -38,11 +38,20 @@
         </Border>
         <Border Grid.Column="3" Classes="tfc-panel" Padding="14,10">
           <StackPanel>
+            <TextBlock Classes="tfc-label" Text="CAPTURE FILTER" />
+            <TextBlock Classes="tfc-data"
+                       Text="{Binding FilterSummary}"
+                       TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="{Binding FilterSummary}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="4" Classes="tfc-panel" Padding="14,10">
+          <StackPanel>
             <TextBlock Classes="tfc-label" Text="TOP HOST" />
             <TextBlock Classes="tfc-data" Text="{Binding TopHostLabel}" />
           </StackPanel>
         </Border>
-        <Border Grid.Column="4" Classes="tfc-panel" Padding="14,10">
+        <Border Grid.Column="5" Classes="tfc-panel" Padding="14,10">
           <StackPanel>
             <TextBlock Classes="tfc-label" Text="TOP SERVICE" />
             <StackPanel Orientation="Horizontal" Spacing="8">

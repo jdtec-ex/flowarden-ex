@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.TopServicesView"
-             x:DataType="vm:OverviewPageViewModel">
+             x:DataType="vm:OverviewPageViewModel"
+             x:Name="Root">
   <Border Classes="tfc-panel" ClipToBounds="True">
     <Grid RowDefinitions="32,*">
       <Border Classes="tfc-panel-header" Padding="16,0">
@@ -13,8 +14,13 @@
         <ItemsControl Margin="10,8" ItemsSource="{Binding TopServiceRows}" IsVisible="{Binding HasTopServiceRows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:OverviewMetricRowViewModel">
-              <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0">
-                <Grid ColumnDefinitions="90,*,48" ColumnSpacing="10">
+              <Button Classes="ranking-row"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Command="{Binding #Root.((vm:OverviewPageViewModel)DataContext).PivotRankingCommand}"
+                      CommandParameter="{Binding}"
+                      ToolTip.Tip="{Binding Tooltip}">
+                <Grid ColumnDefinitions="90,*,48" ColumnSpacing="10" Height="28">
                   <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Border Width="7" Height="7" Background="{Binding AccentBrush}" VerticalAlignment="Center" />
                     <TextBlock Classes="tfc-data" Text="{Binding Label}" />
@@ -24,7 +30,7 @@
                   </Border>
                   <TextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding ValueLabel}" />
                 </Grid>
-              </Border>
+              </Button>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

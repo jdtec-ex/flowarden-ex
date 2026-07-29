@@ -9,6 +9,7 @@ namespace Flowarden.Ui.ViewModels.Overview;
 
 internal static class OverviewRankingsBuilder
 {
+    // Match TfcDataAccent / TfcMutedText tokens (string form for brush bindings).
     public const string DataAccentBrush = "#D9A84E";
     public const string NeutralMetricBrush = "#CBC4D2";
 
@@ -26,12 +27,18 @@ internal static class OverviewRankingsBuilder
                     row.Hostname,
                     row.Sni
                 );
+                var rawHost = row.Host?.Trim() ?? string.Empty;
 
                 return new OverviewMetricRowViewModel(
                     label,
                     OverviewFormatting.FormatCount(row.Packets),
                     CalculateBarWidth(row.Packets, maxPackets),
-                    NeutralMetricBrush
+                    NeutralMetricBrush,
+                    tooltip: string.IsNullOrWhiteSpace(rawHost)
+                        ? label
+                        : $"{label}\nClick to filter Inspect · host={rawHost}",
+                    pivotKind: "host",
+                    pivotValue: rawHost
                 );
             })
             .ToArray();
@@ -44,14 +51,26 @@ internal static class OverviewRankingsBuilder
         var totalBytes = rows.Aggregate<ServiceRowDto, ulong>(0, (current, row) => current + row.Bytes);
         var maxBytes = rows.Count == 0 ? 0 : rows.Max(row => row.Bytes);
         return rows
-            .Select(row => new OverviewMetricRowViewModel(
-                row.Name.ToUpperInvariant(),
-                totalBytes == 0
-                    ? OverviewFormatting.FormatBytes(row.Bytes)
-                    : $"{(double)row.Bytes / totalBytes:0%}",
-                CalculateBarWidth(row.Bytes, maxBytes),
-                DataAccentBrush
-            ))
+            .Select(row =>
+            {
+                var rawName = row.Name?.Trim() ?? string.Empty;
+                var displayName = string.IsNullOrWhiteSpace(rawName)
+                    ? "(unknown)"
+                    : rawName.ToUpperInvariant();
+                return new OverviewMetricRowViewModel(
+                    displayName,
+                    totalBytes == 0
+                        ? OverviewFormatting.FormatBytes(row.Bytes)
+                        : $"{(double)row.Bytes / totalBytes:0%}",
+                    CalculateBarWidth(row.Bytes, maxBytes),
+                    DataAccentBrush,
+                    tooltip: string.IsNullOrWhiteSpace(rawName)
+                        ? displayName
+                        : $"Click to filter Inspect · service={rawName}",
+                    pivotKind: "service",
+                    pivotValue: rawName
+                );
+            })
             .ToArray();
     }
 
@@ -87,23 +106,35 @@ internal static class OverviewRankingsBuilder
             );
 
         return rows
-            .Select(row => new OverviewConnectionRowViewModel(
-                OverviewFormatting.FormatAddressWithOwner(
-                    row.SourceAddress,
-                    countryByHost.TryGetValue(row.SourceAddress, out var sourceOwner)
-                        ? sourceOwner
-                        : string.Empty
-                ),
-                OverviewFormatting.FormatAddressWithOwner(
-                    row.DestinationAddress,
-                    countryByHost.TryGetValue(row.DestinationAddress, out var destinationOwner)
-                        ? destinationOwner
-                        : string.Empty
-                ),
-                OverviewFormatting.FormatBytes(row.Bytes),
-                row.ProcessLabel,
-                row.IconKey
-            ))
+            .Select(row =>
+            {
+                var source = row.SourceAddress ?? string.Empty;
+                var destination = row.DestinationAddress ?? string.Empty;
+                // Prefer remote peer for pivot Search (local-oriented sessions).
+                var peerRaw = !string.IsNullOrWhiteSpace(destination)
+                    ? destination.Trim()
+                    : source.Trim();
+
+                return new OverviewConnectionRowViewModel(
+                    OverviewFormatting.FormatAddressWithOwner(
+                        source,
+                        countryByHost.TryGetValue(source, out var sourceOwner)
+                            ? sourceOwner
+                            : string.Empty
+                    ),
+                    OverviewFormatting.FormatAddressWithOwner(
+                        destination,
+                        countryByHost.TryGetValue(destination, out var destinationOwner)
+                            ? destinationOwner
+                            : string.Empty
+                    ),
+                    OverviewFormatting.FormatBytes(row.Bytes),
+                    row.ProcessLabel,
+                    row.IconKey,
+                    peerAddressRaw: peerRaw,
+                    processNameRaw: row.ProcessName?.Trim() ?? string.Empty
+                );
+            })
             .ToArray();
     }
 

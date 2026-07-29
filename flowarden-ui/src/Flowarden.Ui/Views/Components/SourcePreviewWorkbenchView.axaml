@@ -63,6 +63,25 @@
 
           <StackPanel Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="15" Text="f" />
+              <TextBlock FontSize="16" FontWeight="SemiBold" Text="Capture Filter (BPF)" />
+            </StackPanel>
+            <Border Background="{StaticResource TfcRaisedBrush}" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="14,12">
+              <StackPanel Spacing="8">
+                <TextBox Height="36"
+                         Watermark="Optional libpcap BPF, e.g. tcp port 443"
+                         MaxLength="1024"
+                         Text="{Binding CaptureBpfInput}"
+                         FontFamily="JetBrains Mono, Menlo, Consolas, monospace"
+                         FontSize="13" />
+                <TextBlock Classes="tfc-label" Text="{Binding CaptureBpfStatusLabel}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted-text" FontSize="12" Text="{Binding CaptureBpfHint}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <StackPanel Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
               <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="15" Text="v" />
               <TextBlock FontSize="16" FontWeight="SemiBold" Text="Traffic Summary" />
             </StackPanel>

@@ -16,22 +16,32 @@
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
-          <DataTemplate>
+          <DataTemplate x:DataType="vm:FilterChipViewModel">
             <Border Classes="tfc-chip" Padding="8,4">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="13" Text="{Binding}" />
-                <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="13" Text="x" />
+                <TextBlock Foreground="{StaticResource TfcPrimaryBrush}" FontSize="13"
+                           Text="{Binding DisplayLabel}" />
+                <Button Classes="chip-remove" Content="×"
+                        Command="{Binding RemoveCommand}"
+                        Padding="2,0" MinHeight="18" MinWidth="18"
+                        ToolTip.Tip="Remove filter" />
               </StackPanel>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
-      <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13" Text="{Binding ActiveFilterSummary}" VerticalAlignment="Center" IsVisible="{Binding !HasActiveFilters}" />
+      <TextBlock Grid.Column="1" Classes="muted-text" FontSize="13"
+                 Text="{Binding ActiveFilterSummary}" VerticalAlignment="Center"
+                 IsVisible="{Binding !HasActiveFilters}" />
     </Grid>
 
     <Grid Grid.Row="2" RowDefinitions="*,32">
-      <components:InspectResultsTableView DataContext="{Binding}" IsVisible="{Binding IsFlowsMode}" />
-      <components:TcpConnectionsResultsTableView DataContext="{Binding}" IsVisible="{Binding IsTcpConnectionsMode}" />
+      <Panel>
+        <components:InspectResultsTableView DataContext="{Binding}"
+                                            IsVisible="{Binding IsFlowsMode}" />
+        <components:TcpConnectionsResultsTableView DataContext="{Binding}"
+                                                   IsVisible="{Binding IsTcpConnectionsMode}" />
+      </Panel>
       <components:InspectFooterSummaryView Grid.Row="1" DataContext="{Binding}" />
     </Grid>
   </Grid>

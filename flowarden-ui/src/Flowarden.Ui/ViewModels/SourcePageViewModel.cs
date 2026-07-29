@@ -221,7 +221,90 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     public string BpfFilterLabel => CurrentSession.Bpf ?? string.Empty;
 
+    /// <summary>Editable capture BPF (L1). Effective only on next Start (KD12).</summary>
+    [ObservableProperty]
+    private string captureBpfInput = string.Empty;
+
+    public const int CaptureBpfMaxLength = 1024;
+
+    public string CaptureBpfHint =>
+        IsCaptureRunningOrPaused
+            ? "Capture BPF applies on next Start (not while running)."
+            : "Optional libpcap BPF. Applied when you Start capture.";
+
+    public string CaptureBpfStatusLabel
+    {
+        get
+        {
+            var draft = CaptureBpfInput?.Trim() ?? string.Empty;
+            var active = CurrentSession.Bpf?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(draft) && string.IsNullOrEmpty(active))
+            {
+                return "Capture Filter · none";
+            }
+
+            if (IsCaptureRunningOrPaused)
+            {
+                if (!string.Equals(draft, active, StringComparison.Ordinal))
+                {
+                    return string.IsNullOrEmpty(draft)
+                        ? "Capture Filter · pending clear on next Start"
+                        : $"Capture Filter · pending Start · {TruncateBpf(draft)}";
+                }
+
+                return string.IsNullOrEmpty(active)
+                    ? "Capture Filter · none (active)"
+                    : $"Capture Filter · active · {TruncateBpf(active)}";
+            }
+
+            return string.IsNullOrEmpty(draft)
+                ? "Capture Filter · none"
+                : $"Capture Filter · ready · {TruncateBpf(draft)}";
+        }
+    }
+
+    private bool IsCaptureRunningOrPaused
+    {
+        get
+        {
+            var status = CurrentSession.CaptureStatus ?? string.Empty;
+            return status.Equals("running", StringComparison.OrdinalIgnoreCase)
+                || status.Equals("active", StringComparison.OrdinalIgnoreCase)
+                || status.Equals("paused", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
     public string OfflineImportSummary => "Offline import replays one pcap file through the same overview and inspect projections.";
+
+    private static string TruncateBpf(string value) =>
+        value.Length <= 48 ? value : value[..45] + "…";
+
+    partial void OnCaptureBpfInputChanged(string value)
+    {
+        if (value is { Length: > CaptureBpfMaxLength })
+        {
+            CaptureBpfInput = value[..CaptureBpfMaxLength];
+            return;
+        }
+
+        var trimmed = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        if (!string.Equals(CurrentSession.Bpf, trimmed, StringComparison.Ordinal))
+        {
+            CurrentSession = new CaptureSessionStateDto
+            {
+                SourceKind = CurrentSession.SourceKind,
+                SourceDisplayName = CurrentSession.SourceDisplayName,
+                CaptureStatus = CurrentSession.CaptureStatus,
+                Mode = CurrentSession.Mode,
+                Bpf = trimmed,
+            };
+        }
+
+        OnPropertyChanged(nameof(BpfFilterLabel));
+        OnPropertyChanged(nameof(CaptureBpfStatusLabel));
+        OnPropertyChanged(nameof(CaptureBpfHint));
+        OnPropertyChanged(nameof(FormalCaptureSummary));
+    }
 
     public Task StartFormalCaptureAsync() => StartFormalCapture();
 
@@ -330,6 +413,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
 
     partial void OnCurrentSessionChanged(CaptureSessionStateDto value)
     {
+        var bpf = value.Bpf ?? string.Empty;
+        if (!string.Equals(CaptureBpfInput, bpf, StringComparison.Ordinal))
+        {
+            CaptureBpfInput = bpf;
+        }
+
         OnPropertyChanged(nameof(FormalCaptureSummary));
         OnPropertyChanged(nameof(CaptureStateLabel));
         OnPropertyChanged(nameof(CanStartFormalCapture));
@@ -339,6 +428,8 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanPauseFormalCapture));
         OnPropertyChanged(nameof(CanResumeFormalCapture));
         OnPropertyChanged(nameof(BpfFilterLabel));
+        OnPropertyChanged(nameof(CaptureBpfStatusLabel));
+        OnPropertyChanged(nameof(CaptureBpfHint));
         SessionStateChanged?.Invoke(value, StatusMessage);
     }
 

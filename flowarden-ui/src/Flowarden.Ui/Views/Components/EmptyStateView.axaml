@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Flowarden.Ui.Views.Components.EmptyStateView"
+             x:Name="Root">
+  <Border Classes="tfc-panel-low" Padding="24" MinHeight="120"
+          HorizontalAlignment="Stretch" VerticalAlignment="Center">
+    <StackPanel Spacing="8" HorizontalAlignment="Center" MaxWidth="480">
+      <TextBlock Classes="section-title"
+                 Text="{Binding Title, ElementName=Root}"
+                 HorizontalAlignment="Center"
+                 TextAlignment="Center" />
+      <TextBlock Classes="muted-text"
+                 FontSize="13"
+                 Text="{Binding Detail, ElementName=Root}"
+                 HorizontalAlignment="Center"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

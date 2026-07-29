@@ -42,6 +42,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
     private string _outboundPathData = string.Empty;
     private string _inboundPathData = string.Empty;
     private string _outboundAreaPathData = string.Empty;
+    private string _inboundAreaPathData = string.Empty;
 
     public OverviewPageViewModel()
         : this(
@@ -90,6 +91,9 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     /// <summary>Raised when user wants Inspect after a forensics focus is active.</summary>
     public event Action? OpenInspectRequested;
+
+    /// <summary>Raised when ranking row pivot requests Inspect (raw keys).</summary>
+    public event Action<string, string>? RankingPivotRequested;
 
     public string ModeLabel => OverviewRankingsBuilder.ResolveModeLabel(_modeOverride, Snapshot);
 
@@ -284,6 +288,12 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
     public string OutboundAreaPathData => _outboundAreaPathData;
 
+    public string InboundAreaPathData => _inboundAreaPathData;
+
+    public bool IsProjectionStale =>
+        string.Equals(Snapshot.CaptureStatus, "stale", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(Snapshot.CaptureStatus, "interrupted", StringComparison.OrdinalIgnoreCase);
+
     public string DestinationPlaceholderMessage => Snapshot.DestinationMap.Message;
 
     public string DestinationPlaceholderTitle => "Destination Distribution Future Slot";
@@ -474,6 +484,7 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             selectOutbound: false
         );
         _outboundAreaPathData = OverviewChartPaths.BuildAreaPath(_outboundPathData);
+        _inboundAreaPathData = OverviewChartPaths.BuildAreaPath(_inboundPathData);
     }
 
     private void ApplySnapshot(OverviewSnapshotDto snapshot)
@@ -583,6 +594,36 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(OutboundPathData));
         OnPropertyChanged(nameof(InboundPathData));
         OnPropertyChanged(nameof(OutboundAreaPathData));
+        OnPropertyChanged(nameof(InboundAreaPathData));
+        OnPropertyChanged(nameof(IsProjectionStale));
+        OnPropertyChanged(nameof(FilterSummary));
+        OnPropertyChanged(nameof(SourceSummary));
+    }
+
+    [RelayCommand]
+    private void PivotRanking(object? parameter)
+    {
+        string? kind = null;
+        string? value = null;
+
+        switch (parameter)
+        {
+            case OverviewMetricRowViewModel metric when metric.CanPivot:
+                kind = metric.PivotKind;
+                value = metric.PivotValue;
+                break;
+            case OverviewConnectionRowViewModel connection when connection.CanPivot:
+                kind = connection.PivotKind;
+                value = connection.PivotValue;
+                break;
+        }
+
+        if (string.IsNullOrWhiteSpace(kind) || string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        RankingPivotRequested?.Invoke(kind, value);
     }
 
     private string BuildHeroSummary()

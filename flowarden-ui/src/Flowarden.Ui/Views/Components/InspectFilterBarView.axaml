@@ -4,39 +4,83 @@
              x:Class="Flowarden.Ui.Views.Components.InspectFilterBarView"
              x:DataType="vm:InspectPageViewModel">
   <Border Classes="tfc-panel" Padding="12">
-    <Grid>
-      <Grid ColumnDefinitions="Auto,150,12,116,150,132,*,124,72,84" ColumnSpacing="10" IsVisible="{Binding IsFlowsMode}">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="10"
+            IsVisible="{Binding IsFlowsMode}">
         <TextBlock Classes="tfc-label" Text="FILTER" VerticalAlignment="Center" />
-        <TextBox Grid.Column="1" Height="32" Watermark="All Sources" Text="{Binding SourceAddressInput}" />
-        <Border Grid.Column="2" Width="1" Background="{StaticResource TfcBorderBrush}" />
-        <TextBox Grid.Column="3" Height="32" Watermark="Protocol" Text="{Binding ProtocolInput}" />
-        <TextBox Grid.Column="4" Height="32" Watermark="Service / Port" Text="{Binding ServiceInput}" />
-        <Border Grid.Column="5"
+        <TextBox Grid.Column="1"
+                 Height="32"
+                 Watermark="Search IPs, hosts, SNI, process…"
+                 Text="{Binding SearchInput}" />
+        <Border Grid.Column="2"
                 Background="{StaticResource TfcPanelLowBrush}"
                 BorderBrush="{StaticResource TfcBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="4"
                 Padding="2">
-          <Grid ColumnDefinitions="*,*,*" Height="26">
-            <Button Classes="mode-button" Padding="6,2" Content="Both" Command="{Binding ApplyDirectionCommand}" CommandParameter="" />
-            <Button Grid.Column="1" Classes="tools-button" Padding="6,2" Content="In" Command="{Binding ApplyDirectionCommand}" CommandParameter="inbound" />
-            <Button Grid.Column="2" Classes="tools-button" Padding="6,2" Content="Out" Command="{Binding ApplyDirectionCommand}" CommandParameter="outbound" />
+          <Grid ColumnDefinitions="*,*,*" Height="26" MinWidth="132">
+            <Button Classes="tools-button" Padding="6,2" Content="Both"
+                    Command="{Binding ApplyDirectionCommand}" CommandParameter="" />
+            <Button Grid.Column="1" Classes="tools-button" Padding="6,2" Content="In"
+                    Command="{Binding ApplyDirectionCommand}" CommandParameter="inbound" />
+            <Button Grid.Column="2" Classes="tools-button" Padding="6,2" Content="Out"
+                    Command="{Binding ApplyDirectionCommand}" CommandParameter="outbound" />
           </Grid>
         </Border>
-        <TextBox Grid.Column="6" Height="32" Watermark="Search IPs, hosts..." Text="{Binding DestinationAddressInput}" />
-        <TextBox Grid.Column="7" Height="32" Watermark="Last 5m" Text="{Binding BpfInput}" />
-        <Button Grid.Column="8" Classes="tools-button" Height="32" Command="{Binding ClearFiltersCommand}" Content="Clear" />
-        <Button Grid.Column="9" Classes="mode-button" Height="32" Command="{Binding ApplyFiltersCommand}" Content="Apply" />
+        <Button Grid.Column="3" Classes="tools-button" Height="32" MinWidth="72"
+                Command="{Binding ToggleMoreCommand}" Content="{Binding MoreToggleLabel}" />
+        <Button Grid.Column="4" Classes="tools-button" Height="32" MinWidth="72"
+                Command="{Binding ClearFiltersCommand}" Content="Clear" />
+        <Button Grid.Column="5" Classes="mode-button" Height="32" MinWidth="84"
+                Command="{Binding ApplyStructuredFiltersCommand}" Content="Apply" />
       </Grid>
 
-      <Grid ColumnDefinitions="Auto,*,116,132,72,84" ColumnSpacing="10" IsVisible="{Binding IsTcpConnectionsMode}">
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10" RowDefinitions="Auto,Auto,Auto"
+            RowSpacing="8" IsVisible="{Binding IsMoreExpanded}">
+        <StackPanel IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="SOURCE" />
+          <TextBox Height="32" Watermark="Source address" Text="{Binding SourceAddressInput}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="DESTINATION" />
+          <TextBox Height="32" Watermark="Destination address" Text="{Binding DestinationAddressInput}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="PROTOCOL" />
+          <TextBox Height="32" Watermark="tcp / udp / arp…" Text="{Binding ProtocolInput}" />
+        </StackPanel>
+        <StackPanel Grid.Column="3" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="SERVICE" />
+          <TextBox Height="32" Watermark="Service name" Text="{Binding ServiceInput}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="PROCESS" />
+          <TextBox Height="32" Watermark="Process name" Text="{Binding ProcessInput}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="SNI" />
+          <TextBox Height="32" Watermark="TLS SNI" Text="{Binding SniInput}" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="2" IsVisible="{Binding IsFlowsMode}" Spacing="4">
+          <TextBlock Classes="tfc-label" Text="COUNTRY (EXP)" />
+          <TextBox Height="32" Watermark="Experimental" Text="{Binding CountryInput}" IsEnabled="False" />
+        </StackPanel>
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Classes="muted-text" FontSize="12"
+                   Text="{Binding TopNHint}" IsVisible="{Binding IsFlowsMode}" />
+      </Grid>
+
+      <Grid ColumnDefinitions="Auto,*,116,132,72,84" ColumnSpacing="10"
+            IsVisible="{Binding IsTcpConnectionsMode}">
         <TextBlock Classes="tfc-label" Text="FILTER" VerticalAlignment="Center" />
-        <TextBox Grid.Column="1" Height="32" Watermark="Address or endpoint" Text="{Binding AddressInput}" />
+        <TextBox Grid.Column="1" Height="32" Watermark="Search address or endpoint"
+                 Text="{Binding SearchInput}" />
         <TextBox Grid.Column="2" Height="32" Watermark="Port" Text="{Binding PortInput}" />
         <TextBox Grid.Column="3" Height="32" Watermark="State" Text="{Binding StateInput}" />
-        <Button Grid.Column="4" Classes="tools-button" Height="32" Command="{Binding ClearFiltersCommand}" Content="Clear" />
-        <Button Grid.Column="5" Classes="mode-button" Height="32" Command="{Binding ApplyFiltersCommand}" Content="Apply" />
+        <Button Grid.Column="4" Classes="tools-button" Height="32"
+                Command="{Binding ClearFiltersCommand}" Content="Clear" />
+        <Button Grid.Column="5" Classes="mode-button" Height="32"
+                Command="{Binding ApplyStructuredFiltersCommand}" Content="Apply" />
       </Grid>
-    </Grid>
+    </StackPanel>
   </Border>
 </UserControl>

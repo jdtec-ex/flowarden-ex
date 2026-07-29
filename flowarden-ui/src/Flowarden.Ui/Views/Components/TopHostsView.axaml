@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.TopHostsView"
-             x:DataType="vm:OverviewPageViewModel">
+             x:DataType="vm:OverviewPageViewModel"
+             x:Name="Root">
   <Border Classes="tfc-panel" ClipToBounds="True">
     <Grid RowDefinitions="32,*">
       <Border Classes="tfc-panel-header" Padding="16,0">
@@ -13,19 +14,24 @@
         <ItemsControl Margin="10,8" ItemsSource="{Binding TopHostRows}" IsVisible="{Binding HasTopHostRows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:OverviewMetricRowViewModel">
-              <Border Height="32" BorderBrush="{StaticResource TfcBorderBrush}" BorderThickness="0,0,0,1" Padding="2,0"
+              <Button Classes="ranking-row"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Command="{Binding #Root.((vm:OverviewPageViewModel)DataContext).PivotRankingCommand}"
+                      CommandParameter="{Binding}"
                       ToolTip.Tip="{Binding Tooltip}">
-                <Grid ColumnDefinitions="1.4*,*,64" ColumnSpacing="10">
+                <Grid ColumnDefinitions="1.4*,*,64" ColumnSpacing="10" Height="28">
                   <SelectableTextBlock Classes="tfc-data"
                                        Text="{Binding Label}"
                                        VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis" />
+                                       TextTrimming="CharacterEllipsis"
+                                       IsHitTestVisible="False" />
                   <Border Grid.Column="1" Height="6" Background="{StaticResource TfcDataTrackBrush}" VerticalAlignment="Center">
                     <Border Background="{Binding AccentBrush}" Width="{Binding BarWidth}" HorizontalAlignment="Left" />
                   </Border>
-                  <SelectableTextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding ValueLabel}" />
+                  <SelectableTextBlock Grid.Column="2" Classes="tfc-data" Foreground="{StaticResource TfcMutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding ValueLabel}" IsHitTestVisible="False" />
                 </Grid>
-              </Border>
+              </Button>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
