@@ -6,6 +6,22 @@ Desktop network traffic monitor: live capture and offline pcap replay, ranked ho
 
 ---
 
+## Screenshots
+
+| Overview | Source |
+| --- | --- |
+| ![Overview](docs/screenshots/overview.png) | ![Source](docs/screenshots/source.png) |
+
+| Inspect | Signals |
+| --- | --- |
+| ![Inspect](docs/screenshots/inspect.png) | ![Signals](docs/screenshots/signals.png) |
+
+| Settings | Thumbnail |
+| --- | --- |
+| ![Settings](docs/screenshots/settings.png) | ![Thumbnail](docs/screenshots/thumbnail.png) |
+
+---
+
 ## Features
 
 ### Capture & analysis
