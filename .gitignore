@@ -21,3 +21,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Local design/progress docs — not published with the GitHub repo
+/docs/

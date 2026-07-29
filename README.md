@@ -10,15 +10,15 @@ Desktop network traffic monitor: live capture and offline pcap replay, ranked ho
 
 | Overview | Source |
 | --- | --- |
-| ![Overview](docs/screenshots/overview.png) | ![Source](docs/screenshots/source.png) |
+| ![Overview](screenshots/overview.png) | ![Source](screenshots/source.png) |
 
 | Inspect | Signals |
 | --- | --- |
-| ![Inspect](docs/screenshots/inspect.png) | ![Signals](docs/screenshots/signals.png) |
+| ![Inspect](screenshots/inspect.png) | ![Signals](screenshots/signals.png) |
 
 | Settings | Thumbnail |
 | --- | --- |
-| ![Settings](docs/screenshots/settings.png) | ![Thumbnail](docs/screenshots/thumbnail.png) |
+| ![Settings](screenshots/settings.png) | ![Thumbnail](screenshots/thumbnail.png) |
 
 ---
 
@@ -87,7 +87,7 @@ CLI:  flowarden devices | capture …   (same core, no UI)
 | --- | --- |
 | `flowarden/` | Rust workspace: CLI, resident gRPC host, core, proto |
 | `flowarden-ui/` | Avalonia desktop app |
-| `docs/` | Design, phase plans, runbooks |
+| `screenshots/` | README product screenshots |
 
 ---
 

@@ -1,3 +1,0 @@
-# suricata
-
-Suricata is a high-performance network Intrusion Detection System (IDS), Intrusion Prevention System (IPS), and Network Security Monitoring (NSM) engine. It inspects network traffic using a powerful rule-based detection language, protocol identification, and deep packet inspection to identify threats, suspicious activity, and protocol violations. Suricata processes packets through a multi-stage pipeline: packet capture, protocol decoding, flow tracking, stream reassembly, application layer parsing, and signature-based detection, ultimately generating alerts and detailed logging output in EVE JSON format.
