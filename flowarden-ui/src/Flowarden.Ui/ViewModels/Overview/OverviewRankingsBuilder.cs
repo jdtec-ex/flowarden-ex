@@ -78,14 +78,24 @@ internal static class OverviewRankingsBuilder
         IReadOnlyList<DestinationSummaryDto> rows
     )
     {
+        var maxBytes = rows.Count == 0 ? 0UL : rows.Max(row => row.Bytes);
         return rows
             .Select(row =>
             {
                 var label = string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label;
+                var code = string.IsNullOrWhiteSpace(row.CountryCode)
+                    ? OverviewFormatting.ExtractOwnerCode(row.CountryLabel)
+                    : row.CountryCode.Trim();
+                var pivot = !string.IsNullOrWhiteSpace(code) ? code : label;
+                var ratio = row.Ratio.ToString("P0", CultureInfo.InvariantCulture);
                 return new OverviewRegionRowViewModel(
                     label,
-                    row.Ratio.ToString("P0", CultureInfo.InvariantCulture),
-                    DataAccentBrush
+                    ratio,
+                    DataAccentBrush,
+                    tooltip: $"{label} · {ratio} · {OverviewFormatting.FormatBytes(row.Bytes)}\nClick to filter Inspect · country={pivot}",
+                    pivotValue: pivot,
+                    barWidth: CalculateBarWidth(row.Bytes, maxBytes),
+                    bytesLabel: OverviewFormatting.FormatBytes(row.Bytes)
                 );
             })
             .ToArray();

@@ -31,6 +31,8 @@ public sealed partial class InspectPageViewModel : ViewModelBase
     private CancellationTokenSource? _coldCts;
     private CancellationTokenSource? _searchDebounceCts;
     private FilterChipSource _lastCommitSource = FilterChipSource.User;
+    private IReadOnlyDictionary<string, string> _hostCountryByAddress =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     public InspectPageViewModel()
         : this(
@@ -245,6 +247,10 @@ public sealed partial class InspectPageViewModel : ViewModelBase
             case "destination":
                 DestinationAddressInput = value;
                 break;
+            case "country":
+            case "region":
+                CountryInput = value;
+                break;
             default:
                 SearchInput = value;
                 break;
@@ -419,6 +425,7 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         // Unified path: always apply committed Filter (no exclusive pivot branch).
         if (CurrentMode == InspectMode.TcpConnections)
         {
+            UpdateHostCountryIndex(snapshot);
             _allTcpRows = snapshot.TopTcpConnections.ToArray();
             var source = SnapshotAllTcpRows();
             var filtered = source.Where(r => InspectFilterMatcher.MatchesTcp(r, Filter)).ToArray();
@@ -436,15 +443,80 @@ public sealed partial class InspectPageViewModel : ViewModelBase
             return;
         }
 
+        UpdateHostCountryIndex(snapshot);
         _allRows = snapshot.TopConnections.ToArray();
         var all = SnapshotAllRows();
-        var visible = all.Where(r => InspectFilterMatcher.Matches(r, Filter)).ToArray();
+        var visible = all
+            .Where(r => InspectFilterMatcher.Matches(r, Filter, _hostCountryByAddress))
+            .ToArray();
         ReplaceRows(visible);
         Summary = BuildSummary(all.Count, visible);
         ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
         ActiveFilterSummary = BuildFilterSummary();
         RebuildChips();
         NotifyResultSummaryChanged();
+    }
+
+    private void UpdateHostCountryIndex(OverviewSnapshotDto snapshot)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var host in snapshot.TopHosts)
+        {
+            if (string.IsNullOrWhiteSpace(host.Host))
+            {
+                continue;
+            }
+
+            var label = string.IsNullOrWhiteSpace(host.CountryLabel)
+                ? string.Empty
+                : host.CountryLabel.Trim();
+            if (string.IsNullOrEmpty(label))
+            {
+                continue;
+            }
+
+            // Keep both full label and short codes so country pivot tokens match.
+            map[host.Host.Trim()] = label;
+        }
+
+        // Enrich with destination region codes when hosts only carry full labels.
+        foreach (var dest in snapshot.TopDestinations)
+        {
+            var code = dest.CountryCode?.Trim() ?? string.Empty;
+            var destLabel = string.IsNullOrWhiteSpace(dest.Label) ? dest.CountryLabel : dest.Label;
+            if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(destLabel))
+            {
+                continue;
+            }
+
+            foreach (var host in snapshot.TopHosts)
+            {
+                if (string.IsNullOrWhiteSpace(host.Host) || string.IsNullOrWhiteSpace(host.CountryLabel))
+                {
+                    continue;
+                }
+
+                var hostLabel = host.CountryLabel;
+                var related =
+                    (!string.IsNullOrWhiteSpace(destLabel)
+                        && hostLabel.Contains(destLabel, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrWhiteSpace(code)
+                        && hostLabel.Contains(code, StringComparison.OrdinalIgnoreCase));
+                if (!related)
+                {
+                    continue;
+                }
+
+                var key = host.Host.Trim();
+                var existing = map.TryGetValue(key, out var prev) ? prev : hostLabel;
+                if (!string.IsNullOrWhiteSpace(code) && !existing.Contains(code, StringComparison.OrdinalIgnoreCase))
+                {
+                    map[key] = $"{existing} {code}";
+                }
+            }
+        }
+
+        _hostCountryByAddress = map;
     }
 
     private async Task ApplyCommittedFilterAsync()
@@ -468,9 +540,12 @@ public sealed partial class InspectPageViewModel : ViewModelBase
                 || string.Equals(snapshot.Mode, "live", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(snapshot.Mode, "offline", StringComparison.OrdinalIgnoreCase))
             {
+                UpdateHostCountryIndex(snapshot);
                 _allRows = snapshot.TopConnections.ToArray();
                 var all = SnapshotAllRows();
-                var visible = all.Where(r => InspectFilterMatcher.Matches(r, Filter)).ToArray();
+                var visible = all
+                    .Where(r => InspectFilterMatcher.Matches(r, Filter, _hostCountryByAddress))
+                    .ToArray();
                 ReplaceRows(visible);
                 Summary = BuildSummary(all.Count, visible);
                 ProjectionStateLabel = ProjectionLabelForSnapshot(snapshot);
@@ -495,11 +570,17 @@ public sealed partial class InspectPageViewModel : ViewModelBase
                     return;
                 }
 
-                // Structured filtered server-side; always re-apply Search/process/sni locally.
+                // Structured filtered server-side; always re-apply Search/process/sni/country locally.
                 _allRows = result.Rows;
                 var all = SnapshotAllRows();
                 var visible = all
-                    .Where(r => InspectFilterMatcher.MatchesSearchAndLocalOnly(r, Filter))
+                    .Where(r =>
+                        InspectFilterMatcher.MatchesSearchAndLocalOnly(
+                            r,
+                            Filter,
+                            _hostCountryByAddress
+                        )
+                    )
                     .ToArray();
                 ReplaceRows(visible);
                 Summary = BuildSummary(all.Count, visible);
@@ -519,7 +600,9 @@ public sealed partial class InspectPageViewModel : ViewModelBase
         else
         {
             var all = SnapshotAllRows();
-            var visible = all.Where(r => InspectFilterMatcher.Matches(r, Filter)).ToArray();
+            var visible = all
+                .Where(r => InspectFilterMatcher.Matches(r, Filter, _hostCountryByAddress))
+                .ToArray();
             ReplaceRows(visible);
             Summary = BuildSummary(all.Count, visible);
             ProjectionStateLabel = "Seed dataset";

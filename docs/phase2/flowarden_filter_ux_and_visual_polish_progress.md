@@ -40,3 +40,6 @@
 | Source 设备卡色 → TFC token 常量 | completed |
 | Inspect Flows 空态 EmptyStateView | completed |
 | Destination Map 叙事摘要 + 空态 | completed（地理 P2 轻量） |
+| 地理叙事再增强（legend / region bars / map pivot） | completed |
+| PR8 密度 comfortable/compact + 偏好持久化 | completed |
+| Overview 区域 / 地图 marker pivot → Inspect country | completed |

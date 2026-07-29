@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Flowarden.Ui.Models;
 
 namespace Flowarden.Ui.ViewModels;
@@ -8,9 +9,18 @@ namespace Flowarden.Ui.ViewModels;
 /// </summary>
 public static class InspectFilterMatcher
 {
-    public static bool Matches(ConnectionRowDto row, InspectFilterDto filter)
+    public static bool Matches(
+        ConnectionRowDto row,
+        InspectFilterDto filter,
+        IReadOnlyDictionary<string, string>? hostCountryByAddress = null
+    )
     {
         if (!MatchesSearchOr(row, filter.SearchText))
+        {
+            return false;
+        }
+
+        if (!MatchesCountry(row, filter.Country, hostCountryByAddress))
         {
             return false;
         }
@@ -24,16 +34,66 @@ public static class InspectFilterMatcher
             && MatchesText(filter.Sni, row.Sni);
     }
 
-    public static bool MatchesSearchAndLocalOnly(ConnectionRowDto row, InspectFilterDto filter)
+    public static bool MatchesSearchAndLocalOnly(
+        ConnectionRowDto row,
+        InspectFilterDto filter,
+        IReadOnlyDictionary<string, string>? hostCountryByAddress = null
+    )
     {
-        // After server structured filter: still re-apply Search + process/sni locally (KD14).
+        // After server structured filter: still re-apply Search/process/sni/country locally (KD14).
         if (!MatchesSearchOr(row, filter.SearchText))
+        {
+            return false;
+        }
+
+        if (!MatchesCountry(row, filter.Country, hostCountryByAddress))
         {
             return false;
         }
 
         return MatchesText(filter.ProcessName, row.ProcessName)
             && MatchesText(filter.Sni, row.Sni);
+    }
+
+    public static bool MatchesCountry(
+        ConnectionRowDto row,
+        string? country,
+        IReadOnlyDictionary<string, string>? hostCountryByAddress
+    )
+    {
+        if (string.IsNullOrWhiteSpace(country))
+        {
+            return true;
+        }
+
+        if (hostCountryByAddress is null || hostCountryByAddress.Count == 0)
+        {
+            return false;
+        }
+
+        var token = country.Trim();
+        return AddressMatchesCountry(row.SourceAddress, token, hostCountryByAddress)
+            || AddressMatchesCountry(row.DestinationAddress, token, hostCountryByAddress);
+    }
+
+    private static bool AddressMatchesCountry(
+        string address,
+        string token,
+        IReadOnlyDictionary<string, string> hostCountryByAddress
+    )
+    {
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            return false;
+        }
+
+        if (!hostCountryByAddress.TryGetValue(address, out var label)
+            || string.IsNullOrWhiteSpace(label))
+        {
+            return false;
+        }
+
+        return label.Contains(token, StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool MatchesTcp(TcpConnectionRowDto row, InspectFilterDto filter)

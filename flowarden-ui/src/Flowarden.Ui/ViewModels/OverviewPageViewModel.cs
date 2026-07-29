@@ -339,10 +339,21 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
 
             var lead = TopRegionRows[0];
             var count = TopRegionRows.Count;
-            var extra = count > 1 ? $" · {count} regions in view" : string.Empty;
-            return $"Lead destination · {lead.Label} ({lead.RatioLabel}){extra}";
+            if (count == 1)
+            {
+                return $"{lead.Label} · {lead.RatioLabel} · {lead.BytesLabel}";
+            }
+
+            var second = TopRegionRows[1];
+            var rest = count > 2 ? $" · +{count - 2} more" : string.Empty;
+            return $"{lead.Label} {lead.RatioLabel} · {second.Label} {second.RatioLabel}{rest}";
         }
     }
+
+    public IReadOnlyList<OverviewRegionMarkerViewModel> DestinationLegendMarkers =>
+        TopRegionMarkers.Take(3).ToArray();
+
+    public bool HasDestinationLegend => DestinationLegendMarkers.Count > 0;
 
     public OverviewRegionMarkerViewModel? PrimaryRegionMarker => _primaryRegionMarker;
 
@@ -588,6 +599,8 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(TopRegionMarkers));
         OnPropertyChanged(nameof(HasTopRegionMarkers));
         OnPropertyChanged(nameof(DestinationNarrativeSummary));
+        OnPropertyChanged(nameof(DestinationLegendMarkers));
+        OnPropertyChanged(nameof(HasDestinationLegend));
         OnPropertyChanged(nameof(PrimaryRegionMarker));
         OnPropertyChanged(nameof(SecondaryRegionMarker));
         OnPropertyChanged(nameof(TertiaryRegionMarker));
@@ -635,6 +648,14 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
             case OverviewConnectionRowViewModel connection when connection.CanPivot:
                 kind = connection.PivotKind;
                 value = connection.PivotValue;
+                break;
+            case OverviewRegionRowViewModel region when region.CanPivot:
+                kind = region.PivotKind;
+                value = region.PivotValue;
+                break;
+            case OverviewRegionMarkerViewModel marker when marker.CanPivot:
+                kind = marker.PivotKind;
+                value = marker.PivotValue;
                 break;
         }
 

@@ -6,13 +6,17 @@
              x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid ColumnDefinitions="180,*" Background="{StaticResource TfcBackgroundBrush}">
+  <Grid ColumnDefinitions="180,*"
+        Background="{StaticResource TfcBackgroundBrush}"
+        Classes.density-compact="{Binding IsCompactDensity}">
     <components:AppRailView />
 
     <Grid Grid.Column="1" RowDefinitions="48,*">
       <components:AppHeaderView />
 
-      <Border Grid.Row="1" Classes="main-workbench">
+      <Border Grid.Row="1"
+              Classes="main-workbench"
+              Classes.density-compact="{Binding IsCompactDensity}">
         <Grid>
           <views:SourcePageView DataContext="{Binding SourcePage}"
                                 IsVisible="{Binding DataContext.IsSourcePageActive, ElementName=ShellRoot}" />

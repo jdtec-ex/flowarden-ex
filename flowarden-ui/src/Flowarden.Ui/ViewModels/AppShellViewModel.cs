@@ -161,6 +161,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         );
         SettingsPage.ReconnectCoreHandler = ReconnectCoreAsync;
         SettingsPage.SignalSnapshotProvider = () => _signalFeed.Signals.ToArray();
+        SettingsPage.UiDensityChanged += OnSettingsUiDensityChanged;
+        IsCompactDensity = SettingsPage.IsCompactDensity;
         ThumbnailPage = new ThumbnailViewModel(_liveProjectionState, this);
 
         CoreStatus = new StatusIndicatorViewModel
@@ -228,6 +230,12 @@ public sealed partial class AppShellViewModel : ViewModelBase
     /// <summary>Compact always-on-top monitoring chrome (shared live projection).</summary>
     [ObservableProperty]
     private bool isThumbnailMode;
+
+    /// <summary>UI density: compact rows/padding when true.</summary>
+    [ObservableProperty]
+    private bool isCompactDensity;
+
+    public bool IsComfortableDensity => !IsCompactDensity;
 
     /// <summary>Always created with the shell so thumbnail bindings never see a null DataContext.</summary>
     public ThumbnailViewModel ThumbnailPage { get; }
@@ -446,6 +454,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _preferences.KnownBadHosts = SettingsPageViewModel.ParseHostList(SettingsPage.KnownBadHostsInput);
         _preferences.DesktopNotificationsEnabled = SettingsPage.DesktopNotificationsEnabled;
         _preferences.SignalSoundEnabled = SettingsPage.SignalSoundEnabled;
+        _preferences.UiDensity = SettingsPage.IsCompactDensity ? "compact" : "comfortable";
+        IsCompactDensity = SettingsPage.IsCompactDensity;
 
         try
         {
@@ -1095,6 +1105,17 @@ public sealed partial class AppShellViewModel : ViewModelBase
             status == "error" ? "Offline replay failed." : "Offline replay completed."
         );
         StopOverviewStreaming();
+    }
+
+    private void OnSettingsUiDensityChanged()
+    {
+        IsCompactDensity = SettingsPage.IsCompactDensity;
+        OnPropertyChanged(nameof(IsComfortableDensity));
+    }
+
+    partial void OnIsCompactDensityChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsComfortableDensity));
     }
 
     private void OnProjectionTopNChanged(uint topN)

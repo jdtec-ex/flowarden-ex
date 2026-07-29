@@ -37,14 +37,18 @@ internal static class OverviewMapProjection
         var (x, y) = ProjectEqualEarth(longitude, latitude);
         var normalized = maxBytes == 0 ? 0.0 : Math.Sqrt(row.Bytes / (double)maxBytes);
         var size = 7.0 + normalized * 11.0;
+        var label = string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label;
+        var pivot = string.IsNullOrWhiteSpace(countryCode) ? label : countryCode;
         return new OverviewRegionMarkerViewModel(
-            string.IsNullOrWhiteSpace(row.Label) ? row.CountryLabel : row.Label,
+            label,
             row.Ratio.ToString("P0", CultureInfo.InvariantCulture),
             OverviewFormatting.FormatBytes(row.Bytes),
             x - size / 2,
             y - size / 2,
             size,
-            OverviewRankingsBuilder.DataAccentBrush
+            OverviewRankingsBuilder.DataAccentBrush,
+            pivotValue: pivot,
+            shortLabel: string.IsNullOrWhiteSpace(countryCode) ? label : countryCode.ToUpperInvariant()
         );
     }
 

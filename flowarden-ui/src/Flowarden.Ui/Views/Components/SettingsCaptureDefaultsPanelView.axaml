@@ -4,7 +4,7 @@
              x:Class="Flowarden.Ui.Views.Components.SettingsCaptureDefaultsPanelView"
              x:DataType="vm:SettingsPageViewModel">
   <Border Classes="tfc-panel" Padding="14,12">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <TextBlock Classes="section-title" Text="Capture Defaults" VerticalAlignment="Center" />
         <Button Grid.Column="1"
@@ -62,7 +62,18 @@
                   IsChecked="{Binding SignalSoundEnabled, Mode=TwoWay}" />
       </Grid>
 
-      <TextBlock Grid.Row="5"
+      <StackPanel Grid.Row="5" Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="UI DENSITY" />
+        <CheckBox Content="Compact layout"
+                  FontSize="12"
+                  IsChecked="{Binding IsCompactDensity, Mode=TwoWay}"
+                  ToolTip.Tip="Tighter table rows and workbench padding. Preference is saved with Apply / local prefs." />
+        <TextBlock Classes="muted-text"
+                   FontSize="11"
+                   Text="{Binding DensityModeLabel, StringFormat=Mode: {0}}" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="6"
                  Classes="muted-text"
                  FontSize="11"
                  Text="{Binding ListsStatus}"

@@ -62,8 +62,8 @@
           <TextBox Height="32" Watermark="TLS SNI" Text="{Binding SniInput}" />
         </StackPanel>
         <StackPanel Grid.Row="1" Grid.Column="2" IsVisible="{Binding IsFlowsMode}" Spacing="4">
-          <TextBlock Classes="tfc-label" Text="COUNTRY (EXP)" />
-          <TextBox Height="32" Watermark="Experimental" Text="{Binding CountryInput}" IsEnabled="False" />
+          <TextBlock Classes="tfc-label" Text="COUNTRY" />
+          <TextBox Height="32" Watermark="US / United States" Text="{Binding CountryInput}" />
         </StackPanel>
         <TextBlock Grid.Row="2" Grid.ColumnSpan="4" Classes="muted-text" FontSize="12"
                    Text="{Binding TopNHint}" IsVisible="{Binding IsFlowsMode}" />

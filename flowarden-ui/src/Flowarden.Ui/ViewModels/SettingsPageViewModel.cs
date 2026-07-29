@@ -108,8 +108,16 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         DesktopNotificationsEnabled = preferences.DesktopNotificationsEnabled;
         SignalSoundEnabled = preferences.SignalSoundEnabled;
         ShutdownCoreWhenUiCloses = preferences.ShutdownCoreWhenUiCloses;
+        IsCompactDensity = string.Equals(
+            preferences.UiDensity,
+            "compact",
+            StringComparison.OrdinalIgnoreCase
+        );
         _suppressPreferenceSave = false;
     }
+
+    /// <summary>Raised when UI density preference changes (shell applies CSS classes).</summary>
+    public event Action? UiDensityChanged;
 
     public CaptureSessionStateDto RuntimeState { get; private set; }
 
@@ -158,6 +166,11 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool signalSoundEnabled;
+
+    [ObservableProperty]
+    private bool isCompactDensity;
+
+    public string DensityModeLabel => IsCompactDensity ? "compact" : "comfortable";
 
     [ObservableProperty]
     private bool isSavingPreferences;
@@ -298,6 +311,18 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         }
 
         _ = PersistPreferencesAsync();
+    }
+
+    partial void OnIsCompactDensityChanged(bool value)
+    {
+        OnPropertyChanged(nameof(DensityModeLabel));
+        if (_suppressPreferenceSave || _isDesignTime)
+        {
+            return;
+        }
+
+        UiDensityChanged?.Invoke();
+        _ = PersistLocalPreferencesOnlyAsync();
     }
 
     partial void OnDesktopNotificationsEnabledChanged(bool value)

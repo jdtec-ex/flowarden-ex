@@ -67,13 +67,19 @@ public sealed class OverviewRegionRowViewModel
         string label,
         string ratioLabel,
         string accentBrush,
-        string tooltip = ""
+        string tooltip = "",
+        string pivotValue = "",
+        double barWidth = 0,
+        string bytesLabel = ""
     )
     {
         Label = label;
         RatioLabel = ratioLabel;
         AccentBrush = accentBrush;
         Tooltip = string.IsNullOrWhiteSpace(tooltip) ? label : tooltip;
+        PivotValue = pivotValue;
+        BarWidth = barWidth;
+        BytesLabel = bytesLabel;
     }
 
     public string Label { get; }
@@ -83,6 +89,20 @@ public sealed class OverviewRegionRowViewModel
     public string RatioLabel { get; }
 
     public string AccentBrush { get; }
+
+    public double BarWidth { get; }
+
+    public string BytesLabel { get; }
+
+    /// <summary>Raw country code (preferred) or country label for Inspect pivot.</summary>
+    public string PivotValue { get; }
+
+    public string PivotKind => "country";
+
+    public bool CanPivot => !string.IsNullOrWhiteSpace(PivotValue);
+
+    public string PivotTooltip =>
+        CanPivot ? $"Filter Inspect by country={PivotValue}" : string.Empty;
 }
 
 public sealed class OverviewRegionMarkerViewModel
@@ -94,7 +114,9 @@ public sealed class OverviewRegionMarkerViewModel
         double x,
         double y,
         double size,
-        string accentBrush
+        string accentBrush,
+        string pivotValue = "",
+        string shortLabel = ""
     )
     {
         Label = label;
@@ -104,6 +126,8 @@ public sealed class OverviewRegionMarkerViewModel
         Y = y;
         Size = size;
         AccentBrush = accentBrush;
+        PivotValue = pivotValue;
+        ShortLabel = string.IsNullOrWhiteSpace(shortLabel) ? label : shortLabel;
     }
 
     public string Label { get; }
@@ -119,6 +143,18 @@ public sealed class OverviewRegionMarkerViewModel
     public double Size { get; }
 
     public string AccentBrush { get; }
+
+    public string PivotValue { get; }
+
+    public string ShortLabel { get; }
+
+    public string PivotKind => "country";
+
+    public bool CanPivot => !string.IsNullOrWhiteSpace(PivotValue);
+
+    public string MapTooltip =>
+        $"{Label} · {RatioLabel} · {BytesLabel}"
+        + (CanPivot ? "\nClick to filter Inspect" : string.Empty);
 }
 
 public sealed class OverviewConnectionRowViewModel : INotifyPropertyChanged

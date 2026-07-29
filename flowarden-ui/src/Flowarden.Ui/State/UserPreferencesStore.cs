@@ -10,6 +10,9 @@ public sealed class UserPreferences
 {
     public uint TopN { get; set; } = 10;
 
+    /// <summary>comfortable (default) or compact — UI density preference.</summary>
+    public string UiDensity { get; set; } = "comfortable";
+
     public ulong DataThresholdBytes { get; set; } = 50_000_000;
 
     public List<string> WatchedHosts { get; set; } = new();

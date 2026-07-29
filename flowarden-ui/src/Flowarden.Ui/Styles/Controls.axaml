@@ -292,4 +292,55 @@
   <Style Selector="Button.ranking-row:pressed">
     <Setter Property="Background" Value="{StaticResource TfcRaisedHighBrush}" />
   </Style>
+
+  <Style Selector="Button.map-marker">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="Button.region-legend-chip">
+    <Setter Property="Background" Value="{StaticResource TfcRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource TfcBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="Button.region-legend-chip:pointerover">
+    <Setter Property="BorderBrush" Value="{StaticResource TfcPrimaryBrush}" />
+  </Style>
+
+  <!-- Density: compact reduces table rows, filter bars, and workbench padding -->
+  <Style Selector="Border.main-workbench.density-compact">
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Grid.density-compact Border.tfc-table-row">
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="Padding" Value="12,3" />
+  </Style>
+
+  <Style Selector="Grid.density-compact Border.tfc-table-header">
+    <Setter Property="Padding" Value="12,5" />
+  </Style>
+
+  <Style Selector="Grid.density-compact Button.ranking-row">
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="Padding" Value="2,1" />
+  </Style>
+
+  <Style Selector="Grid.density-compact TextBox">
+    <Setter Property="MinHeight" Value="28" />
+    <Setter Property="Padding" Value="8,4" />
+  </Style>
+
+  <Style Selector="Grid.density-compact Border.app-rail">
+    <Setter Property="Padding" Value="12,16" />
+  </Style>
 </Styles>
