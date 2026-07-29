@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package flowarden.control.v1;
+
+service ControlService {
+  rpc StartCapture(StartCaptureRequest) returns (ControlResponse);
+  rpc StopCapture(StopCaptureRequest) returns (ControlResponse);
+  rpc PauseCapture(PauseCaptureRequest) returns (ControlResponse);
+  rpc ResumeCapture(ResumeCaptureRequest) returns (ControlResponse);
+  rpc SetSource(SetSourceRequest) returns (ControlResponse);
+  rpc ApplyFilter(ApplyFilterRequest) returns (ControlResponse);
+  rpc SetSignalPolicy(SetSignalPolicyRequest) returns (ControlResponse);
+  rpc ShutdownCore(ShutdownCoreRequest) returns (ControlResponse);
+}
+
+message StartCaptureRequest {}
+
+message StopCaptureRequest {}
+
+message PauseCaptureRequest {}
+
+message ResumeCaptureRequest {}
+
+enum CaptureSourceMode {
+  CAPTURE_SOURCE_MODE_UNSPECIFIED = 0;
+  CAPTURE_SOURCE_MODE_LIVE = 1;
+  CAPTURE_SOURCE_MODE_OFFLINE = 2;
+}
+
+message CaptureSourceSpec {
+  CaptureSourceMode mode = 1;
+  string device_name = 2;
+  string file_path = 3;
+}
+
+message SetSourceRequest {
+  CaptureSourceSpec source = 1;
+}
+
+message ApplyFilterRequest {
+  string bpf = 1;
+}
+
+// Watchlist / threshold policy for BehaviorSignal detectors in resident core.
+// Patterns may be plain hosts/IPs, or prefixed: service:https, process:Chrome, sni:example.com
+message SetSignalPolicyRequest {
+  uint64 data_threshold_bytes = 1;
+  repeated string watched_hosts = 2;
+  repeated string known_bad_hosts = 3;
+  repeated string watched_services = 4;
+  repeated string watched_processes = 5;
+  repeated string known_bad_services = 6;
+  repeated string known_bad_processes = 7;
+}
+
+message ShutdownCoreRequest {}
+
+message ControlResponse {
+  bool accepted = 1;
+  string message = 2;
+}

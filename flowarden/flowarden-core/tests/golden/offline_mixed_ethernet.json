@@ -1,0 +1,462 @@
+{
+  "tick_snapshots": [
+    {
+      "capture_id": "file:tests/fixtures/offline_mixed_ethernet.pcap",
+      "sequence": 1,
+      "timestamp": {
+        "seconds": 1,
+        "microseconds": 0
+      },
+      "totals": {
+        "packets": 2,
+        "bytes": 63
+      },
+      "dropped_packets": 0,
+      "last_packet_timestamp": {
+        "seconds": 3,
+        "microseconds": 0
+      },
+      "top_connections": [
+        {
+          "key": {
+            "source_ip": "192.168.1.10",
+            "destination_ip": "93.184.216.34",
+            "source_port": 50123,
+            "destination_port": 443,
+            "protocol": "Tcp"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 59,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "tcp_stats": {
+              "syn_count": 1,
+              "fin_count": 0,
+              "rst_count": 0,
+              "packets": 1,
+              "bytes": 59,
+              "state": "SynAck",
+              "initiator": null,
+              "first_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              },
+              "last_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              }
+            },
+            "sni": null
+          }
+        }
+      ],
+      "top_hosts": [
+        {
+          "host": "93.184.216.34",
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 59,
+            "bytes_out": 0,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        },
+        {
+          "host": "192.168.1.10",
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 59,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        }
+      ],
+      "top_services": [
+        {
+          "service": {
+            "name": "https",
+            "transport": "Tcp",
+            "confidence": "High"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 59,
+            "confidence": "High"
+          }
+        }
+      ]
+    },
+    {
+      "capture_id": "file:tests/fixtures/offline_mixed_ethernet.pcap",
+      "sequence": 2,
+      "timestamp": {
+        "seconds": 3,
+        "microseconds": 0
+      },
+      "totals": {
+        "packets": 1,
+        "bytes": 46
+      },
+      "dropped_packets": 0,
+      "last_packet_timestamp": {
+        "seconds": 3,
+        "microseconds": 0
+      },
+      "top_connections": [
+        {
+          "key": {
+            "source_ip": "192.168.1.10",
+            "destination_ip": "8.8.8.8",
+            "source_port": 53000,
+            "destination_port": 53,
+            "protocol": "Udp"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 46,
+            "bytes_out": 0,
+            "first_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "tcp_stats": null,
+            "sni": null
+          }
+        }
+      ],
+      "top_hosts": [
+        {
+          "host": "8.8.8.8",
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 46,
+            "first_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        },
+        {
+          "host": "192.168.1.10",
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 46,
+            "bytes_out": 0,
+            "first_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        }
+      ],
+      "top_services": [
+        {
+          "service": {
+            "name": "dns",
+            "transport": "Udp",
+            "confidence": "High"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 46,
+            "bytes_out": 0,
+            "confidence": "High"
+          }
+        }
+      ]
+    }
+  ],
+  "offline_gaps": [
+    {
+      "after": {
+        "seconds": 1,
+        "microseconds": 0
+      },
+      "seconds": 1
+    }
+  ],
+  "final_snapshot": {
+    "capture_id": "file:tests/fixtures/offline_mixed_ethernet.pcap",
+    "started_at": {
+      "seconds": 1,
+      "microseconds": 0
+    },
+    "ended_at": {
+      "seconds": 3,
+      "microseconds": 0
+    },
+    "totals": {
+      "packets": 3,
+      "bytes": 109
+    },
+    "dropped_packets": 0,
+    "last_packet_timestamp": {
+      "seconds": 3,
+      "microseconds": 0
+    },
+    "aggregate_summary": {
+      "top_connections": [
+        {
+          "key": {
+            "source_ip": "192.168.1.10",
+            "destination_ip": "93.184.216.34",
+            "source_port": 50123,
+            "destination_port": 443,
+            "protocol": "Tcp"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 59,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "tcp_stats": {
+              "syn_count": 1,
+              "fin_count": 0,
+              "rst_count": 0,
+              "packets": 1,
+              "bytes": 59,
+              "state": "SynAck",
+              "initiator": null,
+              "first_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              },
+              "last_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              }
+            },
+            "sni": null
+          }
+        },
+        {
+          "key": {
+            "source_ip": "192.168.1.10",
+            "destination_ip": "8.8.8.8",
+            "source_port": 53000,
+            "destination_port": 53,
+            "protocol": "Udp"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 46,
+            "bytes_out": 0,
+            "first_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "tcp_stats": null,
+            "sni": null
+          }
+        }
+      ],
+      "tcp_connections": [
+        {
+          "key": {
+            "endpoint_a": {
+              "ip": "192.168.1.10",
+              "port": 50123
+            },
+            "endpoint_b": {
+              "ip": "93.184.216.34",
+              "port": 443
+            }
+          },
+          "stats": {
+            "syn_count": 1,
+            "fin_count": 0,
+            "rst_count": 0,
+            "packets": 1,
+            "bytes": 59,
+            "state": "SynAck",
+            "initiator": null,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            }
+          }
+        }
+      ],
+      "top_hosts": [
+        {
+          "host": "192.168.1.10",
+          "counters": {
+            "packets": 2,
+            "bytes": 105,
+            "packets_in": 1,
+            "packets_out": 1,
+            "bytes_in": 46,
+            "bytes_out": 59,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        },
+        {
+          "host": "93.184.216.34",
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 59,
+            "bytes_out": 0,
+            "first_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        },
+        {
+          "host": "8.8.8.8",
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 46,
+            "first_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "last_seen": {
+              "seconds": 3,
+              "microseconds": 0
+            },
+            "sni": null
+          }
+        }
+      ],
+      "top_services": [
+        {
+          "service": {
+            "name": "https",
+            "transport": "Tcp",
+            "confidence": "High"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 59,
+            "packets_in": 0,
+            "packets_out": 1,
+            "bytes_in": 0,
+            "bytes_out": 59,
+            "confidence": "High"
+          }
+        },
+        {
+          "service": {
+            "name": "dns",
+            "transport": "Udp",
+            "confidence": "High"
+          },
+          "counters": {
+            "packets": 1,
+            "bytes": 46,
+            "packets_in": 1,
+            "packets_out": 0,
+            "bytes_in": 46,
+            "bytes_out": 0,
+            "confidence": "High"
+          }
+        }
+      ]
+    }
+  }
+}

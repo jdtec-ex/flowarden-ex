@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package flowarden.discovery.v1;
+
+service DiscoveryService {
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  rpc ListDevicePreviews(ListDevicePreviewsRequest) returns (ListDevicePreviewsResponse);
+}
+
+message ListDevicesRequest {}
+
+message ListDevicesResponse {
+  repeated DeviceSummary devices = 1;
+}
+
+message ListDevicePreviewsRequest {
+  uint64 preview_seconds = 1;
+}
+
+message ListDevicePreviewsResponse {
+  repeated DevicePreview previews = 1;
+}
+
+message DeviceSummary {
+  string name = 1;
+  string description = 2;
+  repeated DeviceAddressSummary addresses = 3;
+}
+
+message DeviceAddressSummary {
+  string addr = 1;
+}
+
+message DevicePreview {
+  string name = 1;
+  uint64 packets_seen = 2;
+  uint64 bytes_seen = 3;
+  bool unsupported = 4;
+  string error = 5;
+}

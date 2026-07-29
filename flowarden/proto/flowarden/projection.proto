@@ -1,0 +1,196 @@
+syntax = "proto3";
+
+package flowarden.projection.v1;
+
+service ProjectionService {
+  rpc GetLatestOverview(GetLatestOverviewRequest) returns (OverviewSnapshotResponse);
+  rpc StreamOverview(StreamOverviewRequest) returns (stream OverviewSnapshotResponse);
+  rpc GetInspectPage(GetInspectPageRequest) returns (InspectPageResponse);
+  rpc GetTcpConnectionsPage(GetTcpConnectionsPageRequest) returns (TcpConnectionsPageResponse);
+}
+
+message GetLatestOverviewRequest {
+  uint32 top_n = 1;
+}
+
+message StreamOverviewRequest {
+  uint32 top_n = 1;
+}
+
+message GetInspectPageRequest {
+  string source_address = 1;
+  string destination_address = 2;
+  string service_name = 3;
+  string protocol = 4;
+  string direction = 5;
+  // Deprecated for Inspect result filtering; kept for wire compatibility. Leave empty.
+  string bpf = 6;
+  uint32 top_n = 7;
+  // Local process name contains-match (optional; empty = ignore).
+  string process_name = 8;
+  // TLS SNI contains-match (optional; empty = ignore).
+  string sni = 9;
+}
+
+message PacketTimestamp {
+  sint64 seconds = 1;
+  uint32 microseconds = 2;
+}
+
+message AggregateTotals {
+  uint64 packets = 1;
+  uint64 bytes = 2;
+  uint64 bytes_in = 3;
+  uint64 bytes_out = 4;
+}
+
+message ConnectionRow {
+  string source_address = 1;
+  uint32 source_port = 2;
+  string destination_address = 3;
+  uint32 destination_port = 4;
+  string protocol = 5;
+  string service_name = 6;
+  string direction = 7;
+  uint64 packets = 8;
+  uint64 bytes = 9;
+  // Heuristic local-process attribution (async lookup; may be empty).
+  string process_name = 10;
+  uint32 process_pid = 11;
+  bool process_inferred = 12;
+  // TLS ClientHello SNI when observed on this flow.
+  string sni = 13;
+  // Absolute process path when available (async enrichment; empty if unknown).
+  string process_path = 14;
+  // macOS bundle id when derived; otherwise empty.
+  string process_bundle_id = 15;
+  // Remote endpoint ASN label (e.g. "AS15169 · Google LLC"); empty if unknown.
+  string remote_asn_label = 16;
+}
+
+message HostRow {
+  string host = 1;
+  uint64 packets = 2;
+  uint64 bytes = 3;
+  string country_label = 4;
+  // rDNS PTR (opportunistic).
+  string hostname = 5;
+  // TLS SNI associated with this host (preferred display name when present).
+  string sni = 6;
+  uint32 asn_number = 7;
+  string asn_organization = 8;
+  // Preformatted "AS15169 · Google LLC"; empty if unknown.
+  string asn_label = 9;
+}
+
+message ServiceRow {
+  string name = 1;
+  string transport = 2;
+  uint64 packets = 3;
+  uint64 bytes = 4;
+}
+
+message DestinationSummary {
+  string label = 1;
+  uint64 bytes = 2;
+  double ratio = 3;
+  string country_label = 4;
+  string country_code = 5;
+  uint32 asn_number = 6;
+  string asn_organization = 7;
+  string asn_label = 8;
+}
+
+message DestinationMapPlaceholder {
+  string state = 1;
+  string message = 2;
+}
+
+message TimelinePoint {
+  PacketTimestamp timestamp = 1;
+  uint64 inbound_bytes = 2;
+  uint64 outbound_bytes = 3;
+}
+
+enum ProjectionMode {
+  PROJECTION_MODE_UNSPECIFIED = 0;
+  PROJECTION_MODE_LIVE = 1;
+  PROJECTION_MODE_OFFLINE = 2;
+}
+
+message OverviewSnapshotResponse {
+  string capture_id = 1;
+  uint64 sequence = 2;
+  PacketTimestamp timestamp = 3;
+  AggregateTotals totals = 4;
+  uint64 dropped_packets = 5;
+  PacketTimestamp last_packet_timestamp = 6;
+  repeated ConnectionRow top_connections = 7;
+  repeated HostRow top_hosts = 8;
+  repeated ServiceRow top_services = 9;
+  DestinationMapPlaceholder destination_map = 10;
+  repeated DestinationSummary top_destinations = 11;
+  string source_label = 12;
+  string filter_label = 13;
+  string metric_mode = 14;
+  repeated TimelinePoint timeline_points = 15;
+  ProjectionMode mode = 16;
+  string capture_status = 17;
+  // Live-shared TCP slice (same tick as top_connections); used by Inspect TCP mode.
+  repeated TcpConnectionRow top_tcp_connections = 18;
+  // Behavior signals evaluated by resident core (Sniffnet-compatible kinds + status).
+  repeated BehaviorSignalRow signals = 19;
+  // Process lookup diagnostics (async queue / cache).
+  uint32 process_lookup_pending = 20;
+  uint32 process_lookup_cache_size = 21;
+}
+
+message BehaviorSignalRow {
+  string id = 1;
+  string kind = 2;
+  string mode = 3;       // live | offline
+  string status = 4;     // new | active | updated
+  string severity = 5;   // info | warning | error / low | medium | high
+  string subject = 6;
+  string summary = 7;
+  string detail = 8;
+  PacketTimestamp first_seen = 9;
+  PacketTimestamp last_seen = 10;
+  uint32 update_count = 11;
+  double confidence = 12;
+  // Pivot hint for Inspect: host | service | process | sni | none
+  string pivot_kind = 13;
+  string pivot_value = 14;
+}
+
+message InspectPageResponse {
+  string state = 1;
+  repeated ConnectionRow rows = 2;
+}
+
+message GetTcpConnectionsPageRequest {
+  string address = 1;
+  string port = 2;
+  string state = 3;
+  uint32 top_n = 4;
+}
+
+message TcpConnectionRow {
+  string endpoint_a_address = 1;
+  uint32 endpoint_a_port = 2;
+  string endpoint_b_address = 3;
+  uint32 endpoint_b_port = 4;
+  string state = 5;
+  uint64 syn_count = 6;
+  uint64 fin_count = 7;
+  uint64 rst_count = 8;
+  uint64 packets = 9;
+  uint64 bytes = 10;
+  PacketTimestamp first_seen = 11;
+  PacketTimestamp last_seen = 12;
+}
+
+message TcpConnectionsPageResponse {
+  string state = 1;
+  repeated TcpConnectionRow rows = 2;
+}

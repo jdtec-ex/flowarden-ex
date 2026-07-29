@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package flowarden.health.v1;
+
+service HealthService {
+  rpc GetHealth(GetHealthRequest) returns (HealthResponse);
+  rpc GetVersion(GetVersionRequest) returns (VersionResponse);
+}
+
+message GetHealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  uint64 started_at_unix_seconds = 2;
+}
+
+message GetVersionRequest {}
+
+message VersionResponse {
+  string service = 1;
+  string version = 2;
+}

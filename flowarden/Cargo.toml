@@ -1,0 +1,18 @@
+
+[workspace]
+resolver = "2"
+members = [
+    "flowarden", 
+    "flowarden-core", 
+    "flowarden-error",    
+]
+
+[workspace.dependencies]
+tokio = { version = "1.52.1", features = ["macros", "fs"] }
+log = "0.4"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.149", features = ["preserve_order"] }
+prost = "0.14.1"
+tonic = { version = "0.14.2", features = ["transport"] }
+tonic-prost = "0.14.2"
+tonic-prost-build = "0.14.5"
