@@ -344,11 +344,6 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         }
     }
 
-    public string DestinationMapFootnote =>
-        HasTopRegionMarkers
-            ? "Markers sized by share of public destination bytes (country-level)."
-            : "Markers appear when Top Destinations resolve to public countries.";
-
     public OverviewRegionMarkerViewModel? PrimaryRegionMarker => _primaryRegionMarker;
 
     public OverviewRegionMarkerViewModel? SecondaryRegionMarker => _secondaryRegionMarker;
@@ -593,7 +588,6 @@ public sealed partial class OverviewPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(TopRegionMarkers));
         OnPropertyChanged(nameof(HasTopRegionMarkers));
         OnPropertyChanged(nameof(DestinationNarrativeSummary));
-        OnPropertyChanged(nameof(DestinationMapFootnote));
         OnPropertyChanged(nameof(PrimaryRegionMarker));
         OnPropertyChanged(nameof(SecondaryRegionMarker));
         OnPropertyChanged(nameof(TertiaryRegionMarker));

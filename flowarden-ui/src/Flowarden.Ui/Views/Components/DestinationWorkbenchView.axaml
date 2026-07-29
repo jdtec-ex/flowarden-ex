@@ -59,17 +59,13 @@
                 </Grid>
               </Canvas>
             </Viewbox>
-            <StackPanel VerticalAlignment="Bottom" Margin="14" Spacing="4">
-              <TextBlock Classes="tfc-label" Text="DESTINATION STORY" />
-              <TextBlock Classes="tfc-data"
-                         FontSize="12"
-                         Text="{Binding DestinationNarrativeSummary}"
-                         TextWrapping="Wrap" />
-              <TextBlock Classes="muted-text"
-                         FontSize="11"
-                         Text="{Binding DestinationMapFootnote}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
+            <TextBlock VerticalAlignment="Bottom"
+                       Margin="14"
+                       Classes="muted-text"
+                       FontSize="12"
+                       Foreground="{StaticResource TfcDimTextBrush}"
+                       Text="{Binding DestinationNarrativeSummary}"
+                       TextWrapping="Wrap" />
           </Grid>
         </Border>
       </Grid>
