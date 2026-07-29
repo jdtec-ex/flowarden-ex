@@ -1,8 +1,15 @@
 # Flowarden
 
-Desktop network traffic monitor: live capture and offline pcap replay, ranked hosts/services/connections, destination geography, process attribution, TLS SNI, and policy-driven signals — with a headless Rust core and an Avalonia UI.
+[![CI](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml/badge.svg)](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](flowarden/)
+[![.NET](https://img.shields.io/badge/.NET-8-512BD4.svg)](flowarden-ui/)
 
-**Stack:** Rust analysis core · local gRPC · Avalonia (.NET 8) UI · CLI with the same projection contract.
+**Desktop network traffic monitor** for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, and policy-driven signals.
+
+Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over local gRPC, plus a **CLI** that shares the same projection contract. Inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet); not a fork.
+
+> Listing copy (About description, Topics, Release notes): [`.github/GITHUB_LISTING.md`](.github/GITHUB_LISTING.md)
 
 ---
 
