@@ -55,7 +55,12 @@ fn offline_fixture_matches_golden_json() {
         return;
     }
     let expected = fs::read_to_string(&golden).expect("golden file should be readable");
-    assert_eq!(actual.trim_end(), expected.trim_end());
+    // Windows checkouts may rewrite the golden file to CRLF; compare on LF only.
+    assert_eq!(normalize_newlines(&actual), normalize_newlines(&expected));
+}
+
+fn normalize_newlines(s: &str) -> String {
+    s.replace("\r\n", "\n").replace('\r', "\n").trim_end().to_string()
 }
 
 #[test]

@@ -1,0 +1,4 @@
+# Keep golden fixtures byte-stable across platforms (avoid CRLF on Windows checkout).
+flowarden/flowarden-core/tests/golden/** text eol=lf
+*.pcap binary
+*.pcapng binary
