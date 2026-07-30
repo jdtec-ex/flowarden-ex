@@ -590,8 +590,7 @@ fn escape_cef_header(value: &str) -> String {
     value
         .replace('\\', "\\\\")
         .replace('|', "\\|")
-        .replace('\n', " ")
-        .replace('\r', " ")
+        .replace(['\n', '\r'], " ")
 }
 
 /// CEF extension value escaping: `\`, `=`, and newlines.

@@ -86,36 +86,75 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Link against Npcap SDK (wpcap.lib). Full Npcap driver is NOT installed —
-      # offline/unit tests do not need live capture. See rust-pcap README.
-      - name: Install Npcap SDK
+      # Link: Npcap SDK (.lib). Runtime: free installer EXE extracted with 7-Zip so
+      # wpcap.dll/Packet.dll are on PATH (STATUS_DLL_NOT_FOUND otherwise).
+      # Free Npcap has no silent driver install; unit/offline tests only need the DLLs.
+      - name: Install Npcap SDK and runtime DLLs
         shell: pwsh
         run: |
+          $ErrorActionPreference = "Stop"
+          $tmp = $env:RUNNER_TEMP
+
+          # --- SDK (import libraries for the linker) ---
           $sdkVer = "1.15"
-          $zipUrl = "https://npcap.com/dist/npcap-sdk-$sdkVer.zip"
-          $zip = Join-Path $env:RUNNER_TEMP "npcap-sdk.zip"
-          $sdkRoot = Join-Path $env:RUNNER_TEMP "npcap-sdk"
-          Write-Host "Downloading $zipUrl"
-          Invoke-WebRequest -Uri $zipUrl -OutFile $zip
+          $sdkZip = Join-Path $tmp "npcap-sdk.zip"
+          $sdkRoot = Join-Path $tmp "npcap-sdk"
+          $sdkUrl = "https://npcap.com/dist/npcap-sdk-$sdkVer.zip"
+          Write-Host "Downloading $sdkUrl"
+          Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkZip
           if (Test-Path $sdkRoot) { Remove-Item -Recurse -Force $sdkRoot }
-          Expand-Archive -Path $zip -DestinationPath $sdkRoot -Force
-          # Zip layout is usually flat (Include/, Lib/) or one top-level folder.
+          Expand-Archive -Path $sdkZip -DestinationPath $sdkRoot -Force
           $libX64 = Get-ChildItem -Path $sdkRoot -Recurse -Directory -Filter "x64" |
             Where-Object { $_.FullName -match '[\\/]Lib[\\/]x64$' } |
             Select-Object -First 1 -ExpandProperty FullName
-          if (-not $libX64) {
-            $libX64 = Join-Path $sdkRoot "Lib\x64"
-          }
+          if (-not $libX64) { $libX64 = Join-Path $sdkRoot "Lib\x64" }
           if (-not (Test-Path (Join-Path $libX64 "wpcap.lib"))) {
-            Get-ChildItem -Path $sdkRoot -Recurse | Select-Object -First 40 FullName
-            throw "wpcap.lib not found under $sdkRoot (expected Lib\x64)"
+            Get-ChildItem -Path $sdkRoot -Recurse | Select-Object -First 50 FullName
+            throw "wpcap.lib not found under $sdkRoot"
           }
           Write-Host "Npcap Lib\x64 = $libX64"
           "LIBPCAP_LIBDIR=$libX64" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          # Optional: pin version when wpcap.dll is absent at build time.
           "LIBPCAP_VER=1.10.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           $libEnv = if ($env:LIB) { "$libX64;$env:LIB" } else { $libX64 }
           "LIB=$libEnv" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+          # --- Runtime DLLs (extract from free installer; no driver service) ---
+          $npcapVer = "1.80"
+          $npcapExe = Join-Path $tmp "npcap-setup.exe"
+          $npcapExtract = Join-Path $tmp "npcap-extract"
+          $dllDir = Join-Path $tmp "npcap-dlls"
+          $npcapUrl = "https://npcap.com/dist/npcap-$npcapVer.exe"
+          Write-Host "Downloading $npcapUrl"
+          Invoke-WebRequest -Uri $npcapUrl -OutFile $npcapExe
+          if (Test-Path $npcapExtract) { Remove-Item -Recurse -Force $npcapExtract }
+          New-Item -ItemType Directory -Path $npcapExtract -Force | Out-Null
+          New-Item -ItemType Directory -Path $dllDir -Force | Out-Null
+          # GitHub windows-latest includes 7-Zip.
+          $sevenZip = @(
+            "${env:ProgramFiles}\7-Zip\7z.exe",
+            "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $sevenZip) {
+            choco install 7zip -y --no-progress
+            $sevenZip = "${env:ProgramFiles}\7-Zip\7z.exe"
+          }
+          & $sevenZip x "-o$npcapExtract" -y $npcapExe | Out-Host
+          $wpcap = Get-ChildItem -Path $npcapExtract -Recurse -Filter "wpcap.dll" |
+            Select-Object -First 1
+          $packet = Get-ChildItem -Path $npcapExtract -Recurse -Filter "Packet.dll" |
+            Select-Object -First 1
+          if (-not $wpcap) {
+            Get-ChildItem -Path $npcapExtract -Recurse | Select-Object -First 80 FullName
+            throw "wpcap.dll not found inside npcap installer archive"
+          }
+          Copy-Item $wpcap.FullName (Join-Path $dllDir "wpcap.dll") -Force
+          if ($packet) {
+            Copy-Item $packet.FullName (Join-Path $dllDir "Packet.dll") -Force
+          }
+          Write-Host "Runtime DLLs in $dllDir"
+          Get-ChildItem $dllDir | Format-Table Name, Length
+          $dllDir | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          "NPCAP_DLL_DIR=$dllDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -128,10 +167,22 @@ jobs:
           workspaces: flowarden -> target
 
       - name: Test
-        run: cargo test --workspace
+        run: |
+          # Ensure test harness and deps find wpcap.dll (PATH + next to binaries).
+          $dllDir = $env:NPCAP_DLL_DIR
+          if (-not $dllDir -or -not (Test-Path (Join-Path $dllDir "wpcap.dll"))) {
+            throw "NPCAP_DLL_DIR missing wpcap.dll"
+          }
+          $env:PATH = "$dllDir;$env:PATH"
+          New-Item -ItemType Directory -Force -Path target\debug\deps | Out-Null
+          Copy-Item (Join-Path $dllDir "*.dll") target\debug\ -Force
+          Copy-Item (Join-Path $dllDir "*.dll") target\debug\deps\ -Force
+          cargo test --workspace
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: |
+          $env:PATH = "$env:NPCAP_DLL_DIR;$env:PATH"
+          cargo clippy --workspace --all-targets -- -D warnings
 
   ui-windows:
     name: Avalonia UI (Windows)
