@@ -139,7 +139,11 @@ jobs:
             echo "Tag/ref:   ${{ github.ref_name }}"
             echo "RID:       ${{ matrix.rid }}"
           } >> "$BUNDLE/README.txt"
-          ls -la "$BUNDLE" | head -40
+          # Do not pipe ls to head under pipefail (SIGPIPE → exit 2 on Linux).
+          echo "Bundle contents (sample):"
+          ls -la "$BUNDLE" | sed -n '1,40p' || true
+          test -f "$BUNDLE/${{ matrix.core_bin }}"
+          test -f "$BUNDLE/Flowarden.Ui" -o -f "$BUNDLE/Flowarden.Ui.exe"
 
       - name: Pack archive (tar.gz)
         if: matrix.archive == 'tar.gz'
