@@ -1,10 +1,23 @@
 name: CI
 
+# Run only when product code or this workflow changes — skip docs/screenshots/etc.
 on:
   push:
     branches: [main]
+    paths:
+      - "flowarden/**"
+      - "flowarden-ui/**"
+      - ".github/workflows/ci.yml"
+      - ".gitattributes"
   pull_request:
     branches: [main]
+    paths:
+      - "flowarden/**"
+      - "flowarden-ui/**"
+      - ".github/workflows/ci.yml"
+      - ".gitattributes"
+  # Manual re-run when you need a full gate without code changes.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
