@@ -108,9 +108,6 @@ CLI:  flowarden devices | capture …   (same core, no UI)
 - Capture privileges as required by your OS (e.g. BPF/pcap on macOS/Linux; **Npcap** on Windows)
 - Optional: MaxMind GeoLite2 databases under the core resources path for country/ASN enrichment (UI does not show ASN by product choice)
 
-### CI
-
-GitHub Actions runs on **Ubuntu** and **Windows** (`windows-latest` = Windows Server x64). That covers the same Win32 tool chain used on Windows 10/11 for build and unit tests. Hosted runners do **not** provide Windows 10/11 desktop images; for true Win10/Win11 desktop CI, register a self-hosted runner.
 ---
 
 ## Build
