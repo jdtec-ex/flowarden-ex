@@ -3,10 +3,13 @@
 [![CI](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml/badge.svg)](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-Public_Beta-yellow.svg)](#)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)](#supported-platforms)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](flowarden/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4.svg)](flowarden-ui/)
 
 **Public Beta.** Desktop network traffic monitor for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, behavior signals, and **RFC5424 + CEF syslog** export (signals + Inspect flows).
+
+**Cross-platform:** Linux, macOS, and Windows. Same Rust core and Avalonia UI on all three; capture stack uses libpcap (Linux/macOS) or Npcap (Windows).
 
 Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over local gRPC, plus a **CLI** that shares the same projection contract. Inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet); not a fork.
 
@@ -67,6 +70,7 @@ Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over
 
 | | |
 | --- | --- |
+| **Cross-platform** | Runs on **Linux, macOS, and Windows** with one codebase (libpcap / Npcap + Avalonia). |
 | **Clear boundaries** | Capture/analysis stays in Rust; the UI only consumes projections. CLI and UI share one contract. |
 | **Built for long runs** | Resident core, soft-capped aggregates, rolling live timeline — not an unbounded session dump. |
 | **Analyst workflow** | Filters, chips, pivots, signals, and offline forensics markers — not only charts. |
@@ -101,11 +105,26 @@ CLI:  flowarden devices | capture …   (same core, no UI)
 
 ---
 
+## Supported platforms
+
+| OS | Core / CLI | Desktop UI | Capture backend |
+| --- | --- | --- | --- |
+| **Linux** | Yes | Yes (Avalonia) | libpcap |
+| **macOS** | Yes | Yes (Avalonia) | libpcap (system) |
+| **Windows** | Yes | Yes (Avalonia) | [Npcap](https://npcap.com/) (WinPcap-compatible API) |
+
+GitHub Actions CI builds and tests on **Ubuntu** and **Windows** (hosted `windows-latest` is Windows Server x64; same Win32 toolchain as Windows 10/11 for compile/test). macOS is supported for local builds; a dedicated macOS runner can be added later.
+
+---
+
 ## Requirements
 
 - **Rust** (stable) for core/CLI
 - **.NET 8 SDK** for the UI (`global.json` pins the patch level)
-- Capture privileges as required by your OS (e.g. BPF/pcap on macOS/Linux; **Npcap** on Windows)
+- Capture stack:
+  - **Linux:** `libpcap` (e.g. `libpcap-dev`) and capture privileges as needed
+  - **macOS:** system libpcap; grant capture privileges when prompted
+  - **Windows:** install [Npcap](https://npcap.com/) (enable WinPcap API compatibility if offered); SDK only needed when building from source
 - Optional: MaxMind GeoLite2 databases under the core resources path for country/ASN enrichment (UI does not show ASN by product choice)
 
 ---

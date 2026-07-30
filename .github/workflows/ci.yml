@@ -139,18 +139,60 @@ jobs:
             $sevenZip = "${env:ProgramFiles}\7-Zip\7z.exe"
           }
           & $sevenZip x "-o$npcapExtract" -y $npcapExe | Out-Host
-          $wpcap = Get-ChildItem -Path $npcapExtract -Recurse -Filter "wpcap.dll" |
+          # Nested NSIS payloads sometimes need a second extract pass.
+          Get-ChildItem -Path $npcapExtract -Recurse -Include *.7z,*.zip,*.cab |
+            ForEach-Object {
+              $dest = Join-Path $_.DirectoryName ($_.BaseName + "_unpacked")
+              New-Item -ItemType Directory -Path $dest -Force | Out-Null
+              & $sevenZip x "-o$dest" -y $_.FullName 2>$null | Out-Null
+            }
+
+          function Get-PeMachine([string]$Path) {
+            $fs = [System.IO.File]::OpenRead($Path)
+            try {
+              $br = New-Object System.IO.BinaryReader($fs)
+              $fs.Seek(0x3C, 'Begin') | Out-Null
+              $pe = $br.ReadInt32()
+              $fs.Seek($pe + 4, 'Begin') | Out-Null
+              return $br.ReadUInt16()
+            } finally {
+              $fs.Dispose()
+            }
+          }
+
+          # Prefer AMD64 (0x8664). First-match without PE check often picks x86 → 0xc000007b.
+          $amd64 = 0x8664
+          $wpcapCandidates = @(Get-ChildItem -Path $npcapExtract -Recurse -Filter "wpcap.dll" -ErrorAction SilentlyContinue)
+          $wpcap = $wpcapCandidates |
+            Where-Object {
+              try { (Get-PeMachine $_.FullName) -eq $amd64 } catch { $false }
+            } |
+            Sort-Object { if ($_.FullName -match '(?i)[\\/](x64|amd64)[\\/]') { 0 } else { 1 } }, FullName |
             Select-Object -First 1
-          $packet = Get-ChildItem -Path $npcapExtract -Recurse -Filter "Packet.dll" |
-            Select-Object -First 1
+          if (-not $wpcap -and $wpcapCandidates.Count -gt 0) {
+            Write-Host "No PE-x64 wpcap.dll verified; listing candidates:"
+            $wpcapCandidates | ForEach-Object {
+              $m = try { '{0:X4}' -f (Get-PeMachine $_.FullName) } catch { '????' }
+              Write-Host ("  machine=0x{0} {1}" -f $m, $_.FullName)
+            }
+            throw "No AMD64 wpcap.dll found in npcap installer (need x64 for windows-latest)"
+          }
           if (-not $wpcap) {
             Get-ChildItem -Path $npcapExtract -Recurse | Select-Object -First 80 FullName
             throw "wpcap.dll not found inside npcap installer archive"
           }
+          $packet = @(Get-ChildItem -Path $npcapExtract -Recurse -Filter "Packet.dll" -ErrorAction SilentlyContinue) |
+            Where-Object {
+              try { (Get-PeMachine $_.FullName) -eq $amd64 } catch { $false }
+            } |
+            Sort-Object { if ($_.FullName -match '(?i)[\\/](x64|amd64)[\\/]') { 0 } else { 1 } }, FullName |
+            Select-Object -First 1
+
           Copy-Item $wpcap.FullName (Join-Path $dllDir "wpcap.dll") -Force
           if ($packet) {
             Copy-Item $packet.FullName (Join-Path $dllDir "Packet.dll") -Force
           }
+          Write-Host ("Using x64 wpcap.dll from {0} (PE machine=0x{1:X4})" -f $wpcap.FullName, (Get-PeMachine $wpcap.FullName))
           Write-Host "Runtime DLLs in $dllDir"
           Get-ChildItem $dllDir | Format-Table Name, Length
           $dllDir | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
