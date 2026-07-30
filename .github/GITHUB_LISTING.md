@@ -118,18 +118,22 @@ https://github.com/jdtec-ex/flowarden-ex
 
 ---
 
-## Release `v0.1.0` — title
+## Release title format
 
 ```text
-v0.1.0 — Public Beta (signals + CEF syslog)
+Flowarden 0.1.0
+Flowarden 0.1.1
+…
 ```
+
+Git tags: `0.1.0`, `0.1.1`, … (no `v` prefix preferred).
 
 ---
 
-## Release `v0.1.0` — body (paste into GitHub Release)
+## Release `Flowarden 0.1.0` — body (paste into GitHub Release if needed)
 
 ```markdown
-# Flowarden v0.1.0
+# Flowarden 0.1.0
 
 **Public Beta.** Desktop network traffic monitor with a **Rust resident core**, an **Avalonia** UI over local gRPC, and a **CLI** that shares the same projection contract.
 
@@ -224,7 +228,9 @@ GyulyVGC and the Sniffnet community for proving this class of desktop monitor wo
 
 ## Create the release (commands)
 
-Release packages are built by **`.github/workflows/release.yml`** when a `v*` tag is pushed:
+Release packages are built by **`.github/workflows/release.yml`** when an `0.1.*` tag is pushed. The GitHub Release title is **`Flowarden 0.1.x`**.
+
+Assets:
 
 - `flowarden-linux-x64.tar.gz`
 - `flowarden-macos-arm64.tar.gz`
@@ -235,8 +241,8 @@ Each archive is a **full portable bundle** (self-contained Avalonia UI + `flowar
 ```bash
 cd /Users/wangli/workspace/coding/flowarden
 # main green first
-git tag -a v0.1.0 -m "v0.1.0 — Public Beta (signals + CEF syslog)"
-git push origin v0.1.0
+git tag -a 0.1.0 -m "Flowarden 0.1.0"
+git push origin 0.1.0
 # Wait for Actions → "Release" workflow → assets appear on the Releases page
 ```
 

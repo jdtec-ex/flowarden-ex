@@ -1,19 +1,23 @@
 name: Release
 
 # Builds portable "full bundle" packages (self-contained UI + flowarden core)
-# and attaches them to a GitHub Release when a version tag is pushed.
+# and attaches them to a GitHub Release when a 0.1.x version tag is pushed.
+#
+# Version naming (display):  Flowarden 0.1.0, Flowarden 0.1.1, …
+# Git tag (preferred):       0.1.0, 0.1.1, …   (also accepts legacy v0.1.x)
 #
 # Trigger:
-#   git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
+#   git tag -a 0.1.0 -m "Flowarden 0.1.0" && git push origin 0.1.0
 #
 # Users download from:
 #   https://github.com/jdtec-ex/flowarden-ex/releases
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "0.1.*"
+      - "v0.1.*"
   # Manual: builds packages as workflow artifacts only (no GitHub Release).
-  # To publish downloads for users, push a tag: git tag v0.1.0 && git push origin v0.1.0
   workflow_dispatch:
 
 permissions:
@@ -176,8 +180,10 @@ jobs:
     name: Publish GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    # Only tag pushes create a public Release. workflow_dispatch keeps artifacts only.
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Only 0.1.x / v0.1.x tag pushes create a public Release.
+    if: >
+      startsWith(github.ref, 'refs/tags/0.1.') ||
+      startsWith(github.ref, 'refs/tags/v0.1.')
     permissions:
       contents: write
     steps:
@@ -196,11 +202,22 @@ jobs:
           ls -lh upload
           test "$(find upload -type f | wc -l)" -ge 1
 
+      - name: Resolve release title
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Tag 0.1.0 or v0.1.0 → display "Flowarden 0.1.0"
+          REF="${{ github.ref_name }}"
+          VER="${REF#v}"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "title=Flowarden $VER" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          name: ${{ steps.meta.outputs.title }}
           generate_release_notes: true
           files: upload/*
           fail_on_unmatched_files: true

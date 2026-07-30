@@ -119,6 +119,8 @@ Pre-built **portable full bundles** (self-contained UI + `flowarden` core in one
 
 **https://github.com/jdtec-ex/flowarden-ex/releases**
 
+Release titles use **`Flowarden 0.1.*`** (starting at **0.1.0**). Git tags match the number: `0.1.0`, `0.1.1`, …
+
 | Asset (example) | Platform |
 | --- | --- |
 | `flowarden-linux-x64.tar.gz` | Linux x64 |
@@ -154,7 +156,7 @@ Then run `./Flowarden.Ui`. If macOS still blocks the app: System Settings → Pr
 - **Windows:** install Npcap with admin rights once; day-to-day UI usually does not need “Run as administrator” if Npcap is installed correctly.
 - **Caution:** running the whole desktop UI under `sudo`/`Administrator` increases risk. Prefer elevating only the capture backend when you can, and avoid browsing untrusted files as root.
 
-CI (test-only) runs on Ubuntu and Windows; **Release** packages are produced for Linux, macOS, and Windows when a `v*` tag is pushed.
+CI (test-only) runs on Ubuntu and Windows; **Release** packages are produced for Linux, macOS, and Windows when an `0.1.*` tag is pushed.
 
 ---
 
