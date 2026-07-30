@@ -13,7 +13,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tonic_prost_build::configure()
         .build_server(true)
-        .build_client(false)
+        // Clients enabled for in-process e2e tests (syslog / control / projection).
+        .build_client(true)
         .compile_protos(&proto_files, &["../proto"])?;
 
     Ok(())

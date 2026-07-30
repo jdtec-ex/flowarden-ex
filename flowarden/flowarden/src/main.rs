@@ -12,7 +12,7 @@ use std::{
     time::Duration,
 };
 
-use cli::{CaptureArgs, Commands, OutputFormat};
+use cli::{CaptureArgs, Commands, CoreArgs, OutputFormat};
 use flowarden_core::{
     analysis::LightDpiOptions,
     capture::{CaptureRuntime, RuntimeConfig, RuntimeMode},
@@ -36,13 +36,13 @@ fn run_sync() -> Result<()> {
     let cli = cli::parse()?;
 
     match cli.command {
-        Commands::Core(args) => run_service(args.bind),
+        Commands::Core(args) => run_service(args),
         Commands::Devices { format, preview } => run_devices(format, preview),
         Commands::Capture(args) => run_capture(args),
     }
 }
 
-fn run_service(bind: std::net::SocketAddr) -> Result<()> {
+fn run_service(args: CoreArgs) -> Result<()> {
     let runtime = tokio::runtime::Runtime::new()
         .or_err(
             ErrorType::InternalError,
@@ -51,7 +51,13 @@ fn run_service(bind: std::net::SocketAddr) -> Result<()> {
         .map_err(|e| e.into_core())?;
 
     runtime
-        .block_on(run_core_service(CoreServiceOptions { bind }))
+        .block_on(run_core_service(CoreServiceOptions {
+            bind: args.bind,
+            syslog_target: args.syslog_target,
+            syslog_proto: args.syslog_proto,
+            syslog_emit_signals: args.syslog_emit_signals,
+            syslog_emit_flows: args.syslog_emit_flows,
+        }))
         .map_err(|e| e.into_core())
 }
 

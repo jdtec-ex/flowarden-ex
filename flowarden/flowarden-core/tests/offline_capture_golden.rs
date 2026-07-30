@@ -49,9 +49,12 @@ fn offline_fixture_matches_golden_json() {
         "final_snapshot": report.final_snapshot,
     }))
     .expect("golden output should serialize");
-    let expected = fs::read_to_string(golden_path("offline_mixed_ethernet.json"))
-        .expect("golden file should be readable");
-
+    let golden = golden_path("offline_mixed_ethernet.json");
+    if std::env::var("UPDATE_GOLDEN").is_ok() {
+        fs::write(&golden, format!("{actual}\n")).expect("write golden");
+        return;
+    }
+    let expected = fs::read_to_string(&golden).expect("golden file should be readable");
     assert_eq!(actual.trim_end(), expected.trim_end());
 }
 

@@ -303,13 +303,20 @@ pub(crate) fn projection_response_from_runtime_snapshot(
     if let Some(syslog) = syslog.and_then(|s| s.lock().ok()) {
         let mut syslog = syslog;
         for row in &signals {
+            // Prefer detail (includes observed bytes / threshold) when present.
+            let summary = if row.detail.trim().is_empty() {
+                row.summary.clone()
+            } else {
+                format!("{} — {}", row.summary, row.detail)
+            };
             syslog.submit_signal(super::syslog_export::SignalSyslogPayload {
+                id: row.id.clone(),
                 kind: row.kind.clone(),
                 severity: row.severity.clone(),
                 mode: row.mode.clone(),
                 status: row.status.clone(),
                 subject: row.subject.clone(),
-                summary: row.summary.clone(),
+                summary,
                 confidence: row.confidence,
                 pivot_kind: row.pivot_kind.clone(),
                 pivot_value: row.pivot_value.clone(),

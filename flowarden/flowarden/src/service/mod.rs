@@ -16,6 +16,9 @@ mod state;
 mod syslog_export;
 mod timeline;
 
+#[cfg(test)]
+mod e2e_syslog;
+
 pub use signals::{CliFinding, evaluate_cli_findings};
 
 #[cfg(test)]
@@ -50,6 +53,23 @@ use state::{CaptureControlState, CaptureStatus, ServiceState, empty_runtime_over
 #[derive(Debug, Clone)]
 pub struct CoreServiceOptions {
     pub bind: SocketAddr,
+    /// When set (CLI), overrides env-based syslog bootstrap. Empty/None → try env, else disabled.
+    pub syslog_target: Option<String>,
+    pub syslog_proto: String,
+    pub syslog_emit_signals: bool,
+    pub syslog_emit_flows: bool,
+}
+
+impl Default for CoreServiceOptions {
+    fn default() -> Self {
+        Self {
+            bind: SocketAddr::from(([127, 0, 0, 1], 39_091)),
+            syslog_target: None,
+            syslog_proto: "udp".into(),
+            syslog_emit_signals: true,
+            syslog_emit_flows: true,
+        }
+    }
 }
 
 pub async fn run_core_service(options: CoreServiceOptions) -> Result<()> {
@@ -72,6 +92,28 @@ pub async fn run_core_service(options: CoreServiceOptions) -> Result<()> {
         let current = overview_refresh_tx.borrow().clone();
         let _ = overview_refresh_tx.send_replace(current);
     });
+    let syslog_cfg = if options
+        .syslog_target
+        .as_deref()
+        .map(str::trim)
+        .is_some_and(|s| !s.is_empty())
+    {
+        syslog_export::SyslogConfig::from_target_str(
+            options.syslog_target.as_deref(),
+            &options.syslog_proto,
+            options.syslog_emit_signals,
+            options.syslog_emit_flows,
+        )
+    } else {
+        // CLI target empty: allow env bootstrap; still default disabled.
+        let mut cfg = syslog_export::SyslogConfig::from_env();
+        if cfg.target.is_none() {
+            cfg.emit_signals = options.syslog_emit_signals;
+            cfg.emit_flows = options.syslog_emit_flows;
+            cfg.proto = syslog_export::SyslogProto::parse(&options.syslog_proto);
+        }
+        cfg
+    };
     let state = ServiceState {
         started_at_unix_seconds,
         control_bind: options.bind,
@@ -94,9 +136,7 @@ pub async fn run_core_service(options: CoreServiceOptions) -> Result<()> {
         process_lookup: Arc::new(ProcessLookup::spawn(Some(Arc::clone(&enrichment_refresh)))),
         rdns_lookup: Arc::new(RdnsLookup::spawn(Some(enrichment_refresh))),
         signals: Arc::new(Mutex::new(SignalEngine::default())),
-        syslog: Arc::new(Mutex::new(syslog_export::SyslogExporter::start(
-            syslog_export::SyslogConfig::from_env(),
-        ))),
+        syslog: Arc::new(Mutex::new(syslog_export::SyslogExporter::start(syslog_cfg))),
         shutdown_tx,
         overview_tx,
     };

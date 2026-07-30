@@ -244,10 +244,11 @@ impl CaptureType {
 }
 
 fn capture_packet_from_pcap(packet: &Packet<'_>, link_type: LinkTypeEx) -> CapturePacket {
+    // timeval.tv_sec / tv_usec width differs by platform (e.g. macOS often i32,
+    // Linux often wider). Read via Into; write back with `as _` (see runtime savefile).
     CapturePacket {
-        timestamp_sec: packet.header.ts.tv_sec,
-        // timeval.tv_usec is i32 on some platforms (e.g. macOS) and i64 on others (e.g. Linux).
-        timestamp_usec: tv_usec_as_i64(packet.header.ts.tv_usec),
+        timestamp_sec: timeval_field_as_i64(packet.header.ts.tv_sec),
+        timestamp_usec: timeval_field_as_i64(packet.header.ts.tv_usec),
         captured_len: packet.header.caplen,
         original_len: packet.header.len,
         link_type,
@@ -255,7 +256,7 @@ fn capture_packet_from_pcap(packet: &Packet<'_>, link_type: LinkTypeEx) -> Captu
     }
 }
 
-/// Widen libc `tv_usec` to `i64` without platform-specific casts in the call site.
-fn tv_usec_as_i64(value: impl Into<i64>) -> i64 {
+/// Widen libc timeval field (`tv_sec` or `tv_usec`) to `i64` at the call site.
+fn timeval_field_as_i64(value: impl Into<i64>) -> i64 {
     value.into()
 }

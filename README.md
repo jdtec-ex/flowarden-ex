@@ -6,7 +6,7 @@
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](flowarden/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4.svg)](flowarden-ui/)
 
-**Public Beta.** Desktop network traffic monitor for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, behavior signals, and **RFC5424 syslog** export (signals + Inspect flows).
+**Public Beta.** Desktop network traffic monitor for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, behavior signals, and **RFC5424 + CEF syslog** export (signals + Inspect flows).
 
 Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over local gRPC, plus a **CLI** that shares the same projection contract. Inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet); not a fork.
 
@@ -38,7 +38,7 @@ Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over
 - Shared pipeline for live and offline: decode, direction, service labels, per-second aggregation
 - ARP, TCP/UDP/ICMP, TLS ClientHello **SNI**, local process name/PID (async, non-blocking)
 - **Behavior / light-DPI detectors** (Signals): data threshold, watched/known-bad entities, unidirectional large transfer (possible exfil), long-idle TCP, unauthorized P2P/proxy heuristics
-- **Syslog export** (RFC5424): signals and **Inspect flow** summaries; CLI/`core` args or Settings UI (`Get`/`SetSyslogConfig`)
+- **Syslog export** (RFC5424 envelope + **CEF** body, SIEM-standard keys): signals and **Inspect flow** summaries; CLI/`core` args or Settings UI (`Get`/`SetSyslogConfig`)
 - Resident mode with bounded memory for long-running sessions
 - Optional raw pcap write-out during capture
 
@@ -105,9 +105,12 @@ CLI:  flowarden devices | capture …   (same core, no UI)
 
 - **Rust** (stable) for core/CLI
 - **.NET 8 SDK** for the UI (`global.json` pins the patch level)
-- Capture privileges as required by your OS (e.g. BPF/pcap on macOS/Linux)
+- Capture privileges as required by your OS (e.g. BPF/pcap on macOS/Linux; **Npcap** on Windows)
 - Optional: MaxMind GeoLite2 databases under the core resources path for country/ASN enrichment (UI does not show ASN by product choice)
 
+### CI
+
+GitHub Actions runs on **Ubuntu** and **Windows** (`windows-latest` = Windows Server x64). That covers the same Win32 tool chain used on Windows 10/11 for build and unit tests. Hosted runners do **not** provide Windows 10/11 desktop images; for true Win10/Win11 desktop CI, register a self-hosted runner.
 ---
 
 ## Build
@@ -169,6 +172,72 @@ The UI can start or attach to a local `flowarden core` resident process. Prefere
 
 ---
 
+## Behavior signals
+
+Signals are produced in the resident core (`SignalEngine`) while capture is active (or when an offline pcap finishes). The UI **Signals** page shows the same list as overview projection; syslog (if enabled) exports each new signal as CEF with `cat=signal`.
+
+Policy comes from Settings (threshold, watched / known-bad lists) or CLI (`--data-threshold`, `--watch`, `--known-bad`). DPI-style detectors use built-in defaults unless the control API sets them. Live detectors re-fire on a cooldown so the feed does not spam; offline findings are usually once per capture session.
+
+| Kind | What it means | Default trigger (approx.) |
+| --- | --- | --- |
+| `DataThresholdExceeded` | Session byte total crossed the configured ceiling | `50_000_000` bytes (Settings / CLI can lower this) |
+| `WatchedEntityTransmitted` | A host, service, or process on the watch list showed traffic | Substring match on list entries; optional prefixes `service:`, `process:`, `sni:` |
+| `KnownBadHostTransmitted` | Same matching as watch, against the known-bad list | Same pattern rules; severity is higher |
+| `UnidirectionalLargeTransfer` | One connection is mostly outbound and large | Outbound ≥ `50_000_000` bytes and out/in ≥ `20` (heuristic for bulk upload / possible exfil) |
+| `LongIdleTcpConnection` | Established TCP, old, quiet, little data | Age ≥ 1 h, no payload ≥ 10 min, total bytes ≤ 64 KiB |
+| `UnauthorizedP2pOrProxy` | Port / process / SNI looks like P2P or proxy tooling | e.g. ports 1080, 3128, 6881–6889, 7890, 9050; process names like Clash, qbittorrent, tor; narrow SNI patterns |
+
+### How the match lists work
+
+- Watched and known-bad accept comma-separated tokens in Settings.
+- Bare tokens match hosts (IP or name) and related labels by case-insensitive substring.
+- Prefer explicit forms when you care about type: `service:https`, `process:Chrome`, `sni:cdn.example`.
+- Process signals need process attribution on the connection (OS lookup is best-effort and async).
+
+### How to exercise each kind
+
+**Data threshold** — Set threshold to a small number (e.g. `1` or `1000`), Apply, then live-capture a few seconds or replay any pcap. Easiest signal to produce.
+
+**Watched host / service / process** — Put a host you will actually talk to (or `service:https`, or `process:<browser name>`) on the watch list, Apply, generate traffic. Expect `pivot_kind` of `host`, `service`, or `process`.
+
+**Known-bad** — Same as watch, on the known-bad list. Useful for verifying severity and UI treatment, not as a threat-intel feed.
+
+**Unidirectional large transfer** — Defaults are high on purpose. Either upload a large file on a quiet path, or lower `dpi_exfil_min_bytes` / `dpi_exfil_ratio` via control policy when testing. Needs a connection that appears in the projected top-connections set.
+
+**Long-idle TCP** — Defaults require hour-scale idle. For a quick check, lower `dpi_idle_min_age_secs` and `dpi_idle_silence_secs` in policy, keep a nearly silent established TCP, wait past the shortened windows. Needs TCP rows in the projection (Inspect TCP path).
+
+**P2P / proxy** — Run something the process list knows (Clash, Transmission, …) or open traffic on a listed proxy/P2P port. Process-name hits and port hits are independent. Allow-list entries (`dpi_p2p_allow`) suppress matches you consider legitimate.
+
+### CLI smoke check
+
+```bash
+cd flowarden
+cargo run -p flowarden --release -- capture \
+  --read ./flowarden-core/tests/fixtures/offline_mixed_ethernet.pcap \
+  --data-threshold 1 \
+  --watch service:https \
+  --format json
+```
+
+Findings show up under the same kinds as the UI. For unit-level coverage of the engine:
+
+```bash
+cargo test -p flowarden watched_ offline_finding
+```
+
+### Syslog
+
+With syslog enabled (`--syslog-target` or Settings), each signal is one RFC5424 line whose MSG is CEF. Signature ID equals the kind string; extension `cat=signal` separates them from flow lines (`cat=traffic`).
+
+### Limits worth knowing
+
+- Only entities that make it into the current projection tops / TCP slice can fire host/service/connection detectors.
+- Cooldowns: roughly 30 s for threshold (live), 20 s per watched/bad entity, 60 s for DPI kinds.
+- Starting a new capture clears the signal session.
+- A UI-only fallback threshold (when the core returns no signals) does **not** go to syslog; trust the core list for export.
+
+---
+
 ## Relation to Sniffnet
 
 Flowarden is **inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet)** — its capture-and-aggregate model, ranked views, destination map, process hints, and compact thumbnail monitoring shaped the product goals.
@@ -183,7 +252,7 @@ It is **not a fork or re-skin**. Sniffnet is a polished single-process Rust desk
 | Long runs | Solid defaults | Explicit resident bounds + tick window |
 | Enrichment | Country, ASN, process, map | Country, process, **TLS SNI**, map markers; **ASN hidden in UI** (product choice) |
 | Alerts | Notifications / webhooks | Signals + policy + **behavior detectors** (exfil / idle TCP / P2P-proxy) |
-| Syslog | — | **RFC5424** signal + Inspect-flow export (CLI + Settings) |
+| Syslog | — | **RFC5424 + CEF** signal + traffic flow export (CLI + Settings) |
 | Deep protocol / DPI | Out of scope for the reference product | Light DPI + heuristics now; **deeper protocol DPI planned** |
 
 **Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, SNI/process context, syslog integration, or an extensible DPI path.

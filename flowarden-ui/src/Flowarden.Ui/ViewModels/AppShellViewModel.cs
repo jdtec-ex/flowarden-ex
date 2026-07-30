@@ -183,7 +183,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public string Title { get; } = "Flowarden";
 
-    public string Subtitle { get; } = "Traffic Flow Warden · Public Beta";
+    public string Subtitle { get; } = "Traffic Flow Warden\nPublic Beta";
 
     public IReadOnlyList<AppNavigationItemViewModel> NavigationItems { get; }
 
@@ -502,11 +502,20 @@ public sealed partial class AppShellViewModel : ViewModelBase
             return "no control client";
         }
 
+        // Do not push the factory-default "disabled + empty target" over a core that was
+        // started with --syslog-target / FLOWARDEN_SYSLOG_TARGET. Only push when the user
+        // has actually configured syslog in UI preferences (enabled and/or non-empty target).
+        var target = _preferences.SyslogTarget?.Trim() ?? string.Empty;
+        if (!_preferences.SyslogEnabled && string.IsNullOrWhiteSpace(target))
+        {
+            return "skipped (UI prefs unset; leave core CLI/env syslog as-is)";
+        }
+
         try
         {
             var result = await _controlClient.SetSyslogConfigAsync(
                 _preferences.SyslogEnabled,
-                _preferences.SyslogTarget,
+                target,
                 _preferences.SyslogProto,
                 _preferences.SyslogEmitSignals,
                 _preferences.SyslogEmitFlows,
@@ -604,7 +613,9 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 : $"Connected to existing core (may be outdated). Preferred binary: {corePath}";
             UserRunState = "ready";
             _projectionStale = false;
+            // Core starts with syslog disabled unless CLI/env set it — push saved UI prefs.
             await PushSignalPolicyToCoreAsync();
+            await PushSyslogConfigToCoreAsync();
             await LoadSourcePageAsync();
             await LoadOverviewPageAsync();
             await LoadInspectPageAsync();
@@ -676,6 +687,8 @@ public sealed partial class AppShellViewModel : ViewModelBase
                 ? "flowarden core relaunched. Start capture again when ready."
                 : "Reconnected to flowarden core. Start capture again when ready.";
             OnPropertyChanged(nameof(HeaderSupportingText));
+            await PushSignalPolicyToCoreAsync();
+            await PushSyslogConfigToCoreAsync();
             BeginHealthWatch();
             return;
         }

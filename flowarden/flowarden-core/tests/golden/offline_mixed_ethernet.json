@@ -46,6 +46,7 @@
               "rst_count": 0,
               "packets": 1,
               "bytes": 59,
+              "payload_bytes": 5,
               "state": "SynAck",
               "initiator": null,
               "first_seen": {
@@ -53,6 +54,10 @@
                 "microseconds": 0
               },
               "last_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              },
+              "last_payload_seen": {
                 "seconds": 1,
                 "microseconds": 0
               }
@@ -288,6 +293,7 @@
               "rst_count": 0,
               "packets": 1,
               "bytes": 59,
+              "payload_bytes": 5,
               "state": "SynAck",
               "initiator": null,
               "first_seen": {
@@ -295,6 +301,10 @@
                 "microseconds": 0
               },
               "last_seen": {
+                "seconds": 1,
+                "microseconds": 0
+              },
+              "last_payload_seen": {
                 "seconds": 1,
                 "microseconds": 0
               }
@@ -348,6 +358,7 @@
             "rst_count": 0,
             "packets": 1,
             "bytes": 59,
+            "payload_bytes": 5,
             "state": "SynAck",
             "initiator": null,
             "first_seen": {
@@ -355,6 +366,10 @@
               "microseconds": 0
             },
             "last_seen": {
+              "seconds": 1,
+              "microseconds": 0
+            },
+            "last_payload_seen": {
               "seconds": 1,
               "microseconds": 0
             }

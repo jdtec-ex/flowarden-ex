@@ -974,8 +974,8 @@ public sealed partial class SourcePageViewModel : ViewModelBase
         bool preferActiveSelection
     )
     {
-        var items = devices
-            .Select(device => new SourceDeviceItemViewModel
+        var items = SourceDeviceSelection.OrderForDisplay(
+            devices.Select(device => new SourceDeviceItemViewModel
             {
                 Device = device,
                 Preview = previewByName is not null && previewByName.TryGetValue(device.Name, out var preview)
@@ -989,7 +989,7 @@ public sealed partial class SourcePageViewModel : ViewModelBase
                         Error = null,
                     },
             })
-            .ToArray();
+        );
 
         DeviceItems.Clear();
         foreach (var item in items)
@@ -1027,12 +1027,12 @@ public sealed partial class SourcePageViewModel : ViewModelBase
     private void LoadSeedDevices()
     {
         DeviceItems.Clear();
-        foreach (var item in SourceSeedData.CreateSeedDevices())
+        foreach (var item in SourceDeviceSelection.OrderForDisplay(SourceSeedData.CreateSeedDevices()))
         {
             DeviceItems.Add(item);
         }
 
-        SelectedDevice = DeviceItems.FirstOrDefault();
+        SelectedDevice = SourceDeviceSelection.SelectActiveDevice(DeviceItems) ?? DeviceItems.FirstOrDefault();
         SelectedSourceMode = "Live source";
         LastPreviewLabel = $"Preview window: {PreviewWindowSeconds}s sample";
         NotifyDeviceInventoryChanged();

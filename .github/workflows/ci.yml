@@ -10,6 +10,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# OS coverage notes:
+# - ubuntu-latest: primary Linux gate
+# - windows-latest: GitHub-hosted Windows Server (not Win10/Win11 desktop images —
+#   those are unavailable on hosted runners). Server x64 is enough for compile + unit
+#   tests of the Win32 stack used on Windows 10/11. True Win10/Win11 desktop CI needs
+#   a self-hosted runner with labels e.g. [self-hosted, windows, win11].
+
 jobs:
   rust:
     name: Rust core & CLI
@@ -67,3 +74,91 @@ jobs:
       # Headless UI tests are limited; keep compile gate strict for now.
       - name: Verify output
         run: test -f src/Flowarden.Ui/bin/Release/net8.0/Flowarden.Ui.dll
+
+  rust-windows:
+    name: Rust core & CLI (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: flowarden
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Link against Npcap SDK (wpcap.lib). Full Npcap driver is NOT installed —
+      # offline/unit tests do not need live capture. See rust-pcap README.
+      - name: Install Npcap SDK
+        shell: pwsh
+        run: |
+          $sdkVer = "1.15"
+          $zipUrl = "https://npcap.com/dist/npcap-sdk-$sdkVer.zip"
+          $zip = Join-Path $env:RUNNER_TEMP "npcap-sdk.zip"
+          $sdkRoot = Join-Path $env:RUNNER_TEMP "npcap-sdk"
+          Write-Host "Downloading $zipUrl"
+          Invoke-WebRequest -Uri $zipUrl -OutFile $zip
+          if (Test-Path $sdkRoot) { Remove-Item -Recurse -Force $sdkRoot }
+          Expand-Archive -Path $zip -DestinationPath $sdkRoot -Force
+          # Zip layout is usually flat (Include/, Lib/) or one top-level folder.
+          $libX64 = Get-ChildItem -Path $sdkRoot -Recurse -Directory -Filter "x64" |
+            Where-Object { $_.FullName -match '[\\/]Lib[\\/]x64$' } |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (-not $libX64) {
+            $libX64 = Join-Path $sdkRoot "Lib\x64"
+          }
+          if (-not (Test-Path (Join-Path $libX64 "wpcap.lib"))) {
+            Get-ChildItem -Path $sdkRoot -Recurse | Select-Object -First 40 FullName
+            throw "wpcap.lib not found under $sdkRoot (expected Lib\x64)"
+          }
+          Write-Host "Npcap Lib\x64 = $libX64"
+          "LIBPCAP_LIBDIR=$libX64" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          # Optional: pin version when wpcap.dll is absent at build time.
+          "LIBPCAP_VER=1.10.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $libEnv = if ($env:LIB) { "$libX64;$env:LIB" } else { $libX64 }
+          "LIB=$libEnv" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: flowarden -> target
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  ui-windows:
+    name: Avalonia UI (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: flowarden-ui
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore Flowarden.Ui.sln
+
+      - name: Build
+        run: dotnet build Flowarden.Ui.sln -c Release --no-restore
+
+      - name: Verify output
+        run: |
+          $dll = "src/Flowarden.Ui/bin/Release/net8.0/Flowarden.Ui.dll"
+          if (-not (Test-Path $dll)) {
+            throw "Missing build output: $dll"
+          }
+          Write-Host "OK $dll"

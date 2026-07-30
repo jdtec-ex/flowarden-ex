@@ -16,7 +16,7 @@
       </Grid>
       <TextBlock Classes="muted-text"
                  FontSize="11"
-                 Text="RFC5424 export of Signals and Inspect flows (connection summaries). Rust core sends; Apply pushes live config."
+                 Text="RFC5424 transport + CEF body (src/dst/spt/dpt/proto/in/out…). Signals and Inspect flows share the same CEF schema. Enable + target + Apply; empty target = off."
                  TextWrapping="Wrap" />
       <CheckBox Content="Enable syslog"
                 FontSize="12"
@@ -24,7 +24,7 @@
       <StackPanel Spacing="4">
         <TextBlock Classes="tfc-label" FontSize="11" Text="TARGET (HOST:PORT)" />
         <TextBox Height="28"
-                 Watermark="127.0.0.1:514"
+                 Watermark="example: 127.0.0.1:514 or syslog.lab:514"
                  Text="{Binding SyslogTarget, Mode=TwoWay}" />
       </StackPanel>
       <StackPanel Spacing="4">

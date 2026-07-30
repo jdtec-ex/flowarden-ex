@@ -467,9 +467,9 @@ impl ControlService for ControlServiceImpl {
         let req = request.into_inner();
         let target = req.target.trim();
         let (target_addr, enabled) = if req.enabled && !target.is_empty() {
-            let addr = target
-                .parse()
-                .map_err(|_| Status::invalid_argument("syslog target must be HOST:PORT"))?;
+            let addr = super::syslog_export::parse_syslog_target(target).map_err(|e| {
+                Status::invalid_argument(format!("syslog target must be HOST:PORT ({e})"))
+            })?;
             (Some(addr), true)
         } else {
             (None, false)
@@ -503,21 +503,63 @@ impl ControlService for ControlServiceImpl {
             },
         };
 
-        let mut syslog = self
-            .state
-            .syslog
-            .lock()
-            .map_err(|_| Status::internal("Failed to lock syslog exporter"))?;
-        syslog.reconfigure(cfg.clone());
-        if cfg.enabled {
-            syslog.ensure_worker();
+        {
+            let mut syslog = self
+                .state
+                .syslog
+                .lock()
+                .map_err(|_| Status::internal("Failed to lock syslog exporter"))?;
+            syslog.reconfigure(cfg.clone());
+            if cfg.enabled {
+                syslog.ensure_worker();
+            }
         }
+
+        // Re-export signals already in the engine so enabling syslog after a finding
+        // still delivers (overview stream may not fire until the next capture tick).
+        let flushed = if cfg.enabled && cfg.emit_signals {
+            let rows = self
+                .state
+                .signals
+                .lock()
+                .map_err(|_| Status::internal("Failed to lock signal engine"))?
+                .list_proto();
+            let mut syslog = self
+                .state
+                .syslog
+                .lock()
+                .map_err(|_| Status::internal("Failed to lock syslog exporter"))?;
+            let mut n = 0u32;
+            for row in rows {
+                let summary = if row.detail.trim().is_empty() {
+                    row.summary.clone()
+                } else {
+                    format!("{} — {}", row.summary, row.detail)
+                };
+                syslog.submit_signal(super::syslog_export::SignalSyslogPayload {
+                    id: row.id,
+                    kind: row.kind,
+                    severity: row.severity,
+                    mode: row.mode,
+                    status: row.status,
+                    subject: row.subject,
+                    summary,
+                    confidence: row.confidence,
+                    pivot_kind: row.pivot_kind,
+                    pivot_value: row.pivot_value,
+                });
+                n += 1;
+            }
+            n
+        } else {
+            0
+        };
 
         Ok(Response::new(ControlResponse {
             accepted: true,
             message: if cfg.enabled {
                 format!(
-                    "Syslog enabled → {} ({})",
+                    "Syslog enabled → {} ({}); flushed {flushed} signal(s)",
                     cfg.target
                         .map(|a| a.to_string())
                         .unwrap_or_default(),

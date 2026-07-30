@@ -6,7 +6,7 @@
              x:Name="ShellRoot"
              x:Class="Flowarden.Ui.Views.AppShellView"
              x:DataType="vm:AppShellViewModel">
-  <Grid ColumnDefinitions="180,*"
+  <Grid ColumnDefinitions="200,*"
         Background="{StaticResource TfcBackgroundBrush}"
         Classes.density-compact="{Binding IsCompactDensity}">
     <components:AppRailView />

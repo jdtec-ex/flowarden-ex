@@ -278,7 +278,8 @@ impl CaptureRuntime {
                     if let Some(savefile) = savefile.as_mut() {
                         let header = pcap::PacketHeader {
                             ts: libc::timeval {
-                                tv_sec: packet.timestamp_sec,
+                                // Narrow i64 capture timestamps back into platform timeval fields.
+                                tv_sec: packet.timestamp_sec as _,
                                 tv_usec: packet.timestamp_usec as _,
                             },
                             caplen: packet.captured_len,

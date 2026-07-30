@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
              xmlns:vm="using:Flowarden.Ui.ViewModels"
              x:Class="Flowarden.Ui.Views.Components.AppHeaderView"
              x:DataType="vm:AppShellViewModel">
@@ -27,16 +28,32 @@
                   Spacing="8"
                   VerticalAlignment="Center"
                   Margin="0,0,8,0">
+        <!-- Picture-in-picture: stroke frame + solid inset (matches rail icon language). -->
         <Button Classes="tools-button"
-                Width="28"
-                Height="24"
+                Width="32"
+                Height="28"
                 Padding="0"
                 Command="{Binding ToggleThumbnailCommand}"
                 ToolTip.Tip="Thumbnail monitor (always on top)">
-          <PathIcon Width="14"
-                    Height="14"
-                    Data="{StaticResource IconThumbnail}"
-                    Foreground="{StaticResource TfcPrimaryBrush}" />
+          <Viewbox Width="18" Height="18">
+            <Canvas Width="24" Height="24">
+              <shapes:Rectangle Canvas.Left="2.5"
+                                Canvas.Top="3.5"
+                                Width="19"
+                                Height="14"
+                                RadiusX="2"
+                                RadiusY="2"
+                                Stroke="{StaticResource TfcPrimaryBrush}"
+                                StrokeThickness="1.8" />
+              <shapes:Rectangle Canvas.Left="12"
+                                Canvas.Top="10"
+                                Width="8"
+                                Height="6"
+                                RadiusX="1.2"
+                                RadiusY="1.2"
+                                Fill="{StaticResource TfcPrimaryBrush}" />
+            </Canvas>
+          </Viewbox>
         </Button>
       </StackPanel>
 

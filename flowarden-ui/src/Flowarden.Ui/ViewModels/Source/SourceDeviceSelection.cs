@@ -9,30 +9,43 @@ namespace Flowarden.Ui.ViewModels.Source;
 
 internal static class SourceDeviceSelection
 {
+    /// <summary>
+    /// List order for the Source page: interfaces with preview traffic first,
+    /// then address quality / common NIC names. Loopbacks sink to the bottom
+    /// unless every interface is loopback.
+    /// </summary>
+    public static IReadOnlyList<SourceDeviceItemViewModel> OrderForDisplay(
+        IEnumerable<SourceDeviceItemViewModel> items
+    )
+    {
+        return items
+            .OrderByDescending(HasPreviewTraffic)
+            .ThenByDescending(item => item.Preview.BytesSeen)
+            .ThenByDescending(item => item.Preview.PacketsSeen)
+            .ThenByDescending(HasNonLoopbackIpv4)
+            .ThenByDescending(HasUsableNonLoopbackAddress)
+            .ThenByDescending(item => IsCommonPrimaryInterfaceName(item.DisplayName))
+            .ThenBy(item => IsLoopbackInterfaceName(item.DisplayName)) // false before true
+            .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public static SourceDeviceItemViewModel? SelectActiveDevice(
-            IReadOnlyList<SourceDeviceItemViewModel> items
-        )
+        IReadOnlyList<SourceDeviceItemViewModel> items
+    )
+    {
+        if (items.Count == 0)
         {
-            if (items.Count == 0)
-            {
-                return null;
-            }
-    
-            var nonLoopbackCandidates = items
-                .Where(item => !IsLoopbackInterfaceName(item.DisplayName))
-                .ToArray();
-            var candidates = nonLoopbackCandidates.Length > 0 ? nonLoopbackCandidates : items;
-    
-            return candidates
-                .OrderByDescending(HasPreviewTraffic)
-                .ThenByDescending(item => item.Preview.BytesSeen)
-                .ThenByDescending(item => item.Preview.PacketsSeen)
-                .ThenByDescending(HasNonLoopbackIpv4)
-                .ThenByDescending(HasUsableNonLoopbackAddress)
-                .ThenByDescending(item => IsCommonPrimaryInterfaceName(item.DisplayName))
-                .ThenBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
-                .FirstOrDefault();
+            return null;
         }
+
+        var nonLoopbackCandidates = items
+            .Where(item => !IsLoopbackInterfaceName(item.DisplayName))
+            .ToArray();
+        var candidates = nonLoopbackCandidates.Length > 0 ? nonLoopbackCandidates : items;
+
+        return OrderForDisplay(candidates).FirstOrDefault();
+    }
 
     public static bool HasPreviewTraffic(SourceDeviceItemViewModel item)
         {

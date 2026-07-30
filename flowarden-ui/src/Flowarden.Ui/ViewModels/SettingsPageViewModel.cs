@@ -289,15 +289,21 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     [RelayCommand]
     private async Task ApplySyslog()
     {
-        ListsStatus = await PersistPreferencesAsync();
-        if (ReconnectCoreHandler is null)
+        if (SyslogEnabled && string.IsNullOrWhiteSpace(SyslogTarget))
         {
-            // Prefer shell-provided control path via SavePreferences; AppShell must call SetSyslog.
+            SyslogStatus =
+                "Enable is on but TARGET is empty — type a real HOST:PORT (placeholder is not used), then Apply.";
+            ListsStatus = SyslogStatus;
+            return;
         }
 
+        ListsStatus = await PersistPreferencesAsync();
+        // ListsStatus includes core SetSyslogConfig result from AppShell.SavePreferencesAsync.
         SyslogStatus = ListsStatus.Contains("failed", StringComparison.OrdinalIgnoreCase)
+            || ListsStatus.Contains("declined", StringComparison.OrdinalIgnoreCase)
+            || ListsStatus.Contains("error:", StringComparison.OrdinalIgnoreCase)
             ? ListsStatus
-            : $"Syslog prefs saved · enabled={SyslogEnabled} target={SyslogTarget} ({SyslogProto})";
+            : $"Applied to core · enabled={SyslogEnabled} target={SyslogTarget} ({SyslogProto}) · {ListsStatus}";
     }
 
     [RelayCommand]
