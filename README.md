@@ -125,7 +125,34 @@ Pre-built **portable full bundles** (self-contained UI + `flowarden` core in one
 | `flowarden-macos-arm64.tar.gz` | macOS Apple Silicon |
 | `flowarden-windows-x64.zip` | Windows x64 |
 
-Unpack, keep UI and core in the same folder, start `Flowarden.Ui` / `Flowarden.Ui.exe`. See `README.txt` inside the package. Windows users must install [Npcap](https://npcap.com/) first.
+Unpack, keep UI and core in the **same folder**, then start `Flowarden.Ui` / `Flowarden.Ui.exe`. Full notes are also in `README.txt` inside the package.
+
+**After download (all platforms)**
+
+1. Unpack the archive.
+2. Do not separate the UI binary from `flowarden` / `flowarden.exe` — the UI launches core from the same directory.
+3. **Windows:** install [Npcap](https://npcap.com/) first (enable WinPcap API compatibility if offered).
+4. **Linux:** ensure libpcap is installed; live capture often needs elevated privileges (see below).
+5. **macOS (unsigned / GitHub zip):** clear quarantine so Gatekeeper does not block the binaries (**provisional** workaround until app signing/notarization):
+
+```bash
+# From the unpacked folder
+xattr -cr .
+# or only the executables:
+xattr -d com.apple.quarantine ./Flowarden.Ui ./flowarden 2>/dev/null || true
+```
+
+Then run `./Flowarden.Ui`. If macOS still blocks the app: System Settings → Privacy & Security → allow the blocked app, or right-click → Open.
+
+**Privileges / `sudo` (live capture)**
+
+- Live packet capture needs raw access to network interfaces. Offline pcap replay does **not**.
+- **Linux:** you may need `sudo ./Flowarden.Ui` or `sudo ./flowarden …`, or grant capabilities instead of full root, e.g.  
+  `sudo setcap cap_net_raw,cap_net_admin=eip ./flowarden`  
+  Prefer capabilities over leaving the UI running as root when possible.
+- **macOS:** first capture may prompt for permission; some setups still require running from a Terminal with elevated rights. Prefer the system permission dialog when it appears; use `sudo` only if capture still fails after granting access.
+- **Windows:** install Npcap with admin rights once; day-to-day UI usually does not need “Run as administrator” if Npcap is installed correctly.
+- **Caution:** running the whole desktop UI under `sudo`/`Administrator` increases risk. Prefer elevating only the capture backend when you can, and avoid browsing untrusted files as root.
 
 CI (test-only) runs on Ubuntu and Windows; **Release** packages are produced for Linux, macOS, and Windows when a `v*` tag is pushed.
 

@@ -17,20 +17,35 @@ Quick start
    Linux: install libpcap (e.g. libpcap0.8 / libpcap) if not already present.
    macOS: system libpcap is used; grant capture permission when the OS prompts.
 
-2) Unzip / untar this folder anywhere.
+2) Unzip / untar this folder anywhere. Keep UI and flowarden in the SAME folder.
 
-3) Start the desktop UI from this folder:
+3) macOS only — clear quarantine after download (provisional; until signed/notarized):
+
+     xattr -cr .
+     # or: xattr -d com.apple.quarantine ./Flowarden.Ui ./flowarden
+
+   If still blocked: System Settings → Privacy & Security → allow, or right-click → Open.
+
+4) Start the desktop UI from this folder:
      Windows:  double-click Flowarden.Ui.exe
      Linux:    ./Flowarden.Ui
      macOS:    ./Flowarden.Ui
 
-   The UI looks for flowarden next to itself (same directory). Keep both files
-   in this folder; do not move only the UI binary.
-
-4) Optional CLI examples (from this folder):
+5) Optional CLI examples (from this folder):
      ./flowarden devices
      ./flowarden capture --device <iface> --duration 5
      ./flowarden core --bind 127.0.0.1:39091
+
+Privileges / sudo (live capture)
+--------------------------------
+
+- Live capture needs raw interface access. Offline pcap replay does not.
+- Linux: you may need sudo, or:
+    sudo setcap cap_net_raw,cap_net_admin=eip ./flowarden
+  Prefer capabilities over running the whole UI as root.
+- macOS: prefer the system permission prompt; use sudo only if capture still fails.
+- Windows: install Npcap once as admin; daily use usually does not need "Run as administrator".
+- Caution: avoid browsing untrusted files while the UI is running as root/Administrator.
 
 Notes
 -----
