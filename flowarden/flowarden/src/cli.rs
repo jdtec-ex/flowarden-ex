@@ -8,8 +8,8 @@ use flowarden_error::{Error, ErrorType, Result};
 #[command(
     name = "flowarden",
     version,
-    about = "Flowarden",
-    long_about = "Flowarden is a network traffic monitoring and analysis tool built in Rust."
+    about = "Flowarden (Public Beta)",
+    long_about = "Flowarden is a network traffic monitoring and analysis tool built in Rust. Public Beta — APIs and detectors may change."
 )]
 pub struct Cli {
     #[command(subcommand)]
@@ -17,6 +17,7 @@ pub struct Cli {
 }
 
 #[derive(Debug, Clone, Subcommand)]
+#[allow(clippy::large_enum_variant)]
 pub enum Commands {
     /// List available capture devices
     Devices {
@@ -36,6 +37,15 @@ pub enum Commands {
 pub struct CoreArgs {
     #[arg(long)]
     pub bind: SocketAddr,
+    /// Syslog target HOST:PORT (empty = disabled until UI SetSyslogConfig).
+    #[arg(long)]
+    pub syslog_target: Option<String>,
+    #[arg(long, default_value = "udp")]
+    pub syslog_proto: String,
+    #[arg(long, default_value_t = true)]
+    pub syslog_emit_signals: bool,
+    #[arg(long, default_value_t = true)]
+    pub syslog_emit_flows: bool,
 }
 
 #[derive(Debug, Clone, Args)]
@@ -77,6 +87,21 @@ pub struct CaptureArgs {
     /// Max TCP payload bytes inspected for SNI (default 512).
     #[arg(long)]
     pub sni_max_payload: Option<usize>,
+    /// Syslog target HOST:PORT.
+    #[arg(long)]
+    pub syslog_target: Option<String>,
+    #[arg(long, default_value = "udp")]
+    pub syslog_proto: String,
+    #[arg(long, default_value_t = true)]
+    pub syslog_emit_signals: bool,
+    #[arg(long, default_value_t = true)]
+    pub syslog_emit_flows: bool,
+    #[arg(long, default_value_t = 10_000)]
+    pub syslog_flow_min_bytes: u64,
+    #[arg(long, default_value_t = 1_000_000)]
+    pub syslog_flow_delta_bytes: u64,
+    #[arg(long, default_value_t = 60)]
+    pub syslog_flow_interval_secs: u64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
@@ -224,6 +249,13 @@ mod tests {
             snaplen: None,
             no_sni: false,
             sni_max_payload: None,
+            syslog_target: None,
+            syslog_proto: "udp".into(),
+            syslog_emit_signals: true,
+            syslog_emit_flows: true,
+            syslog_flow_min_bytes: 10_000,
+            syslog_flow_delta_bytes: 1_000_000,
+            syslog_flow_interval_secs: 60,
         };
 
         let err = args.into_options().unwrap_err();
@@ -249,6 +281,13 @@ mod tests {
             snaplen: None,
             no_sni: false,
             sni_max_payload: None,
+            syslog_target: None,
+            syslog_proto: "udp".into(),
+            syslog_emit_signals: true,
+            syslog_emit_flows: true,
+            syslog_flow_min_bytes: 10_000,
+            syslog_flow_delta_bytes: 1_000_000,
+            syslog_flow_interval_secs: 60,
         };
 
         let err = args.into_options().unwrap_err();

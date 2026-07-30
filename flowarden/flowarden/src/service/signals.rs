@@ -5,10 +5,14 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
-use flowarden_core::flow::{FinalSnapshot, HostSummary, PacketTimestamp, ServiceSummary};
+use flowarden_core::flow::{
+    ConnectionSummary, FinalSnapshot, HostSummary, PacketTimestamp, ServiceSummary,
+    TcpConnectionState, TcpConnectionSummary,
+};
 use serde::Serialize;
 
 use super::{
+    p2p_proxy_rules,
     proto::projection::{BehaviorSignalRow, PacketTimestamp as ProtoTs, ProjectionMode},
     state::OverviewRuntimeSnapshot,
 };
@@ -16,6 +20,7 @@ use super::{
 const MAX_SIGNALS: usize = 30;
 const THRESHOLD_COOLDOWN: Duration = Duration::from_secs(30);
 const ENTITY_SIGNAL_COOLDOWN: Duration = Duration::from_secs(20);
+const DPI_SIGNAL_COOLDOWN: Duration = Duration::from_secs(60);
 
 #[derive(Clone, Debug)]
 pub(crate) struct SignalPolicy {
@@ -26,6 +31,15 @@ pub(crate) struct SignalPolicy {
     pub(crate) watched_processes: Vec<String>,
     pub(crate) known_bad_services: Vec<String>,
     pub(crate) known_bad_processes: Vec<String>,
+    pub(crate) dpi_exfil_enabled: bool,
+    pub(crate) dpi_exfil_min_bytes: u64,
+    pub(crate) dpi_exfil_ratio: f64,
+    pub(crate) dpi_idle_enabled: bool,
+    pub(crate) dpi_idle_min_age_secs: u64,
+    pub(crate) dpi_idle_silence_secs: u64,
+    pub(crate) dpi_idle_max_bytes: u64,
+    pub(crate) dpi_p2p_enabled: bool,
+    pub(crate) dpi_p2p_allow: Vec<String>,
 }
 
 impl Default for SignalPolicy {
@@ -38,6 +52,15 @@ impl Default for SignalPolicy {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            dpi_exfil_enabled: true,
+            dpi_exfil_min_bytes: 50_000_000,
+            dpi_exfil_ratio: 20.0,
+            dpi_idle_enabled: true,
+            dpi_idle_min_age_secs: 3600,
+            dpi_idle_silence_secs: 600,
+            dpi_idle_max_bytes: 65_536,
+            dpi_p2p_enabled: true,
+            dpi_p2p_allow: Vec::new(),
         }
     }
 }
@@ -144,6 +167,21 @@ impl SignalEngine {
         for service in &snapshot.top_services {
             self.evaluate_service(service, mode, is_offline, now);
         }
+        if self.policy.dpi_exfil_enabled {
+            for conn in &snapshot.top_connections {
+                self.evaluate_exfil(conn, mode, is_offline, now);
+            }
+        }
+        if self.policy.dpi_idle_enabled {
+            for tcp in &snapshot.tcp_connections {
+                self.evaluate_idle_tcp(tcp, mode, is_offline, now);
+            }
+        }
+        if self.policy.dpi_p2p_enabled {
+            for conn in &snapshot.top_connections {
+                self.evaluate_p2p_or_proxy_connection(conn, mode, is_offline, now);
+            }
+        }
         self.log.iter().map(signal_to_proto).collect()
     }
 
@@ -208,6 +246,36 @@ impl SignalEngine {
                             },
                             detail: format!(
                                 "Process `{name}` matched a known-bad entry ({bytes} bytes)."
+                            ),
+                            first_seen: now,
+                            last_seen: now,
+                            update_count: 1,
+                            confidence: 0.85,
+                            dedupe_key: key,
+                            pivot_kind: "process".to_string(),
+                            pivot_value: name.clone(),
+                        },
+                        is_offline,
+                    );
+                }
+            }
+            if self.policy.dpi_p2p_enabled
+                && p2p_proxy_rules::process_looks_like_p2p_or_proxy(name)
+                && !self.is_p2p_allowed(&format!("process:{name}"))
+            {
+                let key = format!("UnauthorizedP2pOrProxy|process|{name}");
+                if self.may_emit_dpi(&key, is_offline) {
+                    self.push(
+                        ActiveSignal {
+                            id: format!("p2p-proc-{}-{}", name, now.seconds),
+                            kind: "UnauthorizedP2pOrProxy".to_string(),
+                            mode: mode.to_string(),
+                            status: initial_status(is_offline).to_string(),
+                            severity: "warning".to_string(),
+                            subject: name.clone(),
+                            summary: "Unauthorized P2P or proxy process".to_string(),
+                            detail: format!(
+                                "Process `{name}` matched built-in P2P/proxy heuristics ({bytes} bytes)."
                             ),
                             first_seen: now,
                             last_seen: now,
@@ -395,6 +463,196 @@ impl SignalEngine {
         }
     }
 
+    fn evaluate_exfil(
+        &mut self,
+        conn: &ConnectionSummary,
+        mode: &str,
+        is_offline: bool,
+        now: PacketTimestamp,
+    ) {
+        let out = conn.counters.bytes_out;
+        let inn = conn.counters.bytes_in;
+        if out < self.policy.dpi_exfil_min_bytes {
+            return;
+        }
+        let ratio = out as f64 / (inn.max(1) as f64);
+        if ratio < self.policy.dpi_exfil_ratio {
+            return;
+        }
+        let peer = conn.key.destination_ip.to_string();
+        let key = format!("UnidirectionalLargeTransfer|{peer}|{}", conn.key.destination_port.unwrap_or(0));
+        if !self.may_emit_dpi(&key, is_offline) {
+            return;
+        }
+        let service = conn
+            .counters
+            .sni
+            .clone()
+            .unwrap_or_else(|| "unknown".into());
+        self.push(
+            ActiveSignal {
+                id: format!("exfil-{}-{}", peer, now.seconds),
+                kind: "UnidirectionalLargeTransfer".to_string(),
+                mode: mode.to_string(),
+                status: initial_status(is_offline).to_string(),
+                severity: "warning".to_string(),
+                subject: peer.clone(),
+                summary: "Unidirectional large transfer (possible exfil)".to_string(),
+                detail: format!(
+                    "Outbound {out} bytes vs inbound {inn} (ratio {ratio:.1}x, min {}, ratio≥{}). peer={peer} sni/service≈{service}",
+                    self.policy.dpi_exfil_min_bytes, self.policy.dpi_exfil_ratio
+                ),
+                first_seen: conn.counters.first_seen,
+                last_seen: conn.counters.last_seen,
+                update_count: 1,
+                confidence: 0.8,
+                dedupe_key: key,
+                pivot_kind: "host".to_string(),
+                pivot_value: peer,
+            },
+            is_offline,
+        );
+    }
+
+    fn evaluate_idle_tcp(
+        &mut self,
+        tcp: &TcpConnectionSummary,
+        mode: &str,
+        is_offline: bool,
+        now: PacketTimestamp,
+    ) {
+        if tcp.stats.state != TcpConnectionState::Established {
+            return;
+        }
+        if tcp.stats.bytes > self.policy.dpi_idle_max_bytes {
+            return;
+        }
+        let age = now.seconds.saturating_sub(tcp.stats.first_seen.seconds);
+        if age < self.policy.dpi_idle_min_age_secs as i64 {
+            return;
+        }
+        let last_data = tcp
+            .stats
+            .last_payload_seen
+            .unwrap_or(tcp.stats.first_seen);
+        let silence = now.seconds.saturating_sub(last_data.seconds);
+        if silence < self.policy.dpi_idle_silence_secs as i64 {
+            return;
+        }
+        let a = format!(
+            "{}:{}",
+            tcp.key.endpoint_a.ip, tcp.key.endpoint_a.port
+        );
+        let b = format!(
+            "{}:{}",
+            tcp.key.endpoint_b.ip, tcp.key.endpoint_b.port
+        );
+        let key = format!("LongIdleTcpConnection|{a}-{b}");
+        if !self.may_emit_dpi(&key, is_offline) {
+            return;
+        }
+        self.push(
+            ActiveSignal {
+                id: format!("idle-{}-{}", a, now.seconds),
+                kind: "LongIdleTcpConnection".to_string(),
+                mode: mode.to_string(),
+                status: initial_status(is_offline).to_string(),
+                severity: "info".to_string(),
+                subject: format!("{a} ↔ {b}"),
+                summary: "Long-lived idle TCP connection".to_string(),
+                detail: format!(
+                    "Established age={age}s silence={silence}s total_bytes={} payload_bytes={} (min_age={}s silence≥{}s max_bytes={})",
+                    tcp.stats.bytes,
+                    tcp.stats.payload_bytes,
+                    self.policy.dpi_idle_min_age_secs,
+                    self.policy.dpi_idle_silence_secs,
+                    self.policy.dpi_idle_max_bytes
+                ),
+                first_seen: tcp.stats.first_seen,
+                last_seen: tcp.stats.last_seen,
+                update_count: 1,
+                confidence: 0.75,
+                dedupe_key: key,
+                pivot_kind: "host".to_string(),
+                pivot_value: tcp.key.endpoint_b.ip.to_string(),
+            },
+            is_offline,
+        );
+    }
+
+    fn evaluate_p2p_or_proxy_connection(
+        &mut self,
+        conn: &ConnectionSummary,
+        mode: &str,
+        is_offline: bool,
+        now: PacketTimestamp,
+    ) {
+        let dport = conn.key.destination_port.unwrap_or(0);
+        let sport = conn.key.source_port.unwrap_or(0);
+        let sni = conn.counters.sni.clone().unwrap_or_default();
+        // Service name is not on FlowCounters; use SNI / ports only here.
+        let port_hit = p2p_proxy_rules::is_proxy_port(dport)
+            || p2p_proxy_rules::is_proxy_port(sport)
+            || p2p_proxy_rules::is_p2p_port(dport)
+            || p2p_proxy_rules::is_p2p_port(sport);
+        let sni_hit = !sni.is_empty() && p2p_proxy_rules::sni_looks_like_proxy_infra(&sni);
+        if !port_hit && !sni_hit {
+            return;
+        }
+        if self.is_p2p_allowed(&format!("port:{dport}"))
+            || self.is_p2p_allowed(&format!("port:{sport}"))
+            || (!sni.is_empty() && self.is_p2p_allowed(&format!("sni:{sni}")))
+        {
+            return;
+        }
+        let peer = conn.key.destination_ip.to_string();
+        let key = format!("UnauthorizedP2pOrProxy|port|{dport}|{peer}");
+        if !self.may_emit_dpi(&key, is_offline) {
+            return;
+        }
+        let confidence = if port_hit && sni_hit {
+            0.9
+        } else if port_hit {
+            0.55
+        } else {
+            0.6
+        };
+        self.push(
+            ActiveSignal {
+                id: format!("p2p-{}-{}-{}", dport, peer, now.seconds),
+                kind: "UnauthorizedP2pOrProxy".to_string(),
+                mode: mode.to_string(),
+                status: initial_status(is_offline).to_string(),
+                severity: "warning".to_string(),
+                subject: peer.clone(),
+                summary: "Unauthorized P2P or proxy traffic".to_string(),
+                detail: format!(
+                    "Heuristic match sport={sport} dport={dport} sni={sni} peer={peer} bytes={}",
+                    conn.counters.bytes
+                ),
+                first_seen: conn.counters.first_seen,
+                last_seen: conn.counters.last_seen,
+                update_count: 1,
+                confidence,
+                dedupe_key: key,
+                pivot_kind: if sni.is_empty() {
+                    "host".to_string()
+                } else {
+                    "sni".to_string()
+                },
+                pivot_value: if sni.is_empty() { peer } else { sni },
+            },
+            is_offline,
+        );
+    }
+
+    fn is_p2p_allowed(&self, token: &str) -> bool {
+        self.policy
+            .dpi_p2p_allow
+            .iter()
+            .any(|p| text_matches(token, p) || text_matches(token, &format!("process:{p}")))
+    }
+
     fn may_emit_threshold(&self, is_offline: bool) -> bool {
         if is_offline {
             // Stable offline finding: emit once per capture session.
@@ -412,6 +670,19 @@ impl SignalEngine {
         }
         if let Some(prev) = self.last_emit.get(key)
             && prev.elapsed() < ENTITY_SIGNAL_COOLDOWN
+        {
+            return false;
+        }
+        self.last_emit.insert(key.to_string(), Instant::now());
+        true
+    }
+
+    fn may_emit_dpi(&mut self, key: &str, is_offline: bool) -> bool {
+        if is_offline {
+            return true;
+        }
+        if let Some(prev) = self.last_emit.get(key)
+            && prev.elapsed() < DPI_SIGNAL_COOLDOWN
         {
             return false;
         }
@@ -492,6 +763,7 @@ pub fn evaluate_cli_findings(
         watched_processes: watched.processes,
         known_bad_services: bad.services,
         known_bad_processes: bad.processes,
+        ..SignalPolicy::default()
     };
 
     let mut engine = SignalEngine::default();
@@ -702,6 +974,7 @@ mod tests {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            ..SignalPolicy::default()
         });
         let mut snap = empty_snapshot();
         snap.top_services.push(ServiceSummary {
@@ -737,6 +1010,7 @@ mod tests {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            ..SignalPolicy::default()
         });
         let mut snap = empty_snapshot();
         snap.top_hosts.push(HostSummary {
@@ -771,6 +1045,7 @@ mod tests {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            ..SignalPolicy::default()
         });
         let mut snap = empty_snapshot();
         snap.mode = ProjectionMode::Offline;
@@ -817,6 +1092,7 @@ mod tests {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            ..SignalPolicy::default()
         });
         let mut snap = empty_snapshot();
         snap.top_hosts.push(HostSummary {
@@ -852,6 +1128,7 @@ mod tests {
             watched_processes: Vec::new(),
             known_bad_services: Vec::new(),
             known_bad_processes: Vec::new(),
+            ..SignalPolicy::default()
         });
         let mut snap = empty_snapshot();
         snap.totals.bytes = 10;

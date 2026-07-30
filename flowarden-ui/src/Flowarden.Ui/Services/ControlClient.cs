@@ -162,6 +162,56 @@ public sealed class ControlClient
         );
     }
 
+    public async Task<ControlActionResult> SetSyslogConfigAsync(
+        bool enabled,
+        string target,
+        string proto,
+        bool emitSignals,
+        bool emitFlows,
+        ulong flowMinBytes,
+        ulong flowDeltaBytes,
+        ulong flowIntervalSecs,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await ExecuteAsync(
+            async () =>
+                await _client.SetSyslogConfigAsync(
+                    new SetSyslogConfigRequest
+                    {
+                        Enabled = enabled,
+                        Target = target ?? string.Empty,
+                        Proto = string.IsNullOrWhiteSpace(proto) ? "udp" : proto,
+                        Facility = "local0",
+                        Tag = "flowarden",
+                        EmitSignals = emitSignals,
+                        EmitFlows = emitFlows,
+                        FlowMinBytes = flowMinBytes,
+                        FlowDeltaBytes = flowDeltaBytes,
+                        FlowIntervalSecs = flowIntervalSecs,
+                    },
+                    cancellationToken: cancellationToken
+                )
+        );
+    }
+
+    public async Task<SyslogConfigResponse?> GetSyslogConfigAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            return await _client.GetSyslogConfigAsync(
+                new GetSyslogConfigRequest(),
+                cancellationToken: cancellationToken
+            );
+        }
+        catch (RpcException)
+        {
+            return null;
+        }
+    }
+
     private static ControlActionResult MapResponse(ControlResponse response)
     {
         return new ControlActionResult

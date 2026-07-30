@@ -2,10 +2,11 @@
 
 [![CI](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml/badge.svg)](https://github.com/jdtec-ex/flowarden-ex/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-Public_Beta-yellow.svg)](#)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](flowarden/)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4.svg)](flowarden-ui/)
 
-**Desktop network traffic monitor** for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, and policy-driven signals.
+**Public Beta.** Desktop network traffic monitor for live capture and pcap replay — ranked hosts, services, and connections, destination geography, process attribution, TLS SNI, behavior signals, and **RFC5424 syslog** export (signals + Inspect flows).
 
 Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over local gRPC, plus a **CLI** that shares the same projection contract. Inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet); not a fork.
 
@@ -36,6 +37,8 @@ Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over
 - Optional capture-time BPF (applied at session start)
 - Shared pipeline for live and offline: decode, direction, service labels, per-second aggregation
 - ARP, TCP/UDP/ICMP, TLS ClientHello **SNI**, local process name/PID (async, non-blocking)
+- **Behavior / light-DPI detectors** (Signals): data threshold, watched/known-bad entities, unidirectional large transfer (possible exfil), long-idle TCP, unauthorized P2P/proxy heuristics
+- **Syslog export** (RFC5424): signals and **Inspect flow** summaries; CLI/`core` args or Settings UI (`Get`/`SetSyslogConfig`)
 - Resident mode with bounded memory for long-running sessions
 - Optional raw pcap write-out during capture
 
@@ -179,10 +182,11 @@ It is **not a fork or re-skin**. Sniffnet is a polished single-process Rust desk
 | CLI | Limited | First-class JSON/table capture output |
 | Long runs | Solid defaults | Explicit resident bounds + tick window |
 | Enrichment | Country, ASN, process, map | Country, process, **TLS SNI**, map markers; **ASN hidden in UI** (product choice) |
-| Alerts | Notifications / webhooks | Signals page + policy (threshold, watch, known-bad) |
-| Deep protocol / DPI | Out of scope for the reference product | **Planned expansion** on the core analysis path (beyond SNI) |
+| Alerts | Notifications / webhooks | Signals + policy + **behavior detectors** (exfil / idle TCP / P2P-proxy) |
+| Syslog | — | **RFC5424** signal + Inspect-flow export (CLI + Settings) |
+| Deep protocol / DPI | Out of scope for the reference product | Light DPI + heuristics now; **deeper protocol DPI planned** |
 
-**Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, or SNI/process-driven analysis on a projection pipeline — with a path toward richer DPI.
+**Use Flowarden** when you want core/UI separation, scriptable capture output, Inspect-oriented filtering and pivots, SNI/process context, syslog integration, or an extensible DPI path.
 
 Credit to GyulyVGC and the Sniffnet community for the reference product and for proving this class of desktop monitor works well in practice.
 
@@ -190,7 +194,7 @@ Credit to GyulyVGC and the Sniffnet community for the reference product and for 
 
 ## Roadmap
 
-- **DPI expansion** — grow light DPI (TLS SNI today) into broader application-layer parsing and projection fields, still without turning Flowarden into a full IDS.
+- **Deeper DPI** — beyond SNI + behavioral heuristics: richer application-layer parsing and projection fields, without becoming a full IDS.
 - Deeper session/forensics views and continued UX polish remain secondary to a stable core + UI contract.
 
 ---

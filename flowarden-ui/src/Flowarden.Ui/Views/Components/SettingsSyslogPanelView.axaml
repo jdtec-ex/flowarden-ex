@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Flowarden.Ui.ViewModels"
+             x:Class="Flowarden.Ui.Views.Components.SettingsSyslogPanelView"
+             x:DataType="vm:SettingsPageViewModel">
+  <Border Classes="tfc-panel" Padding="14,12">
+    <StackPanel Spacing="8">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBlock Classes="section-title" Text="Syslog Export" VerticalAlignment="Center" />
+        <Button Grid.Column="1"
+                Classes="mode-button"
+                Height="28"
+                Padding="12,0"
+                Content="Apply"
+                Command="{Binding ApplySyslogCommand}" />
+      </Grid>
+      <TextBlock Classes="muted-text"
+                 FontSize="11"
+                 Text="RFC5424 export of Signals and Inspect flows (connection summaries). Rust core sends; Apply pushes live config."
+                 TextWrapping="Wrap" />
+      <CheckBox Content="Enable syslog"
+                FontSize="12"
+                IsChecked="{Binding SyslogEnabled, Mode=TwoWay}" />
+      <StackPanel Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="TARGET (HOST:PORT)" />
+        <TextBox Height="28"
+                 Watermark="127.0.0.1:514"
+                 Text="{Binding SyslogTarget, Mode=TwoWay}" />
+      </StackPanel>
+      <StackPanel Spacing="4">
+        <TextBlock Classes="tfc-label" FontSize="11" Text="PROTOCOL" />
+        <TextBox Height="28"
+                 Watermark="udp or tcp"
+                 Text="{Binding SyslogProto, Mode=TwoWay}" />
+      </StackPanel>
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+        <CheckBox Content="Emit signals"
+                  FontSize="12"
+                  IsChecked="{Binding SyslogEmitSignals, Mode=TwoWay}" />
+        <CheckBox Grid.Column="1"
+                  Content="Emit Inspect flows"
+                  FontSize="12"
+                  IsChecked="{Binding SyslogEmitFlows, Mode=TwoWay}" />
+      </Grid>
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="tfc-label" FontSize="10" Text="FLOW MIN BYTES" />
+          <TextBox Height="28" Text="{Binding SyslogFlowMinBytesInput, Mode=TwoWay}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="2">
+          <TextBlock Classes="tfc-label" FontSize="10" Text="FLOW DELTA" />
+          <TextBox Height="28" Text="{Binding SyslogFlowDeltaBytesInput, Mode=TwoWay}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Spacing="2">
+          <TextBlock Classes="tfc-label" FontSize="10" Text="INTERVAL SEC" />
+          <TextBox Height="28" Text="{Binding SyslogFlowIntervalSecsInput, Mode=TwoWay}" />
+        </StackPanel>
+      </Grid>
+      <TextBlock Classes="muted-text"
+                 FontSize="11"
+                 Text="{Binding SyslogStatus}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</UserControl>

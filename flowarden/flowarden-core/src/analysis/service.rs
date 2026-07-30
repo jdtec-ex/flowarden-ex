@@ -164,6 +164,7 @@ mod tests {
             transport_protocol,
             tcp_flags: None,
             packet_len: 60,
+            payload_len: 0,
             sni: None,
             arp_operation: None,
         }
@@ -261,6 +262,7 @@ mod tests {
             transport_protocol: TransportProtocol::Arp,
             tcp_flags: None,
             packet_len: 42,
+            payload_len: 0,
             sni: None,
             arp_operation: Some(1),
         };
@@ -281,6 +283,7 @@ mod tests {
             transport_protocol: TransportProtocol::Tcp,
             tcp_flags: Some(0x18),
             packet_len: 80,
+            payload_len: 0,
             sni: None,
             arp_operation: None,
         };

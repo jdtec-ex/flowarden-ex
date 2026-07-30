@@ -110,6 +110,7 @@ mod tests {
             transport_protocol: TransportProtocol::Tcp,
             tcp_flags: Some(0x10),
             packet_len: 60,
+            payload_len: 0,
             sni: None,
             arp_operation: None,
         }

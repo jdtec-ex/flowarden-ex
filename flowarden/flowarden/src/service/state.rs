@@ -29,6 +29,7 @@ use super::{
     },
     rdns_lookup::RdnsLookup,
     signals::SignalEngine,
+    syslog_export::SyslogExporter,
 };
 use crate::geo::GeoCountryResolver;
 
@@ -41,6 +42,7 @@ pub(crate) struct ServiceState {
     pub(crate) process_lookup: Arc<ProcessLookup>,
     pub(crate) rdns_lookup: Arc<RdnsLookup>,
     pub(crate) signals: Arc<Mutex<SignalEngine>>,
+    pub(crate) syslog: Arc<Mutex<SyslogExporter>>,
     pub(crate) shutdown_tx: watch::Sender<bool>,
     pub(crate) overview_tx: watch::Sender<OverviewRuntimeSnapshot>,
 }

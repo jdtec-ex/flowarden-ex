@@ -12,11 +12,13 @@ use tonic::{Request, Response, Status};
 use super::{
     constants::PROJECTION_TICK_WINDOW,
     proto::control::{
-        ApplyFilterRequest, ControlResponse, PauseCaptureRequest, ResumeCaptureRequest,
-        SetSignalPolicyRequest, SetSourceRequest, ShutdownCoreRequest, StartCaptureRequest,
-        StopCaptureRequest, control_service_server::ControlService,
+        ApplyFilterRequest, ControlResponse, GetSyslogConfigRequest, PauseCaptureRequest,
+        ResumeCaptureRequest, SetSignalPolicyRequest, SetSourceRequest, SetSyslogConfigRequest,
+        ShutdownCoreRequest, StartCaptureRequest, StopCaptureRequest, SyslogConfigResponse,
+        control_service_server::ControlService,
     },
     signals::SignalPolicy,
+    syslog_export::{SyslogConfig, SyslogProto},
     state::{
         CaptureStatus, RuntimeOverviewObserver, SelectedCaptureSource, ServiceState,
         empty_overview_snapshot_for_meta, local_ips_from_source, overview_error_snapshot,
@@ -367,6 +369,7 @@ impl ControlService for ControlServiceImpl {
                 .filter(|s| !s.is_empty()),
         );
 
+        let defaults = SignalPolicy::default();
         let policy = SignalPolicy {
             data_threshold_bytes: req.data_threshold_bytes,
             watched_hosts: watched.hosts,
@@ -375,6 +378,39 @@ impl ControlService for ControlServiceImpl {
             watched_processes: watched.processes,
             known_bad_services: bad.services,
             known_bad_processes: bad.processes,
+            dpi_exfil_enabled: if req.dpi_exfil_min_bytes > 0 || req.dpi_exfil_enabled {
+                req.dpi_exfil_enabled || defaults.dpi_exfil_enabled
+            } else {
+                defaults.dpi_exfil_enabled
+            },
+            dpi_exfil_min_bytes: if req.dpi_exfil_min_bytes > 0 {
+                req.dpi_exfil_min_bytes
+            } else {
+                defaults.dpi_exfil_min_bytes
+            },
+            dpi_exfil_ratio: if req.dpi_exfil_ratio > 0.0 {
+                req.dpi_exfil_ratio
+            } else {
+                defaults.dpi_exfil_ratio
+            },
+            dpi_idle_enabled: req.dpi_idle_enabled || defaults.dpi_idle_enabled,
+            dpi_idle_min_age_secs: if req.dpi_idle_min_age_secs > 0 {
+                req.dpi_idle_min_age_secs
+            } else {
+                defaults.dpi_idle_min_age_secs
+            },
+            dpi_idle_silence_secs: if req.dpi_idle_silence_secs > 0 {
+                req.dpi_idle_silence_secs
+            } else {
+                defaults.dpi_idle_silence_secs
+            },
+            dpi_idle_max_bytes: if req.dpi_idle_max_bytes > 0 {
+                req.dpi_idle_max_bytes
+            } else {
+                defaults.dpi_idle_max_bytes
+            },
+            dpi_p2p_enabled: req.dpi_p2p_enabled || defaults.dpi_p2p_enabled,
+            dpi_p2p_allow: req.dpi_p2p_allow,
         };
         let threshold = policy.data_threshold_bytes;
         let w_host = policy.watched_hosts.len();
@@ -392,6 +428,104 @@ impl ControlService for ControlServiceImpl {
             message: format!(
                 "Signal policy applied (threshold={threshold}, hosts={w_host}, services={w_svc}, processes={w_proc})"
             ),
+        }))
+    }
+
+    async fn get_syslog_config(
+        &self,
+        _request: Request<GetSyslogConfigRequest>,
+    ) -> std::result::Result<Response<SyslogConfigResponse>, Status> {
+        let syslog = self
+            .state
+            .syslog
+            .lock()
+            .map_err(|_| Status::internal("Failed to lock syslog exporter"))?;
+        let cfg = syslog.snapshot_config();
+        Ok(Response::new(SyslogConfigResponse {
+            enabled: cfg.enabled,
+            target: cfg
+                .target
+                .map(|a| a.to_string())
+                .unwrap_or_default(),
+            proto: cfg.proto.as_str().to_string(),
+            facility: "local0".into(),
+            tag: cfg.tag,
+            emit_signals: cfg.emit_signals,
+            emit_flows: cfg.emit_flows,
+            flow_min_bytes: cfg.flow_min_bytes,
+            flow_delta_bytes: cfg.flow_delta_bytes,
+            flow_interval_secs: cfg.flow_interval_secs,
+            dropped_messages: syslog.dropped(),
+            last_error: syslog.last_error(),
+        }))
+    }
+
+    async fn set_syslog_config(
+        &self,
+        request: Request<SetSyslogConfigRequest>,
+    ) -> std::result::Result<Response<ControlResponse>, Status> {
+        let req = request.into_inner();
+        let target = req.target.trim();
+        let (target_addr, enabled) = if req.enabled && !target.is_empty() {
+            let addr = target
+                .parse()
+                .map_err(|_| Status::invalid_argument("syslog target must be HOST:PORT"))?;
+            (Some(addr), true)
+        } else {
+            (None, false)
+        };
+        let cfg = SyslogConfig {
+            enabled,
+            target: target_addr,
+            proto: SyslogProto::parse(&req.proto),
+            facility: 16,
+            tag: if req.tag.trim().is_empty() {
+                "flowarden".into()
+            } else {
+                req.tag.trim().to_string()
+            },
+            emit_signals: req.emit_signals,
+            emit_flows: req.emit_flows,
+            flow_min_bytes: if req.flow_min_bytes > 0 {
+                req.flow_min_bytes
+            } else {
+                10_000
+            },
+            flow_delta_bytes: if req.flow_delta_bytes > 0 {
+                req.flow_delta_bytes
+            } else {
+                1_000_000
+            },
+            flow_interval_secs: if req.flow_interval_secs > 0 {
+                req.flow_interval_secs
+            } else {
+                60
+            },
+        };
+
+        let mut syslog = self
+            .state
+            .syslog
+            .lock()
+            .map_err(|_| Status::internal("Failed to lock syslog exporter"))?;
+        syslog.reconfigure(cfg.clone());
+        if cfg.enabled {
+            syslog.ensure_worker();
+        }
+
+        Ok(Response::new(ControlResponse {
+            accepted: true,
+            message: if cfg.enabled {
+                format!(
+                    "Syslog enabled → {} ({})",
+                    cfg.target
+                        .map(|a| a.to_string())
+                        .unwrap_or_default(),
+                    cfg.proto.as_str()
+                )
+            } else {
+                "Syslog disabled".into()
+            },
         }))
     }
 

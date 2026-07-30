@@ -90,7 +90,7 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
         _isDesignTime = isDesignTime;
         CoreEndpoint = bindAddress;
         CoreEndpointSource = bindAddressSource;
-        UiVersion = "0.1.0-phase2";
+        UiVersion = "0.1.0-beta";
         TickInterval = "1s";
         TopNInput = _projectionSettings.TopN.ToString();
         TopNStatus = $"Applied Top N: {_projectionSettings.TopN}";
@@ -113,6 +113,19 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
             "compact",
             StringComparison.OrdinalIgnoreCase
         );
+        SyslogEnabled = preferences.SyslogEnabled;
+        SyslogTarget = preferences.SyslogTarget ?? string.Empty;
+        SyslogProto = string.IsNullOrWhiteSpace(preferences.SyslogProto)
+            ? "udp"
+            : preferences.SyslogProto;
+        SyslogEmitSignals = preferences.SyslogEmitSignals;
+        SyslogEmitFlows = preferences.SyslogEmitFlows;
+        SyslogFlowMinBytesInput = preferences.SyslogFlowMinBytes.ToString();
+        SyslogFlowDeltaBytesInput = preferences.SyslogFlowDeltaBytes.ToString();
+        SyslogFlowIntervalSecsInput = preferences.SyslogFlowIntervalSecs.ToString();
+        SyslogStatus = preferences.SyslogEnabled
+            ? $"Local prefs: enabled → {preferences.SyslogTarget}"
+            : "Syslog disabled in local preferences.";
         _suppressPreferenceSave = false;
     }
 
@@ -171,6 +184,33 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
     private bool isCompactDensity;
 
     public string DensityModeLabel => IsCompactDensity ? "compact" : "comfortable";
+
+    [ObservableProperty]
+    private bool syslogEnabled;
+
+    [ObservableProperty]
+    private string syslogTarget = string.Empty;
+
+    [ObservableProperty]
+    private string syslogProto = "udp";
+
+    [ObservableProperty]
+    private bool syslogEmitSignals = true;
+
+    [ObservableProperty]
+    private bool syslogEmitFlows = true;
+
+    [ObservableProperty]
+    private string syslogFlowMinBytesInput = "10000";
+
+    [ObservableProperty]
+    private string syslogFlowDeltaBytesInput = "1000000";
+
+    [ObservableProperty]
+    private string syslogFlowIntervalSecsInput = "60";
+
+    [ObservableProperty]
+    private string syslogStatus = "Configure target and Apply to push to core.";
 
     [ObservableProperty]
     private bool isSavingPreferences;
@@ -244,6 +284,20 @@ public sealed partial class SettingsPageViewModel : ViewModelBase
             : $"Applied Top N: {normalized} (clamped to 1–100)";
         OnPropertyChanged(nameof(TopN));
         ListsStatus = await PersistPreferencesAsync();
+    }
+
+    [RelayCommand]
+    private async Task ApplySyslog()
+    {
+        ListsStatus = await PersistPreferencesAsync();
+        if (ReconnectCoreHandler is null)
+        {
+            // Prefer shell-provided control path via SavePreferences; AppShell must call SetSyslog.
+        }
+
+        SyslogStatus = ListsStatus.Contains("failed", StringComparison.OrdinalIgnoreCase)
+            ? ListsStatus
+            : $"Syslog prefs saved · enabled={SyslogEnabled} target={SyslogTarget} ({SyslogProto})";
     }
 
     [RelayCommand]

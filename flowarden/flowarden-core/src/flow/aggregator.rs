@@ -754,6 +754,7 @@ mod tests {
                 transport_protocol: spec.transport.clone(),
                 tcp_flags: None,
                 packet_len: spec.packet_len,
+                payload_len: 0,
                 sni: None,
                 arp_operation: None,
             },

@@ -50,6 +50,7 @@ impl ProjectionService for ProjectionServiceImpl {
             Some(self.state.process_lookup.as_ref()),
             Some(self.state.rdns_lookup.as_ref()),
             Some(self.state.signals.as_ref()),
+            Some(self.state.syslog.as_ref()),
             top_n,
         )
         .map(Response::new)
@@ -69,6 +70,7 @@ impl ProjectionService for ProjectionServiceImpl {
             Some(self.state.process_lookup.as_ref()),
             Some(self.state.rdns_lookup.as_ref()),
             Some(self.state.signals.as_ref()),
+            Some(self.state.syslog.as_ref()),
             top_n,
         )
         .map_err(|err| Status::internal(err.to_string()))?;
@@ -78,6 +80,7 @@ impl ProjectionService for ProjectionServiceImpl {
             let process_lookup = Arc::clone(&self.state.process_lookup);
             let rdns_lookup = Arc::clone(&self.state.rdns_lookup);
             let signals = Arc::clone(&self.state.signals);
+            let syslog = Arc::clone(&self.state.syslog);
             move |snapshot| {
                 projection_response_from_runtime_snapshot(
                     snapshot,
@@ -85,6 +88,7 @@ impl ProjectionService for ProjectionServiceImpl {
                     Some(process_lookup.as_ref()),
                     Some(rdns_lookup.as_ref()),
                     Some(signals.as_ref()),
+                    Some(syslog.as_ref()),
                     top_n,
                 )
                 .map_err(|err| Status::internal(err.to_string()))

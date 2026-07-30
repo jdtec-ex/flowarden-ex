@@ -59,6 +59,8 @@ pub struct DecodedPacket {
     pub transport_protocol: TransportProtocol,
     pub tcp_flags: Option<u8>,
     pub packet_len: u32,
+    /// Transport payload bytes available in the captured frame (0 if header-only).
+    pub payload_len: u32,
     /// TLS ClientHello SNI when extracted from this packet's TCP payload.
     pub sni: Option<String>,
     /// ARP operation code when `transport_protocol == Arp` (1=request, 2=reply).

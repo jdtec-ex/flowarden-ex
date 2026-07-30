@@ -10,6 +10,8 @@ service ControlService {
   rpc SetSource(SetSourceRequest) returns (ControlResponse);
   rpc ApplyFilter(ApplyFilterRequest) returns (ControlResponse);
   rpc SetSignalPolicy(SetSignalPolicyRequest) returns (ControlResponse);
+  rpc GetSyslogConfig(GetSyslogConfigRequest) returns (SyslogConfigResponse);
+  rpc SetSyslogConfig(SetSyslogConfigRequest) returns (ControlResponse);
   rpc ShutdownCore(ShutdownCoreRequest) returns (ControlResponse);
 }
 
@@ -51,6 +53,46 @@ message SetSignalPolicyRequest {
   repeated string watched_processes = 5;
   repeated string known_bad_services = 6;
   repeated string known_bad_processes = 7;
+  // DPI / behavior detectors (optional; defaults applied server-side when unset semantics via false=use defaults is not available in proto3 — always send explicit values from UI).
+  bool dpi_exfil_enabled = 10;
+  uint64 dpi_exfil_min_bytes = 11;
+  double dpi_exfil_ratio = 12;
+  bool dpi_idle_enabled = 13;
+  uint64 dpi_idle_min_age_secs = 14;
+  uint64 dpi_idle_silence_secs = 15;
+  uint64 dpi_idle_max_bytes = 16;
+  bool dpi_p2p_enabled = 17;
+  repeated string dpi_p2p_allow = 18;
+}
+
+message GetSyslogConfigRequest {}
+
+message SetSyslogConfigRequest {
+  bool enabled = 1;
+  string target = 2;
+  string proto = 3;
+  string facility = 4;
+  string tag = 5;
+  bool emit_signals = 6;
+  bool emit_flows = 7;
+  uint64 flow_min_bytes = 8;
+  uint64 flow_delta_bytes = 9;
+  uint64 flow_interval_secs = 10;
+}
+
+message SyslogConfigResponse {
+  bool enabled = 1;
+  string target = 2;
+  string proto = 3;
+  string facility = 4;
+  string tag = 5;
+  bool emit_signals = 6;
+  bool emit_flows = 7;
+  uint64 flow_min_bytes = 8;
+  uint64 flow_delta_bytes = 9;
+  uint64 flow_interval_secs = 10;
+  uint64 dropped_messages = 11;
+  string last_error = 12;
 }
 
 message ShutdownCoreRequest {}

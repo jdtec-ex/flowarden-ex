@@ -81,10 +81,14 @@ pub struct TcpConnectionStats {
     pub rst_count: u64,
     pub packets: u64,
     pub bytes: u64,
+    /// Bytes attributed to transport payload (payload_len > 0).
+    pub payload_bytes: u64,
     pub state: TcpConnectionState,
     pub initiator: Option<EndpointId>,
     pub first_seen: PacketTimestamp,
     pub last_seen: PacketTimestamp,
+    /// Last time a packet with non-empty transport payload was observed.
+    pub last_payload_seen: Option<PacketTimestamp>,
 }
 
 impl TcpConnectionStats {
@@ -95,10 +99,12 @@ impl TcpConnectionStats {
             rst_count: 0,
             packets: 0,
             bytes: 0,
+            payload_bytes: 0,
             state: TcpConnectionState::Established,
             initiator: None,
             first_seen: timestamp,
             last_seen: timestamp,
+            last_payload_seen: None,
         }
     }
 
@@ -108,10 +114,15 @@ impl TcpConnectionStats {
         timestamp: PacketTimestamp,
         flags: u8,
         packet_len: u32,
+        payload_len: u32,
     ) {
         self.last_seen = timestamp;
         self.packets += 1;
         self.bytes += u64::from(packet_len);
+        if payload_len > 0 {
+            self.payload_bytes += u64::from(payload_len);
+            self.last_payload_seen = Some(timestamp);
+        }
 
         let has_syn = flags & TCP_FLAG_SYN != 0;
         let has_ack = flags & TCP_FLAG_ACK != 0;
@@ -182,16 +193,17 @@ pub fn update_tcp_tracker(
     );
     let source = EndpointId::new(packet.decoded.source_ip, source_port);
     let packet_len = packet.decoded.packet_len;
+    let payload_len = packet.decoded.payload_len;
 
     crate::flow::upsert_by_bytes(
         tracker,
         key,
         cap,
         |stats| stats.bytes,
-        |stats| stats.observe_packet(source, timestamp, flags, packet_len),
+        |stats| stats.observe_packet(source, timestamp, flags, packet_len, payload_len),
         || {
             let mut stats = TcpConnectionStats::new(timestamp);
-            stats.observe_packet(source, timestamp, flags, packet_len);
+            stats.observe_packet(source, timestamp, flags, packet_len, payload_len);
             stats
         },
     );
@@ -230,41 +242,55 @@ mod tests {
         let mut stats = TcpConnectionStats::new(PacketTimestamp::tick(1));
         let initiator = endpoint([10, 0, 0, 1], 50000);
 
-        stats.observe_packet(initiator, PacketTimestamp::tick(1), TCP_FLAG_SYN, 60);
+        stats.observe_packet(initiator, PacketTimestamp::tick(1), TCP_FLAG_SYN, 60, 0);
         assert_eq!(stats.syn_count, 1);
         assert_eq!(stats.packets, 1);
         assert_eq!(stats.bytes, 60);
         assert_eq!(stats.state, TcpConnectionState::Init);
         assert_eq!(stats.initiator, Some(initiator));
+        assert!(stats.last_payload_seen.is_none());
 
         stats.observe_packet(
             endpoint([1, 1, 1, 1], 443),
             PacketTimestamp::tick(2),
             TCP_FLAG_SYN | TCP_FLAG_ACK,
             60,
+            0,
         );
         assert_eq!(stats.syn_count, 2);
         assert_eq!(stats.packets, 2);
         assert_eq!(stats.bytes, 120);
         assert_eq!(stats.state, TcpConnectionState::SynAck);
 
-        stats.observe_packet(initiator, PacketTimestamp::tick(3), TCP_FLAG_ACK, 52);
+        stats.observe_packet(initiator, PacketTimestamp::tick(3), TCP_FLAG_ACK, 52, 0);
         assert_eq!(stats.state, TcpConnectionState::Established);
 
         stats.observe_packet(
             initiator,
             PacketTimestamp::tick(4),
+            TCP_FLAG_ACK,
+            200,
+            148,
+        );
+        assert_eq!(stats.payload_bytes, 148);
+        assert_eq!(stats.last_payload_seen.map(|t| t.seconds), Some(4));
+
+        stats.observe_packet(
+            initiator,
+            PacketTimestamp::tick(5),
             TCP_FLAG_FIN | TCP_FLAG_ACK,
             52,
+            0,
         );
         assert_eq!(stats.fin_count, 1);
         assert_eq!(stats.state, TcpConnectionState::Fin);
 
         stats.observe_packet(
             endpoint([1, 1, 1, 1], 443),
-            PacketTimestamp::tick(5),
+            PacketTimestamp::tick(6),
             TCP_FLAG_RST | TCP_FLAG_ACK,
             52,
+            0,
         );
         assert_eq!(stats.rst_count, 1);
         assert_eq!(stats.state, TcpConnectionState::Rst);
@@ -278,9 +304,12 @@ mod tests {
             PacketTimestamp::tick(10),
             TCP_FLAG_ACK,
             128,
+            76,
         );
         assert_eq!(stats.state, TcpConnectionState::Established);
         assert_eq!(stats.packets, 1);
         assert_eq!(stats.bytes, 128);
+        assert_eq!(stats.payload_bytes, 76);
+        assert!(stats.last_payload_seen.is_some());
     }
 }

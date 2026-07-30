@@ -32,8 +32,11 @@
                 Height="24"
                 Padding="0"
                 Command="{Binding ToggleThumbnailCommand}"
-                ToolTip.Tip="Thumbnail mode (compact always-on-top)">
-          <TextBlock FontSize="11" Text="▣" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                ToolTip.Tip="Thumbnail monitor (always on top)">
+          <PathIcon Width="14"
+                    Height="14"
+                    Data="{StaticResource IconThumbnail}"
+                    Foreground="{StaticResource TfcPrimaryBrush}" />
         </Button>
       </StackPanel>
 

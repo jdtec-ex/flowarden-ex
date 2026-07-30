@@ -6,12 +6,14 @@ mod control;
 mod convert;
 mod discovery;
 mod health;
+mod p2p_proxy_rules;
 mod process_lookup;
 mod projection;
 pub mod proto;
 mod rdns_lookup;
 mod signals;
 mod state;
+mod syslog_export;
 mod timeline;
 
 pub use signals::{CliFinding, evaluate_cli_findings};
@@ -92,6 +94,9 @@ pub async fn run_core_service(options: CoreServiceOptions) -> Result<()> {
         process_lookup: Arc::new(ProcessLookup::spawn(Some(Arc::clone(&enrichment_refresh)))),
         rdns_lookup: Arc::new(RdnsLookup::spawn(Some(enrichment_refresh))),
         signals: Arc::new(Mutex::new(SignalEngine::default())),
+        syslog: Arc::new(Mutex::new(syslog_export::SyslogExporter::start(
+            syslog_export::SyslogConfig::from_env(),
+        ))),
         shutdown_tx,
         overview_tx,
     };

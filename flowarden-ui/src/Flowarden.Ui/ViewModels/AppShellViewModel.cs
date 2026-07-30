@@ -183,7 +183,7 @@ public sealed partial class AppShellViewModel : ViewModelBase
 
     public string Title { get; } = "Flowarden";
 
-    public string Subtitle { get; } = "Traffic Flow Warden";
+    public string Subtitle { get; } = "Traffic Flow Warden · Public Beta";
 
     public IReadOnlyList<AppNavigationItemViewModel> NavigationItems { get; }
 
@@ -456,6 +456,27 @@ public sealed partial class AppShellViewModel : ViewModelBase
         _preferences.SignalSoundEnabled = SettingsPage.SignalSoundEnabled;
         _preferences.UiDensity = SettingsPage.IsCompactDensity ? "compact" : "comfortable";
         IsCompactDensity = SettingsPage.IsCompactDensity;
+        _preferences.SyslogEnabled = SettingsPage.SyslogEnabled;
+        _preferences.SyslogTarget = SettingsPage.SyslogTarget?.Trim() ?? string.Empty;
+        _preferences.SyslogProto = string.IsNullOrWhiteSpace(SettingsPage.SyslogProto)
+            ? "udp"
+            : SettingsPage.SyslogProto.Trim();
+        _preferences.SyslogEmitSignals = SettingsPage.SyslogEmitSignals;
+        _preferences.SyslogEmitFlows = SettingsPage.SyslogEmitFlows;
+        if (ulong.TryParse(SettingsPage.SyslogFlowMinBytesInput?.Trim(), out var minB))
+        {
+            _preferences.SyslogFlowMinBytes = minB;
+        }
+
+        if (ulong.TryParse(SettingsPage.SyslogFlowDeltaBytesInput?.Trim(), out var deltaB))
+        {
+            _preferences.SyslogFlowDeltaBytes = deltaB;
+        }
+
+        if (ulong.TryParse(SettingsPage.SyslogFlowIntervalSecsInput?.Trim(), out var intervalS))
+        {
+            _preferences.SyslogFlowIntervalSecs = intervalS;
+        }
 
         try
         {
@@ -467,10 +488,38 @@ public sealed partial class AppShellViewModel : ViewModelBase
         }
 
         var policyResult = await PushSignalPolicyToCoreAsync();
+        var syslogResult = await PushSyslogConfigToCoreAsync();
         var watched = _preferences.WatchedHosts.Count;
         var bad = _preferences.KnownBadHosts.Count;
         return
-            $"Saved · threshold={_preferences.DataThresholdBytes:N0} · watched={watched} · known-bad={bad} · topN={_preferences.TopN} · core: {policyResult}";
+            $"Saved · threshold={_preferences.DataThresholdBytes:N0} · watched={watched} · known-bad={bad} · topN={_preferences.TopN} · policy: {policyResult} · syslog: {syslogResult}";
+    }
+
+    private async Task<string> PushSyslogConfigToCoreAsync()
+    {
+        if (_controlClient is null)
+        {
+            return "no control client";
+        }
+
+        try
+        {
+            var result = await _controlClient.SetSyslogConfigAsync(
+                _preferences.SyslogEnabled,
+                _preferences.SyslogTarget,
+                _preferences.SyslogProto,
+                _preferences.SyslogEmitSignals,
+                _preferences.SyslogEmitFlows,
+                _preferences.SyslogFlowMinBytes,
+                _preferences.SyslogFlowDeltaBytes,
+                _preferences.SyslogFlowIntervalSecs
+            );
+            return result.Accepted ? result.Message : $"declined: {result.Message}";
+        }
+        catch (Exception ex)
+        {
+            return $"error: {ex.Message}";
+        }
     }
 
     private async Task<string> PushSignalPolicyToCoreAsync()

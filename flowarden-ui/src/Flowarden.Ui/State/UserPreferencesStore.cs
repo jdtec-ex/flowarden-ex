@@ -13,6 +13,22 @@ public sealed class UserPreferences
     /// <summary>comfortable (default) or compact — UI density preference.</summary>
     public string UiDensity { get; set; } = "comfortable";
 
+    public bool SyslogEnabled { get; set; }
+
+    public string SyslogTarget { get; set; } = string.Empty;
+
+    public string SyslogProto { get; set; } = "udp";
+
+    public bool SyslogEmitSignals { get; set; } = true;
+
+    public bool SyslogEmitFlows { get; set; } = true;
+
+    public ulong SyslogFlowMinBytes { get; set; } = 10_000;
+
+    public ulong SyslogFlowDeltaBytes { get; set; } = 1_000_000;
+
+    public ulong SyslogFlowIntervalSecs { get; set; } = 60;
+
     public ulong DataThresholdBytes { get; set; } = 50_000_000;
 
     public List<string> WatchedHosts { get; set; } = new();

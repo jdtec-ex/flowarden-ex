@@ -17,13 +17,14 @@
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
       <Grid ColumnDefinitions="*,*"
-            RowDefinitions="Auto,Auto"
+            RowDefinitions="Auto,Auto,Auto"
             RowSpacing="12"
             ColumnSpacing="12">
         <components:SettingsRuntimePanelView DataContext="{Binding}" />
         <components:SettingsCorePanelView Grid.Column="1" DataContext="{Binding}" />
         <components:SettingsCaptureDefaultsPanelView Grid.Row="1" DataContext="{Binding}" />
         <components:SettingsDiagnosticsPanelView Grid.Row="1" Grid.Column="1" DataContext="{Binding}" />
+        <components:SettingsSyslogPanelView Grid.Row="2" Grid.ColumnSpan="2" DataContext="{Binding}" />
       </Grid>
     </ScrollViewer>
   </Grid>

@@ -512,6 +512,7 @@ mod tests {
                     rst_count: 0,
                     packets: 2,
                     bytes: 180,
+                    payload_bytes: 100,
                     state: flowarden_core::flow::TcpConnectionState::Established,
                     initiator: Some(flowarden_core::flow::EndpointId {
                         ip: IpAddr::V4(Ipv4Addr::new(192, 168, 1, 10)),
@@ -519,6 +520,7 @@ mod tests {
                     }),
                     first_seen: timestamp(1),
                     last_seen: timestamp(2),
+                    last_payload_seen: Some(timestamp(2)),
                 }),
                 sni: Some("example.com".into()),
             },

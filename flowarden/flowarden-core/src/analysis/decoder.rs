@@ -191,6 +191,7 @@ pub fn decode_packet_with_options(
             transport_protocol: TransportProtocol::Arp,
             tcp_flags: None,
             packet_len: envelope.original_len,
+            payload_len: 0,
             sni: None,
             arp_operation: Some(arp.operation.0),
         });
@@ -216,9 +217,11 @@ pub fn decode_packet_with_options(
         None => (None, None, TransportProtocol::Other(0), None),
     };
 
+    let payload = headers.payload.slice();
+    let payload_len = payload.len() as u32;
+
     // Light DPI: only attempt SNI on TCP payloads that look like TLS handshakes.
     let sni = if matches!(transport_protocol, TransportProtocol::Tcp) {
-        let payload = headers.payload.slice();
         if payload.first() == Some(&0x16) {
             extract_sni_from_tcp_payload_with_options(payload, options)
         } else {
@@ -238,6 +241,7 @@ pub fn decode_packet_with_options(
         transport_protocol,
         tcp_flags,
         packet_len: envelope.original_len,
+        payload_len,
         sni,
         arp_operation: None,
     })

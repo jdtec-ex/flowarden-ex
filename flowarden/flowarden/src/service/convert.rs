@@ -209,6 +209,7 @@ pub(crate) fn projection_response_from_runtime_snapshot(
     process_lookup: Option<&super::process_lookup::ProcessLookup>,
     rdns_lookup: Option<&super::rdns_lookup::RdnsLookup>,
     signal_engine: Option<&Mutex<super::signals::SignalEngine>>,
+    syslog: Option<&Mutex<super::syslog_export::SyslogExporter>>,
     top_n: usize,
 ) -> Result<OverviewSnapshotResponse> {
     if let Some(error_message) = runtime_snapshot.error_message.clone() {
@@ -298,6 +299,42 @@ pub(crate) fn projection_response_from_runtime_snapshot(
             list
         })
         .unwrap_or_default();
+
+    if let Some(syslog) = syslog.and_then(|s| s.lock().ok()) {
+        let mut syslog = syslog;
+        for row in &signals {
+            syslog.submit_signal(super::syslog_export::SignalSyslogPayload {
+                kind: row.kind.clone(),
+                severity: row.severity.clone(),
+                mode: row.mode.clone(),
+                status: row.status.clone(),
+                subject: row.subject.clone(),
+                summary: row.summary.clone(),
+                confidence: row.confidence,
+                pivot_kind: row.pivot_kind.clone(),
+                pivot_value: row.pivot_value.clone(),
+            });
+        }
+        let process_map: std::collections::HashMap<String, String> = top_connections
+            .iter()
+            .filter(|r| !r.process_name.is_empty())
+            .map(|r| {
+                (
+                    format!(
+                        "{}:{}-{}:{}-{}",
+                        r.source_address,
+                        r.source_port,
+                        r.destination_address,
+                        r.destination_port,
+                        r.protocol
+                    ),
+                    r.process_name.clone(),
+                )
+            })
+            .collect();
+        // Inspect-visible flows = same top_connections pool used for Inspect live path.
+        syslog.consider_inspect_flows(&runtime_snapshot.top_connections, &process_map);
+    }
 
     Ok(OverviewSnapshotResponse {
         capture_id: runtime_snapshot.capture_id,

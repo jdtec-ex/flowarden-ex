@@ -8,9 +8,22 @@
     <DockPanel LastChildFill="True">
       <StackPanel DockPanel.Dock="Top" Spacing="28">
         <StackPanel Spacing="8">
-          <TextBlock FontSize="24"
-                     FontWeight="SemiBold"
-                     Text="{Binding Title}" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock FontSize="24"
+                       FontWeight="SemiBold"
+                       Text="{Binding Title}"
+                       VerticalAlignment="Center" />
+            <Border Classes="tfc-chip"
+                    Background="{StaticResource TfcRaisedHighBrush}"
+                    BorderBrush="{StaticResource TfcPrimaryBrush}"
+                    Padding="8,2"
+                    VerticalAlignment="Center">
+              <TextBlock Classes="tfc-label"
+                         Foreground="{StaticResource TfcPrimaryBrush}"
+                         FontSize="10"
+                         Text="BETA" />
+            </Border>
+          </StackPanel>
           <TextBlock Classes="tfc-label"
                      Text="{Binding Subtitle}" />
         </StackPanel>
