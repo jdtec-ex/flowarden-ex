@@ -246,10 +246,16 @@ impl CaptureType {
 fn capture_packet_from_pcap(packet: &Packet<'_>, link_type: LinkTypeEx) -> CapturePacket {
     CapturePacket {
         timestamp_sec: packet.header.ts.tv_sec,
-        timestamp_usec: i64::from(packet.header.ts.tv_usec),
+        // timeval.tv_usec is i32 on some platforms (e.g. macOS) and i64 on others (e.g. Linux).
+        timestamp_usec: tv_usec_as_i64(packet.header.ts.tv_usec),
         captured_len: packet.header.caplen,
         original_len: packet.header.len,
         link_type,
         data: packet.data.into(),
     }
+}
+
+/// Widen libc `tv_usec` to `i64` without platform-specific casts in the call site.
+fn tv_usec_as_i64(value: impl Into<i64>) -> i64 {
+    value.into()
 }
