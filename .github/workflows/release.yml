@@ -218,7 +218,10 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ steps.meta.outputs.title }}
-          generate_release_notes: true
+          # Preliminary public blurb; keep short until longer notes are needed.
+          body: |
+            First Public Release of Flowarden.
+          generate_release_notes: false
           files: upload/*
           fail_on_unmatched_files: true
         env:

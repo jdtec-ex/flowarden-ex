@@ -130,10 +130,20 @@ Git tags: `0.1.0`, `0.1.1`, … (no `v` prefix preferred).
 
 ---
 
-## Release `Flowarden 0.1.0` — body (paste into GitHub Release if needed)
+## Release `Flowarden 0.1.0` — body
+
+Default release body (also set in `.github/workflows/release.yml`):
+
+```text
+First Public Release of Flowarden.
+```
+
+Longer notes (optional paste if you want more detail):
 
 ```markdown
 # Flowarden 0.1.0
+
+First Public Release of Flowarden.
 
 **Public Beta.** Desktop network traffic monitor with a **Rust resident core**, an **Avalonia** UI over local gRPC, and a **CLI** that shares the same projection contract.
 
