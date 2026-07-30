@@ -24,8 +24,13 @@ Network traffic monitor — Rust core, Avalonia UI, live/pcap, SNI & process con
 
 ## About → Website
 
-Leave empty unless you have a landing page.  
-Optional later: docs site or release download page.
+Optional: point to the latest release downloads:
+
+```text
+https://github.com/jdtec-ex/flowarden-ex/releases
+```
+
+Leave empty if you prefer users to use the Releases tab only.
 
 ---
 
@@ -219,21 +224,26 @@ GyulyVGC and the Sniffnet community for proving this class of desktop monitor wo
 
 ## Create the release (commands)
 
-After this file is on `main`:
+Release packages are built by **`.github/workflows/release.yml`** when a `v*` tag is pushed:
+
+- `flowarden-linux-x64.tar.gz`
+- `flowarden-macos-arm64.tar.gz`
+- `flowarden-windows-x64.zip`
+
+Each archive is a **full portable bundle** (self-contained Avalonia UI + `flowarden` core).
 
 ```bash
 cd /Users/wangli/workspace/coding/flowarden
+# main green first
 git tag -a v0.1.0 -m "v0.1.0 — Public Beta (signals + CEF syslog)"
 git push origin v0.1.0
+# Wait for Actions → "Release" workflow → assets appear on the Releases page
 ```
 
-Then GitHub → **Releases → Draft a new release** → choose tag `v0.1.0` → paste **title** and **body** above → **Publish release**.
+Users download from:
 
-Or with GitHub CLI:
-
-```bash
-# Prefer the Release body only (not this whole file) for --notes
-gh release create v0.1.0 \
-  --title "v0.1.0 — Public Beta (signals + CEF syslog)" \
-  --notes-file /path/to/release-body.md
+```text
+https://github.com/jdtec-ex/flowarden-ex/releases
 ```
+
+Optional: paste the **Release body** section above into the release notes (the workflow also generates notes from commits). Manual `gh release create` is only needed if you skip the workflow.

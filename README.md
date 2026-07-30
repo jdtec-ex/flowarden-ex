@@ -113,7 +113,21 @@ CLI:  flowarden devices | capture …   (same core, no UI)
 | **macOS** | Yes | Yes (Avalonia) | libpcap (system) |
 | **Windows** | Yes | Yes (Avalonia) | [Npcap](https://npcap.com/) (WinPcap-compatible API) |
 
-GitHub Actions CI builds and tests on **Ubuntu** and **Windows** (hosted `windows-latest` is Windows Server x64; same Win32 toolchain as Windows 10/11 for compile/test). macOS is supported for local builds; a dedicated macOS runner can be added later.
+### Downloads (users)
+
+Pre-built **portable full bundles** (self-contained UI + `flowarden` core in one archive) are published on:
+
+**https://github.com/jdtec-ex/flowarden-ex/releases**
+
+| Asset (example) | Platform |
+| --- | --- |
+| `flowarden-linux-x64.tar.gz` | Linux x64 |
+| `flowarden-macos-arm64.tar.gz` | macOS Apple Silicon |
+| `flowarden-windows-x64.zip` | Windows x64 |
+
+Unpack, keep UI and core in the same folder, start `Flowarden.Ui` / `Flowarden.Ui.exe`. See `README.txt` inside the package. Windows users must install [Npcap](https://npcap.com/) first.
+
+CI (test-only) runs on Ubuntu and Windows; **Release** packages are produced for Linux, macOS, and Windows when a `v*` tag is pushed.
 
 ---
 
