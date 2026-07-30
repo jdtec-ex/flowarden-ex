@@ -13,7 +13,6 @@
 
 Built as a **Rust resident analysis core** with an **Avalonia (.NET 8) UI** over local gRPC, plus a **CLI** that shares the same projection contract. Inspired by [Sniffnet](https://github.com/GyulyVGC/sniffnet); not a fork.
 
-> Listing copy (About description, Topics, Release notes): [`.github/GITHUB_LISTING.md`](.github/GITHUB_LISTING.md)
 
 ---
 
